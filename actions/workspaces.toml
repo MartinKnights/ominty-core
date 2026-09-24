@@ -1,0 +1,53 @@
+# Omivoid action registry — workspaces
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Workspace actions use native Niri operations (docs/03 §23).
+
+registry_version = 1
+
+[action."workspace.next"]
+
+name = "Next Workspace"
+description = "Focus the next workspace."
+category = "Workspaces"
+
+keywords = ["workspace", "next", "switch"]
+
+keys = ["Super+Page_Down"]
+
+adapter = "niri.native"
+arguments = { action = "focus-workspace-down" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."workspace.previous"]
+
+name = "Previous Workspace"
+description = "Focus the previous workspace."
+category = "Workspaces"
+
+keywords = ["workspace", "previous", "switch"]
+
+keys = ["Super+Page_Up"]
+
+adapter = "niri.native"
+arguments = { action = "focus-workspace-up" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false

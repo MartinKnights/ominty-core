@@ -1,0 +1,31 @@
+# Omivoid action registry — session
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Session actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
+
+registry_version = 1
+
+[action."session.lock"]
+
+name = "Lock Session"
+description = "Lock the session."
+category = "System"
+
+keywords = ["lock", "screen", "secure"]
+
+# Mod+Alt+L is claimed by DMS (lock, dms-evaluation.md §4.2).
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "lock", function = "lock" } }
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false

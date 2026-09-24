@@ -1,0 +1,77 @@
+# Omivoid action registry — windows
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Window actions use native Niri operations (docs/03 §23, Contract 4).
+
+registry_version = 1
+
+[action."window.close"]
+
+name = "Close Window"
+description = "Close the focused window."
+category = "Windows"
+
+keywords = ["close", "quit", "kill"]
+
+keys = ["Super+Q"]
+
+adapter = "niri.native"
+arguments = { action = "close-window" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."window.focus.left"]
+
+name = "Focus Left"
+description = "Focus the window to the left."
+category = "Navigation"
+
+keywords = ["focus", "left", "column"]
+
+keys = ["Super+Left"]
+
+adapter = "niri.native"
+arguments = { action = "focus-column-left" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."window.focus.right"]
+
+name = "Focus Right"
+description = "Focus the window to the right."
+category = "Navigation"
+
+keywords = ["focus", "right", "column"]
+
+keys = ["Super+Right"]
+
+adapter = "niri.native"
+arguments = { action = "focus-column-right" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false

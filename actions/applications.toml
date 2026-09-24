@@ -1,0 +1,52 @@
+# Omivoid action registry — applications
+# Schema version 1 (docs/03-action-registry-spec.md)
+
+registry_version = 1
+
+[action."app.terminal.open"]
+
+name = "Open Terminal"
+description = "Open the configured primary terminal."
+category = "Applications"
+
+keywords = ["terminal", "console", "shell", "command"]
+
+keys = ["Super+Enter"]
+
+adapter = "app.launch"
+arguments = { role = "terminal" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."app.browser.open"]
+
+name = "Open Browser"
+description = "Open the default web browser."
+category = "Applications"
+
+keywords = ["browser", "web", "internet"]
+
+keys = ["Super+Shift+B"]
+
+adapter = "app.launch"
+arguments = { role = "browser" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false

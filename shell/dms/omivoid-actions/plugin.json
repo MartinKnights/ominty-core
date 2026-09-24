@@ -1,0 +1,22 @@
+{
+    "id": "omivoidActions",
+    "name": "Omivoid Actions",
+    "description": "Search and run Omivoid actions from the DMS launcher. Bridges the Omivoid Action Registry into the DMS interaction surface.",
+    "version": "0.1.0",
+    "author": "Omivoid",
+    "icon": "bolt",
+    "type": "launcher",
+    "capabilities": [
+        "launcher",
+        "action-registry"
+    ],
+    "component": "./OmivoidActions.qml",
+    "settings": "./OmivoidActionsSettings.qml",
+    "trigger": "!",
+    "requires_dms": ">=1.2.0",
+    "permissions": [
+        "settings_read",
+        "settings_write",
+        "process"
+    ]
+}

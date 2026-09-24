@@ -1,0 +1,56 @@
+# Omivoid action registry — theme
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Wallpaper actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
+# Direct bindings deferred to the theme stage (niri-binding-audit.md).
+
+registry_version = 1
+
+[action."theme.wallpaper.select"]
+
+name = "Select Wallpaper"
+description = "Open the wallpaper selection workflow."
+category = "Appearance"
+
+keywords = ["wallpaper", "background", "select", "image"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "wallpaper", function = "select" } }
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."theme.wallpaper.next"]
+
+name = "Next Wallpaper"
+description = "Cycle to the next wallpaper."
+category = "Appearance"
+
+keywords = ["wallpaper", "next", "cycle", "background"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "wallpaper", function = "next" } }
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false

@@ -1,0 +1,56 @@
+# Omivoid action registry — display
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Brightness actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
+# Brightness keys (XF86MonBrightness*) are claimed by DMS and bound in its binds.kdl.
+
+registry_version = 1
+
+[action."display.brightness.increase"]
+
+name = "Increase Brightness"
+description = "Increase the display brightness."
+category = "Displays"
+
+keywords = ["brightness", "up", "screen", "backlight"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "brightness", function = "increment", args = ["5", ""] } }
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."display.brightness.decrease"]
+
+name = "Decrease Brightness"
+description = "Decrease the display brightness."
+category = "Displays"
+
+keywords = ["brightness", "down", "screen", "backlight"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "brightness", function = "decrement", args = ["5", ""] } }
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false

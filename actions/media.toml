@@ -1,0 +1,81 @@
+# Omivoid action registry — media
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Media actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
+# Media keys (XF86Audio*) are claimed by DMS and bound in its binds.kdl.
+
+registry_version = 1
+
+[action."media.play_pause"]
+
+name = "Play/Pause Media"
+description = "Play or pause the current media player."
+category = "Media"
+
+keywords = ["play", "pause", "media", "music", "video"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "mpris", function = "playPause" } }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."media.next"]
+
+name = "Next Track"
+description = "Skip to the next media track."
+category = "Media"
+
+keywords = ["next", "skip", "track", "media"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "mpris", function = "next" } }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."media.previous"]
+
+name = "Previous Track"
+description = "Go back to the previous media track."
+category = "Media"
+
+keywords = ["previous", "back", "track", "media"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "mpris", function = "previous" } }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false

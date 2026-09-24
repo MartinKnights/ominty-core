@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local scratch / session state
+.tmp/
+*.log
+
+# Editor / OS
+.DS_Store
