@@ -17,6 +17,8 @@ import urllib.error
 from unittest.mock import MagicMock, patch
 
 from omivoidlib.ai import ask, capabilities, default_provider, provider_status
+from omivoidlib.ai import policy
+from omivoidlib.ai.actions import run_action_as_ai
 from omivoidlib.ai.capabilities import list_capabilities
 from omivoidlib.ai.providers import resolve_provider
 from omivoidlib.registry import Action, Registry
@@ -408,3 +410,132 @@ def test_capabilities_public_interface():
     with patch("omivoidlib.ai._capabilities.list_capabilities", return_value=[{"id": "x"}]):
         result = capabilities()
     assert result == [{"id": "x"}]
+
+
+# ── AI policy (docs/ai/09, AI-14/AI-16) ───────────────────────────────────
+
+def test_policy_allows_routine_action():
+    a = make_action(id="x.open", ai_accessible=True, risk="routine",
+                    confirmation="never")
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "allow"
+    assert decision["code"] is None
+
+
+def test_policy_denies_not_ai_accessible():
+    a = make_action(id="x.close", ai_accessible=False)
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "deny"
+    assert decision["code"] == "PERMISSION_DENIED"
+    assert decision["reason"] == "not_ai_accessible"
+
+
+def test_policy_denies_ai_recursion():
+    """AI-invoking actions are refused even if marked ai_accessible."""
+    a = make_action(id="ai.ask", ai_accessible=True)
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "deny"
+    assert decision["reason"] == "ai_recursion"
+
+
+def test_policy_denies_forbidden_risk():
+    a = make_action(id="x.wipe", ai_accessible=True, risk="destructive")
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "deny"
+    assert decision["reason"] == "risk_not_permitted"
+
+
+def test_policy_confirms_ai_only():
+    a = make_action(id="x.next", ai_accessible=True, risk="state-change",
+                    confirmation="ai-only")
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "confirm"
+    assert decision["code"] == "CONFIRMATION_REQUIRED"
+
+
+def test_policy_confirms_always():
+    a = make_action(id="x.next", ai_accessible=True, confirmation="always")
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "confirm"
+
+
+def test_policy_interactive_is_not_ai_confirmed():
+    """`interactive` scopes confirmation to human surfaces (docs/03 §17)."""
+    a = make_action(id="x.next", ai_accessible=True,
+                    confirmation="interactive")
+    decision = policy.evaluate(a)
+    assert decision["decision"] == "allow"
+
+
+# ── AI action execution (docs/ai/10 §19, AI-13) ───────────────────────────
+
+def test_run_action_as_ai_unknown():
+    result = run_action_as_ai("no.such.action", registry=Registry())
+    assert result["success"] is False
+    assert result["error"]["code"] == "ACTION_NOT_FOUND"
+
+
+def test_run_action_as_ai_denied_recursion():
+    a = make_action(id="ai.ask", ai_accessible=True)
+    result = run_action_as_ai("ai.ask", registry=registry_with(a))
+    assert result["success"] is False
+    assert result["error"]["code"] == "PERMISSION_DENIED"
+    assert result["error"]["reason"] == "ai_recursion"
+
+
+def test_run_action_as_ai_confirmation_required():
+    a = make_action(id="x.next", ai_accessible=True, risk="state-change",
+                    confirmation="ai-only")
+    result = run_action_as_ai("x.next", registry=registry_with(a))
+    assert result["success"] is False
+    assert result["confirmation_required"] is True
+    assert result["error"]["code"] == "CONFIRMATION_REQUIRED"
+
+
+def test_run_action_as_ai_confirmed_executes():
+    a = make_action(id="x.next", ai_accessible=True, risk="state-change",
+                    confirmation="ai-only")
+    with patch(
+        "omivoidlib.ai.actions.run_action",
+        return_value={"action": "x.next", "success": True, "state": {}},
+    ) as runner:
+        result = run_action_as_ai("x.next", confirmed=True,
+                                  registry=registry_with(a))
+    assert result["success"] is True
+    runner.assert_called_once()
+
+
+def test_run_action_as_ai_allowed_executes():
+    a = make_action(id="x.open", ai_accessible=True)
+    with patch(
+        "omivoidlib.ai.actions.run_action",
+        return_value={"action": "x.open", "success": True, "state": {}},
+    ):
+        result = run_action_as_ai("x.open", registry=registry_with(a))
+    assert result["success"] is True
+
+
+def test_run_action_as_ai_unavailable_passthrough():
+    """Runner-level failures (e.g. ACTION_UNAVAILABLE) pass through."""
+    a = make_action(id="x.open", ai_accessible=True)
+    with patch(
+        "omivoidlib.ai.actions.run_action",
+        return_value={
+            "action": "x.open",
+            "success": False,
+            "error": {"code": "ACTION_UNAVAILABLE", "message": "no impl"},
+        },
+    ):
+        result = run_action_as_ai("x.open", registry=registry_with(a))
+    assert result["error"]["code"] == "ACTION_UNAVAILABLE"
+
+
+def test_wallpaper_next_is_ai_confirmed_in_real_registry():
+    """Integration: the AI-15 confirmation action is configured (real registry)."""
+    from omivoidlib.registry import load_registry
+
+    registry = load_registry()
+    action = registry.actions.get("theme.wallpaper.next")
+    assert action is not None
+    assert action.confirmation == "ai-only"
+    assert policy.evaluate(action)["decision"] == "confirm"

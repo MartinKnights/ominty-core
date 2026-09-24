@@ -44,7 +44,11 @@ adapter = "dms.ipc"
 arguments = { dms = { target = "wallpaper", function = "next" } }
 
 risk = "state-change"
-confirmation = "never"
+
+# AI-15 confirmation proof: a harmless, reversible state change. Direct
+# interaction (palette/CLI) is trusted; an AI request must be confirmed
+# by the user (docs/ai/09 §9–10, docs/03 §17).
+confirmation = "ai-only"
 
 contexts = ["global"]
 platforms = ["common"]

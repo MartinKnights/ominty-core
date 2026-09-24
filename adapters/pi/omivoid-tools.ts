@@ -11,10 +11,15 @@
  * so `app.browser.open` becomes `app_browser_open`. The canonical
  * action ID is preserved and passed to the runner.
  *
- * Execution: `omivoid action run <id> --json`. Pi never executes
+ * Execution: `omivoid action run <id> --ai --json`. Pi never executes
  * implementation commands directly for registered capabilities
  * (docs/ai/02 §19). Only actions in the AI-accessible catalogue can
- * be invoked — the catalogue is the policy boundary (AGENTS.md §17).
+ * be invoked — the catalogue is the policy boundary (AGENTS.md §17),
+ * and Omivoid re-checks policy per request (docs/ai/09).
+ *
+ * Confirmation: when Omivoid returns CONFIRMATION_REQUIRED, the user
+ * is asked via Pi's UI and the action is retried with --confirmed.
+ * The model can never approve its own action (docs/ai/09 §10).
  *
  * CLI resolution: $OMIVOID_CLI if set, otherwise `omivoid` from PATH.
  */
@@ -34,7 +39,8 @@ interface ActionResult {
   success: boolean;
   action?: string;
   state?: Record<string, unknown>;
-  error?: { code: string; message: string };
+  confirmation_required?: boolean;
+  error?: { code: string; message: string; reason?: string };
 }
 
 /** Pi tool names must match /^[a-z0-9_]+$/ (see dynamic-tools example). */
@@ -60,15 +66,25 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
     return JSON.parse(result.stdout) as Capability[];
   }
 
-  async function runAction(actionId: string): Promise<ActionResult> {
-    const result = await pi.exec(cli, ["action", "run", actionId, "--json"]);
-    if (result.code !== 0) {
+  async function runAction(
+    actionId: string,
+    confirmed: boolean,
+  ): Promise<ActionResult> {
+    const args = ["action", "run", actionId, "--ai", "--json"];
+    if (confirmed) {
+      args.push("--confirmed");
+    }
+    const result = await pi.exec(cli, args);
+    // A denial still exits non-zero, but --json emits a structured result
+    // on stdout. Prefer the structured result; throw only if it is absent.
+    try {
+      return JSON.parse(result.stdout) as ActionResult;
+    } catch {
       throw new Error(
         `omivoid action run ${actionId} failed (${result.code}): ` +
           `${result.stderr || result.stdout}`,
       );
     }
-    return JSON.parse(result.stdout) as ActionResult;
   }
 
   function registerTool(cap: Capability): void {
@@ -82,10 +98,37 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
         `Use ${toolName} when the user asks to ${cap.description.toLowerCase()}`,
       ],
       parameters: Type.Object({}),
-      async execute(_toolCallId, _params, _signal, _onUpdate, _ctx) {
-        const result = await runAction(cap.id);
+      async execute(_toolCallId, _params, _signal, _onUpdate, ctx) {
+        let result = await runAction(cap.id, false);
+
+        // Omivoid policy may require user confirmation. The user decides;
+        // the model can never set --confirmed itself (docs/ai/09 §10).
+        if (!result.success && result.confirmation_required) {
+          let approved = false;
+          try {
+            approved = await ctx.ui.confirm(
+              "Omivoid: confirm action",
+              `${cap.name} (${cap.id})\n` +
+                `risk: ${cap.risk}  ·  confirmation: ${cap.confirmation}\n\n` +
+                `An AI request wants to run this action. Approve?`,
+            );
+          } catch {
+            throw new Error(
+              `CONFIRMATION_REQUIRED: '${cap.id}' needs user approval ` +
+                `(interactive session required)`,
+            );
+          }
+          if (!approved) {
+            throw new Error(`PERMISSION_DENIED: user denied '${cap.id}'`);
+          }
+          result = await runAction(cap.id, true);
+        }
+
         if (!result.success) {
-          const err = result.error ?? { code: "UNKNOWN", message: "unknown error" };
+          const err = result.error ?? {
+            code: "UNKNOWN",
+            message: "unknown error",
+          };
           throw new Error(`${err.code}: ${err.message}`);
         }
         return {

@@ -146,7 +146,12 @@ def cmd_action_search(args: argparse.Namespace) -> int:
 
 
 def cmd_action_run(args: argparse.Namespace) -> int:
-    result = run_action(args.action_id)
+    if getattr(args, "ai", False):
+        from .ai.actions import run_action_as_ai
+
+        result = run_action_as_ai(args.action_id, confirmed=args.confirmed)
+    else:
+        result = run_action(args.action_id)
     if args.json:
         print(json.dumps(result, indent=2))
         return 0 if result["success"] else 1
@@ -362,6 +367,16 @@ def build_parser() -> argparse.ArgumentParser:
     run_p = action_sub.add_parser("run", help="run an action")
     run_p.add_argument("action_id")
     run_p.add_argument("--json", action="store_true", help="JSON output")
+    run_p.add_argument(
+        "--ai",
+        action="store_true",
+        help="evaluate as an AI request (policy enforcement, docs/ai/09)",
+    )
+    run_p.add_argument(
+        "--confirmed",
+        action="store_true",
+        help="user approved a confirmation-required AI action",
+    )
     run_p.set_defaults(func=cmd_action_run)
 
     # registry
