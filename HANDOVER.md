@@ -1,64 +1,84 @@
-# Handover — Omivoid LMDE (2026-09-10)
+# Handover — Omivoid LMDE (2026-09-24)
 
-> Brief handover for the next agent session. Read this first, then the source
-> documents listed below.
+> Brief handover for the next agent session. Read this first, then the
+> documents listed below (and `../PROGRESS.md`, the living progress log).
 
 ## Where we are
 
-The Omivoid project has **changed direction**. Instead of rebuilding the Omarchy
-Quattro shell layer under Niri, Omivoid will use **DankMaterialShell (DMS)** as
-infrastructure and concentrate on the workflow above it: keyboard grammar,
-action registry, discovery, theming, and AI integration.
+`omivoid-lmde/` is the **Phase 1 reference implementation**: a keyboard-first,
+discoverable, dynamically themed, AI-aware Niri desktop driven by a canonical
+Action Registry, on top of **DankMaterialShell (DMS)** as the shell layer.
 
-The new project documentation tree exists at `omivoid-lmde/` — **all files are
-empty** and awaiting content.
+Current state:
 
-## Source documents (read these first)
+- **Registry:** 44 actions, 0 errors / 0 warnings (`omivoid registry validate`).
+- **Tests:** 173 passing (`cd omivoid-lmde && PYTHONPATH=cli python3 -m pytest tests/`).
+- **Niri bindings:** generated from the registry into
+  `~/.config/omivoid/generated/niri/bindings.kdl` (included *last* in
+  `~/.config/niri/config.kdl`), validated with `niri validate`.
+- **Discovery:** `Super+K` = interaction explorer (DMS spotlight, `!!` sentinel);
+  `Super+Space` = universal palette; `Super+A` = AI menu.
+- **GKS cheat sheet:** `Super+Shift+S` opens the `omivoidKeybinds` DMS plugin — a
+  read-only, tabbed, human-readable keybinding sheet fed by `omivoid keybinds --json`.
+  Reference: `docs/implementation/keybindings-reference.md`.
+- **AI:** provider layer (Pi + Ollama), policy + confirmation, capability
+  catalogue + Pi tool bridge; local model = ollama `qwen2.5:3b`.
+- **Theme:** DMS + Matugen; `Super+Ctrl+P` wallpaper carousel;
+  `theme.palette.regenerate`, `theme.mode.toggle`.
+- **Power menu:** DMS restart buttons for audio / network / niri via
+  `customPowerButtons` (`system.audio.restart`, `system.network.restart`,
+  `system.niri.reload`).
 
-- `~/Projects/OmiVoid/update/01-A-New-Direction.md` — the pivot to DMS
-- `~/Projects/OmiVoid/update/02-Omivoid-Interaction-Specification.md` — interaction spec draft v0.1
-- `~/Projects/OmiVoid/update/03-Omivoid-Action-Registry-Specification.md` — action registry spec draft v0.1
+## Read these first
 
-## What the next agent should do
+- `docs/00-project-overview.md` … `docs/13-phase-1-definition-of-done.md`
+- `docs/decisions/` — ADRs 001–006
+- `docs/implementation/` — audits, evaluations, implementation records
+- `../PROGRESS.md` — living progress log + decisions log
+- `AGENTS.md` — operating rules (contracts, code-quality, commit discipline)
 
-1. **Fill in the empty files** in `omivoid-lmde/`:
-   - `AGENTS.md` — agent rules for the new project (adapt from
-     `~/Projects/OmiVoid/AGENT.md`)
-   - `docs/00-project-overview.md` … `docs/10-phase-1-implementation-plan.md`
-   - `docs/decisions/ADR-001-niri-as-compositor.md` … `ADR-005-lmde-validation-platform.md`
-2. Content should be derived from the three `update/` documents plus the
-   carried project knowledge (Niri adapter work, DMS decision, registry
-   architecture, LMDE validation platform).
-3. The user has reviewed the structure; confirm before adding content if
-   anything is ambiguous.
+## Outstanding (Phase 1 close-out)
+
+1. **Desktop validation** (DoD §25/§26): Super+K, Super+Space, logout/login and
+   reboot — perform and record.
+2. **Phase 1 exit architectural review** (DoD §33) — the ten questions.
+3. **`app.files.open` binding decision** (niri-binding-audit item #4:
+   `Super+Shift+D` vs DEFER).
+4. **`dankHooks`** event-integration evaluation (ADR-006 §27–28).
+5. Keep `docs/implementation/` current (docs/08 theme and docs/12 config layout
+   may not yet reflect the deferred/implemented theme work).
 
 ## Key facts to carry
 
-- **Project path:** `~/Projects/OmiVoid/` (the user sometimes mistypes the
-  path with an extra leading `~` — the correct path has none)
-- **New project:** `~/Projects/OmiVoid/omivoid-lmde/`
-- **Compositor:** Niri 26.04 (installed, validated on Surface Book 1)
-- **Shell:** DMS (DankMaterialShell) — Quickshell-based, Niri-optimized,
-  wallpaper-based theming (GTK/Qt/terminals/editors)
-- **Five principles:** universal interaction model, keyboard-first,
-  discoverable (Super+K), visually coherent (DMS + Matugen + app templates),
-  AI-native (Pi + Herdr + agent integration)
-- **Action registry:** `namespace.subject.action` IDs (e.g. `app.browser.open`,
-  `window.focus.left`, `workspace.next`, `system.lock`); registry describes
-  meaning, adapters define implementation
-- **Phase 1 scope:** ~30–40 actions; TOML → validation → action runner → Niri
-  generation → Super+K data → command palette data. Defer: registry daemon,
-  event bus, DBus service, plugin sandboxing, etc.
+- **Project path:** `~/Projects/OmiVoid/omivoid-lmde/`. The git repo root is
+  `~/Projects/OmiVoid`; `omivoid-lmde/` lives inside it (repo-boundary decision
+  still open).
+- **CLI:** `omivoid` — symlinked into `~/.local/bin` → `cli/omivoid`. Python 3.13
+  stdlib + pytest only; no third-party runtime deps.
+- **Compositor:** Niri 26.04 (Surface Book 1). **Shell:** DMS (Quickshell).
+- **Contracts (AGENTS.md §7):** the Action Registry is authoritative; adapters
+  define implementation; interaction surfaces must not hard-code commands where a
+  canonical action exists; do not edit generated files by hand.
+- **Generated vs source:** `~/.config/omivoid/generated/niri/bindings.kdl` is
+  generated — fix the registry or the generator, never the file.
+- **Personal paths:** do not commit `/home/mk` paths; use `$OMIVOID_CLI` /
+  `omivoid` on PATH (AGENTS.md §22/§33).
 
-## Uncommitted work in the old project (Stage 10)
+## Recently done (2026-09-24)
 
-The Niri adapter fixes from the previous session are **not committed**:
-- `adapters/niri/services/PluginRegistry.qml` (`find -L` fix)
-- `adapters/niri/Niri.qml` (idx on focusedWorkspace, layoutChanged signal,
-  event-pattern fix, temp DEBUG log)
-- `adapters/niri/Workspaces.qml` (idx-based 1–9 workspace widget)
-- `adapters/niri/KeyboardLayout.qml` (new niri port)
-- `adapters/niri/launch.sh` (PATCHED list additions)
+- GKS cheat-sheet DMS plugin + plain-English labels + keybindings reference —
+  `c7c2764`.
+- DMS power-menu restart buttons (`actions/system.toml`) — `4c587f0`.
+- Stage 10 Niri-adapter wrap-up committed — `2164e02`.
+- DMS pivot source docs (`update/`) + `The-Dank-Difference.md` — `5357759`.
 
-Decide with the user whether to commit these as a wrap-up of Stage 10 or leave
-them as reference material for the new architecture.
+## Background
+
+The project pivoted on 2026-09-10 from rebuilding the Omarchy Quattro shell to
+using **DMS as infrastructure**, concentrating Omivoid on the workflow above the
+shell: keyboard grammar, action registry, discovery, theming, AI integration.
+The three `update/` documents are the source for the current architecture (see
+`update/01-A-New-Direction.md`).
+
+Earlier Stage 10 adapter work (`adapters/niri/`) that was previously uncommitted
+is now committed in `2164e02`.
