@@ -422,6 +422,31 @@ def cmd_project_context(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_keybinds(args: argparse.Namespace) -> int:
+    """List keybindings tagged by GKS domain (docs/14-gks-keyboard-grammar.md)."""
+    from .keybinds import keybinds
+
+    data = keybinds()
+    rows = data["bindings"]
+    if getattr(args, "domain", None):
+        want = args.domain.lower()
+        rows = [r for r in rows if r["domain"].lower() == want]
+
+    if args.json:
+        print(json.dumps({"domains": data["domains"], "bindings": rows}, indent=2))
+        return 0
+
+    current = None
+    for row in rows:
+        if row["domain"] != current:
+            current = row["domain"]
+            print(f"\n## {current}")
+        mark = "  (shadowed)" if row["shadowed"] else ""
+        print(f"  {row['key']:<24} {row['action']}  [{row['source']}]{mark}")
+    print(f"\n{len(rows)} binding(s)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="omivoid",
@@ -560,6 +585,12 @@ def build_parser() -> argparse.ArgumentParser:
     context_p.add_argument("--root", help="explicit project root")
     context_p.add_argument("--json", action="store_true", help="JSON output")
     context_p.set_defaults(func=cmd_project_context)
+
+    # keybinds (GKS cheat sheet data — docs/14)
+    kb_p = sub.add_parser("keybinds", help="list keybindings by GKS domain")
+    kb_p.add_argument("--domain", help="filter to one GKS domain")
+    kb_p.add_argument("--json", action="store_true", help="JSON output")
+    kb_p.set_defaults(func=cmd_keybinds)
 
     return parser
 
