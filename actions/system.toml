@@ -1,0 +1,85 @@
+# Omivoid action registry — system service restarts
+# Schema version 1 (docs/03-action-registry-spec.md)
+#
+# Low-frequency service restarts, surfaced as DMS power-menu buttons
+# (settings.json `customPowerButtons` → `omivoid action run <id>`).
+# They carry no keys so they do not duplicate compositor bindings
+# (AGENTS.md §14); they exist for the power menu, palette and CLI.
+
+registry_version = 1
+
+[action."system.audio.restart"]
+
+name = "Restart Audio"
+description = "Restart the PipeWire audio stack (WirePlumber, PipeWire, PipeWire-Pulse)."
+category = "System"
+
+keywords = ["audio", "sound", "pipewire", "wireplumber", "restart"]
+
+keys = []
+
+adapter = "command"
+command = ["systemctl", "--user", "restart", "wireplumber", "pipewire", "pipewire-pulse"]
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["systemctl"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."system.network.restart"]
+
+name = "Restart Network"
+description = "Toggle networking off and on to reset the network stack."
+category = "System"
+
+keywords = ["network", "wifi", "networking", "nmcli", "restart"]
+
+keys = []
+
+# `command` runs argv without a shell, so the compound toggle needs sh -c.
+adapter = "command"
+command = ["sh", "-c", "nmcli networking off && sleep 1 && nmcli networking on"]
+
+risk = "state-change"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["nmcli"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."system.niri.reload"]
+
+name = "Reload Niri"
+description = "Reload the Niri configuration (keeps the session and windows)."
+category = "System"
+
+keywords = ["niri", "reload", "config", "compositor"]
+
+keys = []
+
+adapter = "command"
+command = ["niri", "msg", "action", "reload-config"]
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["niri"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false

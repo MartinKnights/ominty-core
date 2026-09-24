@@ -318,6 +318,45 @@ Prefer integration with the selected shell/session mechanism.
 
 ---
 
+## `system.audio.restart`
+
+**Name:** Restart Audio
+**Category:** System
+**Risk:** `state-change`
+**Context:** `global`
+
+Restarts the PipeWire audio stack
+(`systemctl --user restart wireplumber pipewire pipewire-pulse`). Surfaced as a
+DMS power-menu button (`customPowerButtons`); carries no keybinding.
+
+---
+
+## `system.network.restart`
+
+**Name:** Restart Network
+**Category:** System
+**Risk:** `state-change`
+**Context:** `global`
+
+Toggles networking off and on (`nmcli networking off && sleep 1 && nmcli networking on`)
+to reset the network stack. Surfaced as a DMS power-menu button; carries no
+keybinding.
+
+---
+
+## `system.niri.reload`
+
+**Name:** Reload Niri
+**Category:** System
+**Risk:** `routine`
+**Context:** `global`
+
+Reloads the Niri configuration (`niri msg action reload-config`) without
+restarting the session. Surfaced as a DMS power-menu button; carries no
+keybinding.
+
+---
+
 # 7. Audio Actions
 
 These should integrate with the existing PipeWire/WirePlumber environment or the shell's existing controls rather than creating a parallel audio stack.
@@ -713,10 +752,12 @@ Actions may be deferred where implementation would be speculative.
 
 The goal is approximately 30–40 working actions by the end of Phase 1.
 
-**Phase 1 implementation (2026-09-19):** **40 actions** implemented and
-validating (0 errors, 0 warnings). By category: Applications 6, Windows 4,
-Navigation 4, Workspaces 2, System 1, Audio 4, Displays 2, Media 3,
-Appearance 5, Capture 2, AI 5, Help 2.
+**Phase 1 implementation:** **44 actions** implemented and validating
+(0 errors, 0 warnings). By category: Applications 6, Windows 4, Navigation 4,
+Workspaces 2, System 4, Audio 4, Displays 2, Media 3, Appearance 5, Capture 2,
+AI 5, Help 3. (`help.keybinds.open` added 2026-09-24 for the cheat sheet;
+`system.audio.restart` / `system.network.restart` / `system.niri.reload` added
+2026-09-24 for the DMS power-menu restart buttons.)
 
 Deferred (documented, not implemented): `session.*` (logout/reboot/
 shutdown — destructive, needs a confirmation design), `network.*`
