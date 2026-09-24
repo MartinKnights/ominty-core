@@ -1,0 +1,19 @@
+{
+    "id": "omivoidKeybinds",
+    "name": "Omivoid Keybindings",
+    "description": "GKS keybindings cheat sheet — every binding, grouped into tabs by domain (read-only).",
+    "version": "0.1.0",
+    "author": "Omivoid",
+    "icon": "keyboard",
+    "type": "daemon",
+    "capabilities": [
+        "daemon"
+    ],
+    "components": {
+        "daemon": "./OmivoidKeybinds.qml"
+    },
+    "requires_dms": ">=1.2.0",
+    "permissions": [
+        "process"
+    ]
+}

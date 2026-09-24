@@ -341,6 +341,7 @@ DMS: [OmivoidActions] Explorer requested: 21 actions
 | Path | Binding | Mechanism |
 | ---- | ------- | --------- |
 | Interaction explorer | `Super+K` | `help.keys.open` → adapter `shell.explorer` → spawn `dms ipc call spotlight openQuery "!!"` |
+| Keybindings cheat sheet | `Super+Shift+S` | `help.keybinds.open` → adapter `command` → spawn `dms ipc call omivoidKeybinds toggle` (own `omivoidKeybinds` DMS plugin, tabbed by GKS domain) |
 | Universal palette | `Super+Space` (DMS `Mod+Space`) | plugin is always-active, so `getItems(query)` runs alongside app search (`help.actions.search` toggles the spotlight) |
 
 Design notes:

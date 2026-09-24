@@ -64,3 +64,29 @@ discoverable = true
 palette = true
 ai_accessible = false
 voice_accessible = false
+
+[action."help.keybinds.open"]
+
+name = "Open Keybindings Cheat Sheet"
+description = "Open the read-only GKS keybindings cheat sheet (tabbed by domain)."
+category = "Help"
+
+keywords = ["keybindings", "keys", "cheatsheet", "shortcuts", "gks", "sheet"]
+
+# Mod+Shift+K is claimed by DMS (move-window-up, dms/binds.kdl), so the cheat
+# sheet uses Super+Shift+S, which is free. Opens the omivoidKeybinds DMS plugin.
+keys = ["Super+Shift+S"]
+
+adapter = "command"
+command = ["dms", "ipc", "call", "omivoidKeybinds", "toggle"]
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false

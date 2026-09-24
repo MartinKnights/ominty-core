@@ -711,21 +711,29 @@ Two GKS changes fall out of this:
 
 The cheat sheet is where GKS becomes usable. **One dialog, one tab per domain**, each tab a continuous list.
 
-**Invocation:** `Super+K` (interaction explorer) and/or `Super+Shift+Slash` (hotkey overlay).
+**Invocation:** `Super+Shift+S` opens the tabbed cheat sheet (`help.keybinds.open`),
+alongside `Super+K` (interaction explorer, `help.keys.open`) and
+`Super+Shift+Slash` (Niri hotkey overlay).
 
 **Tabs (one per GKS tier):**
 
-| Tab | Modifier | Contents |
+| Tab label | Domain | Contents |
 |---|---|---|
-| **Application** | `Ctrl` | universal app conventions (reference — not owned by GKS) |
-| **Navigation** | `Alt` | back/forward, level up/down |
-| **Desktop** | `Super` | focus, launch, windows, workspaces, media |
-| **Window state** | `Super+Alt` | maximize, fullscreen, hide, always-on-top |
-| **Workspace topology** | `Super+Ctrl` | create/delete/reorder workspaces |
-| **System** | `Ctrl+Alt` | terminal, lock, security |
-| **AI** | `Super+A` | AI menu and chords |
-| **Projects** | `Super+P` | reserved |
-| **All** | — | every binding, searchable |
+| **Apps** | `Application` | universal app conventions (reference — not owned by GKS) |
+| **Navigate** | `Navigation` | window/monitor cycling |
+| **Desktop** | `Desktop` | focus, launch, windows, lock |
+| **Workspaces** | `Workspace topology` | workspace navigation and moves |
+| **System** | `System` | security and system controls |
+| **AI** | `AI` | AI menu and chords |
+| **Projects** | `Projects` | reserved |
+| **Hardware** | `Hardware` | media keys (`F1`–`F12`) and screenshots |
+
+> The former **Window state** tier was folded into **Desktop** — its only
+> binding (`Mod+Alt+L`, lock) now lives there. Tab labels are shortened at the
+> display layer; the underlying domain keys are unchanged.
+
+The full, generated list lives in
+[`docs/implementation/keybindings-reference.md`](implementation/keybindings-reference.md).
 
 **Behaviour:**
 
@@ -807,6 +815,7 @@ Implementation decisions:
 
 | Item | Decision |
 |---|---|
-| Cheat sheet | **Own DMS plugin** (`popoutContent` surface), *not* a fork of DMS's `KeybindsModal` |
-| Invocation | `Super+K` opens the tabbed cheat sheet |
+| Cheat sheet | **Own DMS plugin** (`omivoidKeybinds`, `popoutContent` surface), *not* a fork of DMS's `KeybindsModal` |
+| Explorer invocation | `Super+K` (`help.keys.open`) opens the interaction explorer |
+| Cheat-sheet invocation | `Super+Shift+S` (`help.keybinds.open`) opens the tabbed cheat sheet via `dms ipc call omivoidKeybinds toggle` |
 | Data source | `omivoid keybinds --json` (merges registry + Niri + DMS, tags each row with its GKS domain) |

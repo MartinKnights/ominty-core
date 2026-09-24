@@ -85,6 +85,7 @@ Initial baseline:
 | `Super+Enter`      | Open terminal            |
 | `Super+Space`      | Universal palette        |
 | `Super+K`          | Interaction explorer     |
+| `Super+Shift+S`    | Keybindings cheat sheet  |
 | `Super+A`          | AI palette               |
 | `Super+P`          | Project palette          |
 | `Super+Q`          | Close focused window     |

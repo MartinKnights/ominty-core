@@ -639,6 +639,21 @@ This is the basis of the universal action palette.
 
 ---
 
+## `help.keybinds.open`
+
+**Name:** Open Keybindings Cheat Sheet
+**Category:** Help
+**Proposed binding:** `Super+Shift+S`
+**Risk:** `routine`
+**Context:** `global`
+
+Opens the read-only, tabbed GKS cheat sheet (the `omivoidKeybinds` DMS plugin),
+whose rows are generated from `omivoid keybinds --json`. Distinct from
+`help.keys.open`, which runs the interaction explorer. See
+`docs/implementation/keybindings-reference.md`.
+
+---
+
 # 15. Project Namespace Reservation
 
 Project workflow is important to the wider Omivoid architecture, but a complete project system is not required to prove Phase 1.
@@ -729,6 +744,7 @@ workspace.previous
 
 help.keys.open
 help.actions.search
+help.keybinds.open
 ```
 
 These prove:

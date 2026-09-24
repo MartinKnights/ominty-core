@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from omivoidlib.keybinds import (
     UNIVERSAL_CONVENTIONS,
+    action_label,
     classify_domain,
     collect,
+    key_label,
     normalize_key,
     parse_kdl_binds,
     registry_bindings,
@@ -37,7 +39,7 @@ def test_classify_domain():
     assert classify_domain("Alt+Left") == "Navigation"
     assert classify_domain("Mod+Left") == "Desktop"
     assert classify_domain("Mod+Shift+Left") == "Desktop"
-    assert classify_domain("Mod+Alt+L") == "Window state"
+    assert classify_domain("Mod+Alt+L") == "Desktop"
     assert classify_domain("Mod+Ctrl+N") == "Workspace topology"
     assert classify_domain("Ctrl+Alt+Delete") == "System"
     assert classify_domain("Mod+A") == "AI"
@@ -103,3 +105,48 @@ def test_collect_marks_shadowed(tmp_path):
 def test_universal_conventions_present():
     keys = {k for k, _ in UNIVERSAL_CONVENTIONS}
     assert "Ctrl+C" in keys and "Ctrl+S" in keys
+
+
+def test_key_labels():
+    assert key_label("Mod+Q") == "Super + Q"
+    assert key_label("XF86MonBrightnessUp") == "F2"
+    assert key_label("Mod+Home") == "Super + F8"
+    assert key_label("Ctrl+XF86AudioRaiseVolume") == "Ctrl + F6"
+    assert key_label("Mod+BracketLeft") == "Super + ["
+    assert key_label("Mod+A,A") == "Super + A, A"
+    assert (
+        key_label("Ctrl+Mod+Shift+WheelScrollDown")
+        == "Ctrl + Super + Shift + Scroll Down"
+    )
+
+
+def test_action_labels():
+    assert (
+        action_label('spawn "dms" "ipc" "call" "workspace-rename" "open"')
+        == "Rename Workspace"
+    )
+    assert (
+        action_label('spawn "dms" "ipc" "call" "mpris" "decrement" "3"')
+        == "Media Volume Down"
+    )
+    assert action_label("close-window") == "Close Window"
+    assert action_label("focus-workspace 3") == "Switch to Workspace 3"
+    assert action_label("ai.ask") == "Ask AI"
+    assert action_label("something-unknown") == "something-unknown"
+
+
+def test_collect_hides_absent_keys_and_adds_labels(tmp_path):
+    niri = tmp_path / "config.kdl"
+    niri.write_text(
+        "binds {\n"
+        "    Mod+Q { close-window; }\n"
+        '    XF86AudioPrev { spawn "dms" "ipc" "call" "mpris" "previous"; }\n'
+        "}\n"
+    )
+    data = collect(None, sources=[("Niri", niri)])
+    keys = {b["key"] for b in data["bindings"]}
+    assert "Mod+Q" in keys
+    assert "XF86AudioPrev" not in keys
+    row = next(b for b in data["bindings"] if b["key"] == "Mod+Q")
+    assert row["key_label"] == "Super + Q"
+    assert row["action_label"] == "Close Window"
