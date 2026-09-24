@@ -306,7 +306,22 @@ def cmd_ai_ask(args: argparse.Namespace) -> int:
     """Ask the default (or named) AI provider (docs/ai/10 §10)."""
     from .ai import ask
 
-    result = ask(args.prompt, provider=args.provider, timeout=args.timeout)
+    context = None
+    if getattr(args, "clipboard", False):
+        from .ai.context import collect_clipboard
+
+        collected = collect_clipboard()
+        if not collected["success"]:
+            error = collected["error"]
+            print(
+                f"{error.get('code', 'ERROR')}: {error.get('message', 'unknown error')}",
+                file=sys.stderr,
+            )
+            return 1
+        context = [collected["context"]]
+
+    result = ask(args.prompt, provider=args.provider, timeout=args.timeout,
+                 context=context)
     if args.json:
         print(json.dumps(result, indent=2))
         return 0 if result["success"] else 1
@@ -444,6 +459,11 @@ def build_parser() -> argparse.ArgumentParser:
     ask_p.add_argument("prompt")
     ask_p.add_argument("--provider", help="provider name (default: configured)")
     ask_p.add_argument("--timeout", type=float, default=None, help="timeout in seconds")
+    ask_p.add_argument(
+        "--clipboard",
+        action="store_true",
+        help="attach the current clipboard as context (AI-22)",
+    )
     ask_p.add_argument("--json", action="store_true", help="JSON output")
     ask_p.set_defaults(func=cmd_ai_ask)
 

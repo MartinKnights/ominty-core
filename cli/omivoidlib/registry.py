@@ -42,6 +42,7 @@ VALID_CONFIRMATIONS = {"never", "interactive", "ai-only", "always"}
 VALID_CONTEXTS = {
     "global", "window", "workspace", "selection", "text-selection",
     "file", "directory", "browser", "terminal", "editor", "project",
+    "clipboard",
 }
 
 VALID_PLATFORMS = {"common", "debian", "void"}
@@ -58,6 +59,8 @@ KNOWN_ADAPTERS = {
     "dms.ipc",
     "ai.pi.open",
     "ai.ask",
+    "ai.clipboard.explain",
+    "ai.clipboard.summarise",
 }
 
 REQUIRED_FIELDS = ("name", "description", "category", "risk")

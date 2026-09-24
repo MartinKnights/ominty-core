@@ -15,6 +15,7 @@ from __future__ import annotations
 from ..config import load_ai_config
 from . import capabilities as _capabilities
 from . import providers
+from .context import ContextObject, build_prompt
 
 
 def default_provider() -> str:
@@ -46,10 +47,15 @@ def ask(
     prompt: str,
     provider: str | None = None,
     timeout: float | None = None,
+    context: list[ContextObject] | None = None,
 ) -> dict:
     """Ask a provider and return a structured result.
 
     Resolution: explicit provider argument → configured default.
+
+    ``context`` is a list of structured context objects (docs/ai/05 §5).
+    The AI layer composes them into the provider prompt (docs/ai/05 §38);
+    providers themselves remain plain-prompt based in Phase 1.
 
     Returns:
         {"success": True, "response": str}
@@ -78,5 +84,8 @@ def ask(
                 ),
             },
         }
+
+    if context:
+        prompt = build_prompt(prompt, context)
 
     return module.ask(prompt, timeout=timeout)

@@ -88,6 +88,17 @@ Item {
         return "";
     }
 
+    // ---- Context indicator (AI-21) --------------------------------------
+    // Shows which context an AI action consumes, so the user can see what
+    // is being sent (docs/ai/03 §11, docs/ai/05 §9). Only implemented
+    // context types are shown (docs/ai/10 §27).
+    function _contextChip(action) {
+        const ctx = action.contexts || [];
+        if (ctx.indexOf("clipboard") !== -1)
+            return "[Clipboard]";
+        return "";
+    }
+
     // ---- AI menu (Super+A) -----------------------------------------------
     // Lists AI-category actions. When the query carried a prompt
     // ("!ai what is 2+2"), a direct "Ask AI" entry is offered first.
@@ -124,10 +135,13 @@ Item {
             if (a.id === "ai.menu.open" || a.id === "ai.ask")
                 continue;
             const binding = _binding(a);
+            const chip = _contextChip(a);
             results.push({
                 name: a.name || a.id,
                 icon: "material:bolt",
-                comment: (binding ? binding + "  ·  " : "") + (a.description || a.id),
+                comment: (binding ? binding + "  ·  " : "") +
+                         (chip ? chip + "  " : "") +
+                         (a.description || a.id),
                 action: "run:" + a.id,
                 categories: ["Omivoid · AI"],
                 _omivoidId: a.id,
@@ -218,6 +232,15 @@ Item {
         const value = parts.slice(1).join(":");
 
         if (kind === "run") {
+            // AI response actions (ai.clipboard.*) capture their reply and
+            // deliver it as a notification; other actions are fire-and-forget.
+            if (value.indexOf("ai.clipboard.") === 0) {
+                askProcess.command = [cliPath, "action", "run", value, "--json"];
+                askProcess.running = true;
+                if (typeof ToastService !== "undefined")
+                    ToastService.showInfo("Omivoid AI", "Asking…");
+                return;
+            }
             Quickshell.execDetached([cliPath, "action", "run", value]);
             if (typeof ToastService !== "undefined")
                 ToastService.showInfo("Omivoid", item.name);
@@ -246,21 +269,43 @@ Item {
     }
 
     // ---- AI ask ----------------------------------------------------------
+    // Runs `omivoid ai ask <prompt>` (plain text) or
+    // `omivoid action run ai.clipboard.* --json` (structured). Replies are
+    // delivered as DMS notifications (docs/ai/03 §34) — persistent in the
+    // notification centre, unlike a transient toast.
+    function notifyReply(reply) {
+        const body = (reply && reply.length > 0) ? reply : "(no response)";
+        Quickshell.execDetached(["notify-send", "-a", "Omivoid AI", "-t", "0",
+                                 "Omivoid AI", body]);
+    }
+
     Process {
         id: askProcess
         running: false
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const reply = (text || "").trim();
-                if (typeof ToastService !== "undefined")
-                    ToastService.showInfo("Omivoid AI", reply.length > 0 ? reply : "(no response)");
+                const raw = (text || "").trim();
+                let reply = raw;
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.state && parsed.state.response)
+                        reply = parsed.state.response;
+                    else if (parsed && parsed.error)
+                        reply = parsed.error.code + ": " + parsed.error.message;
+                } catch (e) {
+                    // Plain text reply (ai ask).
+                }
+                root.notifyReply(reply);
             }
         }
 
         onExited: exitCode => {
-            if (exitCode !== 0 && typeof ToastService !== "undefined")
-                ToastService.showError("Omivoid AI", "Ask failed (exit " + exitCode + ")");
+            if (exitCode !== 0) {
+                Quickshell.execDetached(["notify-send", "-a", "Omivoid AI",
+                                         "-u", "critical", "Omivoid AI",
+                                         "Ask failed (exit " + exitCode + ")"]);
+            }
         }
     }
 

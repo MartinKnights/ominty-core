@@ -32,6 +32,9 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
     # AI actions (docs/ai/10 §8–9).
     "ai.pi.open": ("common", "ai_pi_open.py"),
     "ai.ask": ("common", "ai_ask.py"),
+    # AI clipboard context actions (docs/ai/10 §31, AI-25).
+    "ai.clipboard.explain": ("common", "ai_clipboard_explain.py"),
+    "ai.clipboard.summarise": ("common", "ai_clipboard_summarise.py"),
 }
 
 KNOWN_ADAPTERS = set(ADAPTER_LOCATIONS)

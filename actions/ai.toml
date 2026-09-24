@@ -96,3 +96,60 @@ palette = true
 # invocation (AGENTS.md §18).
 ai_accessible = false
 voice_accessible = false
+
+
+# "Super+A,E" / "Super+A,S" are chords (docs/03 §12), realised through the
+# AI menu. These are *clipboard* actions, not selection actions: direct
+# selection capture is classified CLIPBOARD FALLBACK
+# (docs/implementation/ai-context-evaluation.md, AI-24). The clipboard is
+# never relabelled as a selection (docs/ai/05 §18).
+[action."ai.clipboard.explain"]
+
+name = "Explain Clipboard"
+description = "Explain the current clipboard content using AI."
+category = "AI"
+
+keywords = ["ai", "explain", "clipboard", "selection", "context"]
+
+keys = ["Super+A,E"]
+
+adapter = "ai.clipboard.explain"
+
+risk = "read"
+confirmation = "never"
+
+contexts = ["clipboard"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+# ai_accessible = false: actions that invoke AI avoid recursive tool
+# invocation (AGENTS.md §18).
+ai_accessible = false
+voice_accessible = false
+
+
+[action."ai.clipboard.summarise"]
+
+name = "Summarise Clipboard"
+description = "Summarise the current clipboard content using AI."
+category = "AI"
+
+keywords = ["ai", "summarise", "summarize", "clipboard", "selection", "context"]
+
+keys = ["Super+A,S"]
+
+adapter = "ai.clipboard.summarise"
+
+risk = "read"
+confirmation = "never"
+
+contexts = ["clipboard"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+# ai_accessible = false: actions that invoke AI avoid recursive tool
+# invocation (AGENTS.md §18).
+ai_accessible = false
+voice_accessible = false

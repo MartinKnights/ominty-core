@@ -565,3 +565,187 @@ def test_ai_namespace_in_real_registry():
     # AI-invoking actions are not AI-accessible (AGENTS.md §18).
     assert registry.actions["ai.ask"].ai_accessible is False
     assert registry.actions["ai.pi.open"].ai_accessible is False
+
+
+# ── Context system (docs/ai/05, AI-22) ─────────────────────────────────
+
+def test_context_object_to_dict():
+    from omivoidlib.ai.context import ContextObject
+
+    ctx = ContextObject(
+        type="clipboard", content="hello", source="clipboard",
+        metadata={"bytes": 5},
+    )
+    d = ctx.to_dict()
+    assert d["type"] == "clipboard"
+    assert d["content"] == "hello"
+    assert d["source"] == "clipboard"
+    assert d["metadata"] == {"bytes": 5}
+
+
+def test_collect_clipboard_missing_wl_paste():
+    from omivoidlib.ai.context import collect_clipboard
+
+    with patch("omivoidlib.ai.context.shutil.which", return_value=None):
+        result = collect_clipboard()
+    assert result["success"] is False
+    assert result["error"]["code"] == "CONTEXT_UNAVAILABLE"
+
+
+def test_collect_clipboard_empty():
+    from omivoidlib.ai.context import collect_clipboard
+
+    with (
+        patch("omivoidlib.ai.context.shutil.which", return_value="/usr/bin/wl-paste"),
+        patch(
+            "omivoidlib.ai.context.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr=""),
+        ),
+    ):
+        result = collect_clipboard()
+    assert result["success"] is False
+    assert result["error"]["code"] == "CONTEXT_UNAVAILABLE"
+
+
+def test_collect_clipboard_success():
+    from omivoidlib.ai.context import collect_clipboard
+
+    with (
+        patch("omivoidlib.ai.context.shutil.which", return_value="/usr/bin/wl-paste"),
+        patch(
+            "omivoidlib.ai.context.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="selected text", stderr=""),
+        ),
+    ):
+        result = collect_clipboard()
+    assert result["success"] is True
+    assert result["context"].type == "clipboard"
+    assert result["context"].content == "selected text"
+    assert result["context"].source == "clipboard"
+
+
+def test_collect_clipboard_too_large():
+    from omivoidlib.ai.context import collect_clipboard
+
+    big = "x" * (32 * 1024 + 1)
+    with (
+        patch("omivoidlib.ai.context.shutil.which", return_value="/usr/bin/wl-paste"),
+        patch(
+            "omivoidlib.ai.context.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout=big, stderr=""),
+        ),
+    ):
+        result = collect_clipboard()
+    assert result["success"] is False
+    assert result["error"]["code"] == "CONTEXT_TOO_LARGE"
+
+
+def test_collect_selection_unavailable():
+    """Selection is CLIPBOARD FALLBACK — never faked (AI-24)."""
+    from omivoidlib.ai.context import collect_selection
+
+    result = collect_selection()
+    assert result["success"] is False
+    assert result["error"]["code"] == "CONTEXT_UNAVAILABLE"
+
+
+def test_build_prompt_no_context():
+    from omivoidlib.ai.context import build_prompt
+
+    assert build_prompt("hello", []) == "hello"
+
+
+def test_build_prompt_with_context():
+    from omivoidlib.ai.context import ContextObject, build_prompt
+
+    ctx = ContextObject(type="clipboard", content="abc", source="clipboard")
+    prompt = build_prompt("Explain this.", [ctx])
+    assert "[CLIPBOARD CONTEXT]" in prompt
+    assert "abc" in prompt
+    assert prompt.endswith("Explain this.")
+
+
+def test_ask_with_context_composes_prompt():
+    """ask() renders context blocks into the provider prompt (docs/ai/05 §38)."""
+    from omivoidlib.ai.context import ContextObject
+
+    ctx = ContextObject(type="clipboard", content="abc", source="clipboard")
+    with (
+        patch("omivoidlib.ai.providers.pi.binary_available", return_value=True),
+        patch("omivoidlib.ai.providers.pi._auth_ready", return_value=True),
+        patch("omivoidlib.ai.providers.pi._base_reachable", return_value=True),
+        patch("omivoidlib.ai.providers.pi._key_plausible", return_value=True),
+        patch("omivoidlib.ai.providers.pi.ask") as pi_ask,
+    ):
+        pi_ask.return_value = {"success": True, "response": "ok"}
+        result = ask("Explain this.", provider="pi", context=[ctx])
+    assert result["success"] is True
+    prompt_arg = pi_ask.call_args[0][0]
+    assert "[CLIPBOARD CONTEXT]" in prompt_arg
+    assert prompt_arg.endswith("Explain this.")
+
+
+# ── ai.clipboard.* adapters (docs/ai/10 §31, AI-25) ────────────────────
+
+def test_clipboard_explain_context_unavailable():
+    action = make_action(adapter="ai.clipboard.explain")
+    with patch("omivoidlib.ai.context.shutil.which", return_value=None):
+        result = run_action(action.id, registry_with(action))
+    assert result["success"] is False
+    assert result["error"]["code"] == "CONTEXT_UNAVAILABLE"
+
+
+def test_clipboard_explain_success():
+    action = make_action(adapter="ai.clipboard.explain")
+    with (
+        patch("omivoidlib.ai.context.shutil.which", return_value="/usr/bin/wl-paste"),
+        patch(
+            "omivoidlib.ai.context.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="some code", stderr=""),
+        ),
+        patch(
+            "omivoidlib.ai.clipboard_actions.ai_ask",
+            return_value={"success": True, "response": "explanation"},
+        ),
+    ):
+        result = run_action(action.id, registry_with(action))
+    assert result["success"] is True
+    assert result["state"]["response"] == "explanation"
+
+
+def test_clipboard_summarise_success():
+    action = make_action(adapter="ai.clipboard.summarise")
+    with (
+        patch("omivoidlib.ai.context.shutil.which", return_value="/usr/bin/wl-paste"),
+        patch(
+            "omivoidlib.ai.context.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="long text", stderr=""),
+        ),
+        patch(
+            "omivoidlib.ai.clipboard_actions.ai_ask",
+            return_value={"success": True, "response": "summary"},
+        ),
+    ):
+        result = run_action(action.id, registry_with(action))
+    assert result["success"] is True
+    assert result["state"]["response"] == "summary"
+
+
+def test_clipboard_actions_in_real_registry():
+    """Integration: the clipboard explain/summarise actions are declared."""
+    from omivoidlib.registry import load_registry
+
+    registry = load_registry()
+    explain = registry.actions.get("ai.clipboard.explain")
+    assert explain is not None
+    assert explain.keys == ["Super+A,E"]
+    assert explain.adapter == "ai.clipboard.explain"
+    assert explain.contexts == ["clipboard"]
+    assert explain.ai_accessible is False
+
+    summarise = registry.actions.get("ai.clipboard.summarise")
+    assert summarise is not None
+    assert summarise.keys == ["Super+A,S"]
+    assert summarise.adapter == "ai.clipboard.summarise"
+    assert summarise.contexts == ["clipboard"]
+    assert summarise.ai_accessible is False
