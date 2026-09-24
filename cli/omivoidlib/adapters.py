@@ -26,6 +26,7 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
     "command": ("common", "command.py"),
     "niri.native": ("niri", "native.py"),
     "dms.ipc": ("dms", "ipc.py"),
+    "dms.theme": ("dms", "theme.py"),
     # Shell components arrive with DMS integration (Stage 11–14).
     "shell.explorer": ("dms", "explorer.py"),
     "shell.palette": ("dms", "palette.py"),

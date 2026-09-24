@@ -523,6 +523,20 @@ This is useful after:
 * editing templates;
 * recovering from a failed update.
 
+**Phase 1 implementation (2026-09-19).** Implemented as
+`theme.palette.regenerate` (adapter `dms.theme`): reads the current
+wallpaper and mode via DMS IPC, then re-runs `dms matugen generate`
+without changing the wallpaper. See
+`docs/implementation/theme-implementation.md`.
+
+Wallpaper selection is realised through the DMS Wallpaper Carousel plugin
+(`theme.wallpaper.select` → `wallpaperCarousel open`;
+`theme.wallpaper.next`/`.previous` → `cycleNext`/`cyclePrevious`, which
+open the overlay and highlight — Enter applies). DMS is the palette
+provider and already themes external applications (alacritty, nvim,
+firefox, ghostty, zed, qt5ct/qt6ct, gtk); Omivoid does not build a
+parallel theme engine (AGENTS.md §15).
+
 ---
 
 # 28. User Overrides

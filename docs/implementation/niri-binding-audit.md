@@ -83,7 +83,7 @@ docs/04-phase-1-action-catalogue.md).
 | `Super+Space` | help.actions.search | — (free) | **ACCEPT** | See §2. |
 | — | session.lock | `Super+Alt+L` → swaylock (⚠️ not installed) | **DEFER** | DMS lock integration (Stage 13). |
 | — | session.logout / reboot / shutdown | — | **DEFER** | Palette-only in Phase 1. |
-| — | theme.wallpaper.next / palette.regenerate / mode.toggle | — | **DEFER** | Palette-only until theme pipeline (Stage 15–16). |
+| — | theme.wallpaper.* / palette.regenerate / mode.toggle | — | **IMPLEMENTED (no binding)** | Palette/CLI/AI only — realised via the DMS Wallpaper Carousel and `dms.theme` (theme-implementation.md). Direct keybindings remain deferred. |
 | — | audio.volume.* / mute / microphone | `XF86Audio*` → wpctl/playerctl | **ACCEPT** | Map to existing media-key binds. ⚠️ playerctl not installed (audit finding 4). |
 
 ## 7. Existing Bindings Preserved Unchanged

@@ -57,6 +57,7 @@ KNOWN_ADAPTERS = {
     "shell.explorer",
     "shell.palette",
     "dms.ipc",
+    "dms.theme",
     "ai.pi.open",
     "ai.ask",
     "ai.clipboard.explain",

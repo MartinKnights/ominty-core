@@ -1,22 +1,33 @@
 # Omivoid action registry — theme
 # Schema version 1 (docs/03-action-registry-spec.md)
-# Wallpaper actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
-# Direct bindings deferred to the theme stage (niri-binding-audit.md).
+#
+# Wallpaper actions drive the DMS Wallpaper Carousel plugin (yngwe/
+# wallpaperCarousel) over its stable IPC surface — browse, select and
+# cycle wallpapers with a fullscreen preview overlay
+# (dms-evaluation.md §5, theme-implementation.md). On pick the carousel
+# calls DMS setWallpaper, which runs matugen and regenerates the theme
+# (docs/08 §14, §27).
+#
+# Palette regeneration re-runs matugen from the current wallpaper without
+# changing it (docs/08 §27) through the purpose-built dms.theme adapter.
+#
+# No direct Niri bindings — palette/CLI/AI only for Phase 1
+# (niri-binding-audit.md, Appearance row: DEFER).
 
 registry_version = 1
 
 [action."theme.wallpaper.select"]
 
 name = "Select Wallpaper"
-description = "Open the wallpaper selection workflow."
+description = "Open the wallpaper carousel to browse and pick a wallpaper."
 category = "Appearance"
 
-keywords = ["wallpaper", "background", "select", "image"]
+keywords = ["wallpaper", "background", "select", "browse", "carousel", "image"]
 
 keys = []
 
 adapter = "dms.ipc"
-arguments = { dms = { target = "wallpaper", function = "select" } }
+arguments = { dms = { target = "wallpaperCarousel", function = "open" } }
 
 risk = "state-change"
 confirmation = "never"
@@ -33,21 +44,96 @@ voice_accessible = false
 [action."theme.wallpaper.next"]
 
 name = "Next Wallpaper"
-description = "Cycle to the next wallpaper."
+description = "Open the carousel and highlight the next wallpaper (Enter applies)."
 category = "Appearance"
 
-keywords = ["wallpaper", "next", "cycle", "background"]
+keywords = ["wallpaper", "next", "cycle", "background", "carousel"]
 
 keys = []
 
 adapter = "dms.ipc"
-arguments = { dms = { target = "wallpaper", function = "next" } }
+arguments = { dms = { target = "wallpaperCarousel", function = "cycleNext" } }
 
 risk = "state-change"
 
 # AI-15 confirmation proof: a harmless, reversible state change. Direct
 # interaction (palette/CLI) is trusted; an AI request must be confirmed
 # by the user (docs/ai/09 §9–10, docs/03 §17).
+confirmation = "ai-only"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."theme.wallpaper.previous"]
+
+name = "Previous Wallpaper"
+description = "Open the carousel and highlight the previous wallpaper (Enter applies)."
+category = "Appearance"
+
+keywords = ["wallpaper", "previous", "back", "cycle", "background", "carousel"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "wallpaperCarousel", function = "cyclePrevious" } }
+
+risk = "state-change"
+confirmation = "ai-only"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."theme.palette.regenerate"]
+
+name = "Regenerate Colour Palette"
+description = "Regenerate the theme from the current wallpaper without changing it."
+category = "Appearance"
+
+keywords = ["theme", "palette", "colour", "color", "regenerate", "refresh", "matugen"]
+
+keys = []
+
+adapter = "dms.theme"
+arguments = { theme = { action = "regenerate" } }
+
+risk = "state-change"
+confirmation = "ai-only"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."theme.mode.toggle"]
+
+name = "Toggle Light/Dark Mode"
+description = "Toggle the shell theme between light and dark mode."
+category = "Appearance"
+
+keywords = ["theme", "mode", "light", "dark", "toggle", "appearance"]
+
+keys = []
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "theme", function = "toggle" } }
+
+risk = "state-change"
 confirmation = "ai-only"
 
 contexts = ["global"]
