@@ -558,10 +558,16 @@ def validate_registry(registry: Registry) -> list[Issue]:
             )
 
     # Chord prefix conflicts (e.g. Super+A,E vs Super+A) — checked after all
-    # bindings are collected so ordering does not matter.
+    # bindings are collected so ordering does not matter. A declared group
+    # prefix (docs/03 §13) intentionally prefixes its chords, so it is not a
+    # conflict.
+    group_prefixes = {g.prefix for g in registry.groups.values() if g.prefix}
+
     for key, aid in all_bindings:
         if "," in key:
             continue  # a chord is never a prefix of another binding
+        if key in group_prefixes:
+            continue  # intentional prefix namespace (docs/03 §13)
         for other, other_owner in all_bindings:
             if other is key:
                 continue

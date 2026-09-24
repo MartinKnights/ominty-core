@@ -233,6 +233,33 @@ def test_shell_adapters_with_command_generated():
     assert "Mod+space {" not in fragment
 
 
+def test_command_adapter_top_level_command_generated():
+    """The `command` adapter declares a top-level command (Super+A AI menu)."""
+    action = Action(
+        id="ai.menu.open",
+        name="AI Menu",
+        description="Open the AI menu",
+        category="AI",
+        risk="routine",
+        confirmation="never",
+        keywords=["ai"],
+        keys=["Super+A"],
+        adapter="command",
+        command=["dms", "ipc", "call", "spotlight", "openQuery", "!ai "],
+        arguments={},
+        contexts=["global"],
+        platforms=["common"],
+        discoverable=True,
+        palette=True,
+        ai_accessible=False,
+        voice_accessible=False,
+        source_file="test",
+    )
+    fragment = generate_niri_fragment(Registry(actions={action.id: action}), "/opt/omivoid")
+    assert "Mod+A {" in fragment
+    assert 'spawn "dms" "ipc" "call" "spotlight" "openQuery" "!ai "' in fragment
+
+
 def test_dms_claimed_keys_excluded():
     fragment = generate_niri_fragment(make_registry(), "/opt/omivoid")
     # DMS owns these keys (dms-evaluation.md §4.2); the generator must not bind them.

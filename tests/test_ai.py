@@ -539,3 +539,29 @@ def test_wallpaper_next_is_ai_confirmed_in_real_registry():
     assert action is not None
     assert action.confirmation == "ai-only"
     assert policy.evaluate(action)["decision"] == "confirm"
+
+
+# ── Super+A AI namespace (docs/ai/10 §23–25, AI-18/19/20) ─────────────────
+
+def test_ai_namespace_in_real_registry():
+    """Integration: the Super+A AI namespace is declared."""
+    from omivoidlib.registry import load_registry
+
+    registry = load_registry()
+    assert "ai" in registry.groups
+    assert registry.groups["ai"].prefix == "Super+A"
+
+    menu = registry.actions.get("ai.menu.open")
+    assert menu is not None
+    assert menu.keys == ["Super+A"]
+    assert menu.command == ["dms", "ipc", "call", "spotlight", "openQuery", "!ai "]
+    assert menu.ai_accessible is False
+
+    # Chord notation is declared as intent; Niri cannot bind chords
+    # (docs/implementation/ai-dms-evaluation.md §6).
+    assert "Super+A,A" in registry.actions["ai.ask"].keys
+    assert "Super+A,P" in registry.actions["ai.pi.open"].keys
+
+    # AI-invoking actions are not AI-accessible (AGENTS.md §18).
+    assert registry.actions["ai.ask"].ai_accessible is False
+    assert registry.actions["ai.pi.open"].ai_accessible is False

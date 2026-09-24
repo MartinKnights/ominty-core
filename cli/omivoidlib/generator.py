@@ -155,8 +155,11 @@ def generate_niri_fragment(registry: Registry, omivoid_cli: str) -> str:
                 )
                 lines.append("    }")
                 lines.append("")
-            elif action.arguments.get("command"):
-                cmd = action.arguments["command"]
+            elif action.arguments.get("command") or action.command:
+                # Shell-handled command declared by the action. The
+                # `arguments.command` form is used by shell.* adapters; the
+                # top-level `command` form is used by the `command` adapter.
+                cmd = action.arguments.get("command") or action.command
                 spawn_args = " ".join(f'"{a}"' for a in cmd)
                 lines.append(f"    // {action.id}")
                 lines.append(f"    {kdl_key} {{")

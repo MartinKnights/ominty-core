@@ -1,9 +1,49 @@
 # Omivoid action registry — AI
 # Schema version 1 (docs/03-action-registry-spec.md)
-# docs/ai/10 §8 (ai.pi.open), §9 (ai.ask)
+# docs/ai/10 §8 (ai.pi.open), §9 (ai.ask), §23–25 (Super+A namespace)
 
 registry_version = 1
 
+[group.ai]
+
+name = "AI"
+prefix = "Super+A"
+description = "AI and agent operations"
+
+# AI-17/AI-18: DMS has no AI surface and Niri has no keybinding chords
+# (docs/implementation/ai-dms-evaluation.md §6). The AI prefix is therefore
+# presented by the DMS spotlight in AI mode via the "!ai" sentinel, handled
+# by the Omivoid Actions launcher plugin.
+[action."ai.menu.open"]
+
+name = "AI Menu"
+description = "Open the AI menu (discoverable AI actions)."
+category = "AI"
+
+keywords = ["ai", "menu", "assistant", "actions", "ask", "pi"]
+
+keys = ["Super+A"]
+
+adapter = "command"
+command = ["dms", "ipc", "call", "spotlight", "openQuery", "!ai "]
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+# A UI surface, not an AI capability: AI must not open menus.
+ai_accessible = false
+voice_accessible = false
+
+
+# "Super+A,P" is a chord (docs/03 §12). Niri cannot bind chords, so the
+# binding is registry intent surfaced by the AI menu; the second key is
+# realised by the launcher (ai-dms-evaluation.md §6–7).
 [action."ai.pi.open"]
 
 name = "Open Pi"
@@ -11,6 +51,8 @@ description = "Open the Pi AI assistant in the configured terminal."
 category = "AI"
 
 keywords = ["pi", "ai", "assistant", "chat", "terminal"]
+
+keys = ["Super+A,P"]
 
 adapter = "ai.pi.open"
 
@@ -22,9 +64,13 @@ platforms = ["common"]
 
 discoverable = true
 palette = true
-ai_accessible = true
+# ai_accessible = false: actions that invoke AI avoid recursive tool
+# invocation (AGENTS.md §18).
+ai_accessible = false
 voice_accessible = false
 
+
+# "Super+A,A" is a chord (docs/03 §12), realised through the AI menu.
 [action."ai.ask"]
 
 name = "Ask AI"
@@ -32,6 +78,8 @@ description = "Ask the default AI provider a question."
 category = "AI"
 
 keywords = ["ai", "ask", "question", "assistant", "chat"]
+
+keys = ["Super+A,A"]
 
 adapter = "ai.ask"
 arguments = { prompt = "" }

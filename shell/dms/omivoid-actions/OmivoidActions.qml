@@ -88,12 +88,67 @@ Item {
         return "";
     }
 
+    // ---- AI menu (Super+A) -----------------------------------------------
+    // Lists AI-category actions. When the query carried a prompt
+    // ("!ai what is 2+2"), a direct "Ask AI" entry is offered first.
+    // ai.ask routes through the Omivoid provider layer, never a second path.
+    function aiItems(rest) {
+        const prompt = (rest || "").trim();
+        const results = [];
+
+        if (prompt.length > 0) {
+            results.push({
+                name: "Ask AI: " + prompt,
+                icon: "material:bolt",
+                comment: "Ask the default AI provider",
+                action: "ask:" + prompt,
+                categories: ["Omivoid · AI"]
+            });
+        } else {
+            results.push({
+                name: "Ask AI",
+                icon: "material:bolt",
+                comment: "Type your question to ask the default AI provider",
+                action: "askhint:",
+                categories: ["Omivoid · AI"]
+            });
+        }
+
+        for (let i = 0; i < _actions.length; i++) {
+            const a = _actions[i];
+            if (!_accepts(a))
+                continue;
+            if ((a.category || "") !== "AI")
+                continue;
+            // The menu itself and ai.ask (handled above) are not listed.
+            if (a.id === "ai.menu.open" || a.id === "ai.ask")
+                continue;
+            const binding = _binding(a);
+            results.push({
+                name: a.name || a.id,
+                icon: "material:bolt",
+                comment: (binding ? binding + "  ·  " : "") + (a.description || a.id),
+                action: "run:" + a.id,
+                categories: ["Omivoid · AI"],
+                _omivoidId: a.id,
+                _omivoidBinding: binding,
+                _omivoidRisk: a.risk || "routine"
+            });
+        }
+
+        console.info("[OmivoidActions] AI mode:", results.length, "items");
+        return results;
+    }
+
     // ---- Launcher contract ----------------------------------------------
-    // Query semantics (ADR-006 §12–13):
+    // Query semantics (ADR-006 §12–13, ai-dms-evaluation.md §7):
     //   "!!..."  explicit interaction-explorer request (Super+K): show all
     //            actions, or filter the remainder after "!!". Two characters
     //            are used because the DMS launcher ignores 1-char queries
     //            in the plugin phase.
+    //   "!ai..." AI menu (Super+A): list AI actions; "!ai <text>" offers a
+    //            direct "Ask AI: <text>" entry. The AI prefix is presented
+    //            here because Niri has no keybinding chords.
     //   ""       in trigger mode DMS strips the trigger, so an empty query
     //            means "show everything"; in no-trigger mode an empty query
     //            is the palette default view, which we leave to DMS to avoid
@@ -101,6 +156,10 @@ Item {
     //   other    normal filter against the registry.
     function getItems(query) {
         let q = query ? String(query) : "";
+
+        if (q.indexOf("!ai") === 0)
+            return aiItems(q.slice(3));
+
         let explicit = false;
         if (q.indexOf("!") === 0) {
             explicit = true;
@@ -155,17 +214,54 @@ Item {
         if (!item || !item.action)
             return;
         const parts = item.action.split(":");
-        if (parts[0] !== "run")
+        const kind = parts[0];
+        const value = parts.slice(1).join(":");
+
+        if (kind === "run") {
+            Quickshell.execDetached([cliPath, "action", "run", value]);
+            if (typeof ToastService !== "undefined")
+                ToastService.showInfo("Omivoid", item.name);
             return;
-        const id = parts.slice(1).join(":");
-        Quickshell.execDetached([cliPath, "action", "run", id]);
-        if (typeof ToastService !== "undefined")
-            ToastService.showInfo("Omivoid", item.name);
+        }
+
+        if (kind === "ask") {
+            // Runs the same provider architecture as `omivoid ai ask`
+            // (AI-19); the AI menu never creates a second invocation path.
+            askProcess.command = [cliPath, "ai", "ask", value];
+            askProcess.running = true;
+            if (typeof ToastService !== "undefined")
+                ToastService.showInfo("Omivoid AI", "Asking…");
+            return;
+        }
+
+        if (kind === "askhint") {
+            if (typeof ToastService !== "undefined")
+                ToastService.showInfo("Omivoid AI", "Type your question after Super+A");
+        }
     }
 
     onTriggerChanged: {
         if (pluginService)
             pluginService.savePluginData("omivoidActions", "trigger", trigger);
+    }
+
+    // ---- AI ask ----------------------------------------------------------
+    Process {
+        id: askProcess
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const reply = (text || "").trim();
+                if (typeof ToastService !== "undefined")
+                    ToastService.showInfo("Omivoid AI", reply.length > 0 ? reply : "(no response)");
+            }
+        }
+
+        onExited: exitCode => {
+            if (exitCode !== 0 && typeof ToastService !== "undefined")
+                ToastService.showError("Omivoid AI", "Ask failed (exit " + exitCode + ")");
+        }
     }
 
     // ---- Registry read ---------------------------------------------------

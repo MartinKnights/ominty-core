@@ -178,6 +178,27 @@ def test_chord_prefix_conflict_warns(tmp_path):
     assert any(i.code == "CHORD_PREFIX_CONFLICT" and i.level == "WARNING" for i in issues)
 
 
+def test_group_prefix_suppresses_chord_conflict(tmp_path):
+    """A declared group prefix is an intentional namespace (docs/03 §13)."""
+    registry = load(
+        tmp_path,
+        (
+            "ai.toml",
+            'registry_version = 1\n'
+            '[group.ai]\nname = "AI"\nprefix = "Super+A"\ndescription = "AI"\n'
+            '[action."ai.menu.open"]\nname = "AI Menu"\ndescription = "d"\n'
+            'category = "AI"\nrisk = "routine"\nkeys = ["Super+A"]\n',
+        ),
+        (
+            "ask.toml",
+            'registry_version = 1\n[action."ai.ask"]\nname = "Ask"\ndescription = "d"\n'
+            'category = "AI"\nrisk = "read"\nkeys = ["Super+A,A"]\n',
+        ),
+    )
+    issues = validate_registry(registry)
+    assert not any(i.code == "CHORD_PREFIX_CONFLICT" for i in issues)
+
+
 def test_primary_key_must_be_in_keys(tmp_path):
     registry = load(
         tmp_path,
