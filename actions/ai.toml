@@ -1,0 +1,50 @@
+# Omivoid action registry — AI
+# Schema version 1 (docs/03-action-registry-spec.md)
+# docs/ai/10 §8 (ai.pi.open), §9 (ai.ask)
+
+registry_version = 1
+
+[action."ai.pi.open"]
+
+name = "Open Pi"
+description = "Open the Pi AI assistant in the configured terminal."
+category = "AI"
+
+keywords = ["pi", "ai", "assistant", "chat", "terminal"]
+
+adapter = "ai.pi.open"
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."ai.ask"]
+
+name = "Ask AI"
+description = "Ask the default AI provider a question."
+category = "AI"
+
+keywords = ["ai", "ask", "question", "assistant", "chat"]
+
+adapter = "ai.ask"
+arguments = { prompt = "" }
+
+risk = "read"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+# ai_accessible = false: actions that invoke AI avoid recursive tool
+# invocation (AGENTS.md §18).
+ai_accessible = false
+voice_accessible = false

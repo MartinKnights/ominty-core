@@ -267,6 +267,57 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ai_provider_status(args: argparse.Namespace) -> int:
+    """Show provider availability (docs/ai/10 §7)."""
+    from .ai import provider_status
+
+    st = provider_status(args.provider)
+    if args.json:
+        print(json.dumps(st, indent=2))
+        return 0
+
+    print(f"Provider: {st['provider']}")
+    print(f"State:    {st['state']}")
+    if st.get("detail"):
+        print(f"Detail:   {st['detail']}")
+    return 0 if st["state"] == "available" else 1
+
+
+def cmd_ai_provider_list(args: argparse.Namespace) -> int:
+    """List all registered providers with status."""
+    from .ai import list_providers
+
+    statuses = list_providers()
+    if args.json:
+        print(json.dumps(statuses, indent=2))
+        return 0
+
+    for st in statuses:
+        print(f"{st['provider']:<12} {st['state']:<14} {st.get('detail', '')}")
+    return 0
+
+
+def cmd_ai_ask(args: argparse.Namespace) -> int:
+    """Ask the default (or named) AI provider (docs/ai/10 §10)."""
+    from .ai import ask
+
+    result = ask(args.prompt, provider=args.provider, timeout=args.timeout)
+    if args.json:
+        print(json.dumps(result, indent=2))
+        return 0 if result["success"] else 1
+
+    if result["success"]:
+        print(result["response"])
+        return 0
+
+    error = result.get("error", {})
+    print(
+        f"{error.get('code', 'ERROR')}: {error.get('message', 'unknown error')}",
+        file=sys.stderr,
+    )
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="omivoid",
@@ -342,6 +393,29 @@ def build_parser() -> argparse.ArgumentParser:
     search_p.add_argument("--palette", action="store_true", help="palette-eligible actions only")
     search_p.add_argument("--json", action="store_true", help="JSON output")
     search_p.set_defaults(func=cmd_search)
+
+    # ai
+    ai_p = sub.add_parser("ai", help="AI provider operations")
+    ai_sub = ai_p.add_subparsers(dest="ai_command", required=True)
+
+    provider_p = ai_sub.add_parser("provider", help="AI provider operations")
+    provider_sub = provider_p.add_subparsers(dest="provider_command", required=True)
+
+    status_p = provider_sub.add_parser("status", help="show provider status")
+    status_p.add_argument("provider")
+    status_p.add_argument("--json", action="store_true", help="JSON output")
+    status_p.set_defaults(func=cmd_ai_provider_status)
+
+    list_p = provider_sub.add_parser("list", help="list providers")
+    list_p.add_argument("--json", action="store_true", help="JSON output")
+    list_p.set_defaults(func=cmd_ai_provider_list)
+
+    ask_p = ai_sub.add_parser("ask", help="ask the default AI provider")
+    ask_p.add_argument("prompt")
+    ask_p.add_argument("--provider", help="provider name (default: configured)")
+    ask_p.add_argument("--timeout", type=float, default=None, help="timeout in seconds")
+    ask_p.add_argument("--json", action="store_true", help="JSON output")
+    ask_p.set_defaults(func=cmd_ai_ask)
 
     return parser
 

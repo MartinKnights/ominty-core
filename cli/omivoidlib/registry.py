@@ -56,15 +56,20 @@ KNOWN_ADAPTERS = {
     "shell.explorer",
     "shell.palette",
     "dms.ipc",
+    "ai.pi.open",
+    "ai.ask",
 }
 
 REQUIRED_FIELDS = ("name", "description", "category", "risk")
 
-# Reserved error codes (docs/03 §32).
+# Reserved error codes (docs/03 §32). Provider errors (docs/ai/10 §11)
+# are returned through the same structured error envelope.
 ERROR_CODES = {
     "ACTION_NOT_FOUND", "ACTION_UNAVAILABLE", "DEPENDENCY_MISSING",
     "INVALID_ARGUMENT", "PERMISSION_DENIED", "CONFIRMATION_REQUIRED",
     "ADAPTER_FAILED", "CONTEXT_UNAVAILABLE", "PLATFORM_UNSUPPORTED",
+    "PROVIDER_NOT_FOUND", "PROVIDER_UNAVAILABLE", "PROVIDER_FAILED",
+    "PROVIDER_TIMEOUT",
 }
 
 

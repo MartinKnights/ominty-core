@@ -29,6 +29,9 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
     # Shell components arrive with DMS integration (Stage 11–14).
     "shell.explorer": ("dms", "explorer.py"),
     "shell.palette": ("dms", "palette.py"),
+    # AI actions (docs/ai/10 §8–9).
+    "ai.pi.open": ("common", "ai_pi_open.py"),
+    "ai.ask": ("common", "ai_ask.py"),
 }
 
 KNOWN_ADAPTERS = set(ADAPTER_LOCATIONS)
