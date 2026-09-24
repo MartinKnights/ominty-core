@@ -298,6 +298,21 @@ cancelled
 
 Do not implement a parallel Omivoid task engine if Herdr already provides suitable lifecycle management.
 
+**Phase 1 implementation note (AI-35).** The readiness audit
+(`docs/implementation/herdr-readiness-review.md`) found that Herdr 0.9.0
+does **not** model a job queue with the states above. Its object model is:
+
+```text
+session → workspace → tab → pane → agent
+```
+
+Lifecycle is observed through `herdr agent wait` (block until an agent
+reaches a state) and results through `herdr agent read` / `herdr api
+snapshot`. A future adapter must map an Omivoid delegation request onto
+Herdr sessions/agents rather than assuming the queue model. The list above
+remains the conceptual vocabulary; the concrete states must come from the
+actual Herdr interface.
+
 ---
 
 # 17. Result Return

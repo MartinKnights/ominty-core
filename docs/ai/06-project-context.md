@@ -141,6 +141,24 @@ current working directory
 
 Explicit user selection should take precedence over inference.
 
+**Phase 1 implementation note (AI-35).** Implementation revealed that the
+Git root and the instruction boundary can differ. In this repository the
+Git root is the parent directory, while the project instructions
+(`AGENTS.md`) live in `omivoid-lmde/`; using the Git root alone produced
+the wrong project. Phase 1 therefore resolves:
+
+```text
+explicit root (--root / OMIVOID_PROJECT)
+    → nearest AGENTS.md (walk-up, bounded by home)
+    → Git root
+    → current working directory
+```
+
+`AGENTS.md` outranks the Git root because it is the strongest
+project-instruction boundary (docs/ai/06 §8–9). See
+`docs/implementation/ai-phase-f.md` and
+`cli/omivoidlib/ai/project/__init__.py`.
+
 ---
 
 # 7. Project Root

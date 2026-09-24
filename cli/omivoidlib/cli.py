@@ -320,6 +320,21 @@ def cmd_ai_ask(args: argparse.Namespace) -> int:
             return 1
         context = [collected["context"]]
 
+    if getattr(args, "project", False):
+        from .ai.project import collect_project
+
+        collected = collect_project()
+        if not collected["success"]:
+            error = collected["error"]
+            print(
+                f"{error.get('code', 'ERROR')}: {error.get('message', 'unknown error')}",
+                file=sys.stderr,
+            )
+            return 1
+        if context is None:
+            context = []
+        context.append(collected["context"])
+
     result = ask(args.prompt, provider=args.provider, timeout=args.timeout,
                  context=context)
     if args.json:
@@ -350,6 +365,60 @@ def cmd_ai_capabilities(args: argparse.Namespace) -> int:
     for cap in caps:
         print(f"{cap['id']:<28} {cap['name']}")
     print(f"\n{len(caps)} capability/capabilities")
+    return 0
+
+
+def cmd_project_current(args: argparse.Namespace) -> int:
+    """Show the detected project (docs/ai/06 §33, AI-26)."""
+    from .ai.project import discover_project
+
+    discovered = discover_project(explicit=args.root)
+    if not discovered["success"]:
+        error = discovered["error"]
+        print(
+            f"{error.get('code', 'ERROR')}: {error.get('message', 'unknown error')}",
+            file=sys.stderr,
+        )
+        return 1
+
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "name": discovered["name"],
+                    "root": str(discovered["root"]),
+                    "method": discovered["method"],
+                },
+                indent=2,
+            )
+        )
+        return 0
+
+    print(f"Project: {discovered['name']}")
+    print(f"Root: {discovered['root']}")
+    print(f"Method: {discovered['method']}")
+    return 0
+
+
+def cmd_project_context(args: argparse.Namespace) -> int:
+    """Show the project context that would be sent (docs/ai/06 §33, AI-27)."""
+    from .ai.project import collect_project
+
+    collected = collect_project(explicit=args.root)
+    if not collected["success"]:
+        error = collected["error"]
+        print(
+            f"{error.get('code', 'ERROR')}: {error.get('message', 'unknown error')}",
+            file=sys.stderr,
+        )
+        return 1
+
+    ctx = collected["context"]
+    if args.json:
+        print(json.dumps(ctx.to_dict(), indent=2))
+        return 0
+
+    print(ctx.content)
     return 0
 
 
@@ -464,12 +533,33 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="attach the current clipboard as context (AI-22)",
     )
+    ask_p.add_argument(
+        "--project",
+        action="store_true",
+        help="attach project context (AI-27)",
+    )
     ask_p.add_argument("--json", action="store_true", help="JSON output")
     ask_p.set_defaults(func=cmd_ai_ask)
 
     caps_p = ai_sub.add_parser("capabilities", help="list AI-accessible capabilities")
     caps_p.add_argument("--json", action="store_true", help="JSON output")
     caps_p.set_defaults(func=cmd_ai_capabilities)
+
+    # project
+    project_p = sub.add_parser("project", help="project context operations")
+    project_sub = project_p.add_subparsers(dest="project_command", required=True)
+
+    current_p = project_sub.add_parser("current", help="show the current project")
+    current_p.add_argument("--root", help="explicit project root")
+    current_p.add_argument("--json", action="store_true", help="JSON output")
+    current_p.set_defaults(func=cmd_project_current)
+
+    context_p = project_sub.add_parser(
+        "context", help="show the project context that would be sent"
+    )
+    context_p.add_argument("--root", help="explicit project root")
+    context_p.add_argument("--json", action="store_true", help="JSON output")
+    context_p.set_defaults(func=cmd_project_context)
 
     return parser
 

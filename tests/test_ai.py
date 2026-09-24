@@ -749,3 +749,206 @@ def test_clipboard_actions_in_real_registry():
     assert summarise.adapter == "ai.clipboard.summarise"
     assert summarise.contexts == ["clipboard"]
     assert summarise.ai_accessible is False
+
+
+# ── Project discovery + context (docs/ai/06, AI-26/27) ─────────────────
+
+def test_is_secret():
+    """Obvious credential material is recognised (docs/ai/06 §29)."""
+    from omivoidlib.ai.project import is_secret
+
+    assert is_secret(".env")
+    assert is_secret(".env.production")
+    assert is_secret("id_rsa")
+    assert is_secret("credentials.json")
+    assert is_secret("server.key")
+    assert is_secret("secrets")
+    assert not is_secret("AGENTS.md")
+    assert not is_secret("main.py")
+    assert not is_secret("docs")
+
+
+def test_discover_project_explicit():
+    """Explicit root always wins (docs/ai/06 §6)."""
+    from omivoidlib.ai.project import discover_project
+
+    result = discover_project(
+        cwd="/tmp", explicit="/home/mk/Projects/OmiVoid/omivoid-lmde"
+    )
+    assert result["success"] is True
+    assert result["method"] == "explicit"
+    assert result["name"] == "omivoid-lmde"
+
+
+def test_discover_project_explicit_invalid():
+    from omivoidlib.ai.project import discover_project
+
+    result = discover_project(cwd="/tmp", explicit="/nonexistent/xyz")
+    assert result["success"] is False
+    assert result["error"]["code"] == "INVALID_ARGUMENT"
+
+
+def test_discover_project_agents_walkup(tmp_path):
+    """Nearest AGENTS.md defines the project boundary (docs/ai/06 §8–9)."""
+    from omivoidlib.ai.project import discover_project
+
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "AGENTS.md").write_text("# rules\n")
+    sub = root / "src" / "deep"
+    sub.mkdir(parents=True)
+
+    result = discover_project(cwd=str(sub))
+    assert result["success"] is True
+    assert result["method"] == "AGENTS.md"
+    assert result["root"] == root
+
+
+def test_discover_project_git(tmp_path):
+    from omivoidlib.ai.project import discover_project
+
+    root = tmp_path / "repo"
+    root.mkdir()
+    with (
+        patch("omivoidlib.ai.project._find_agents_md", return_value=None),
+        patch("omivoidlib.ai.project._git_root", return_value=root),
+    ):
+        result = discover_project(cwd=str(root))
+    assert result["success"] is True
+    assert result["method"] == "git"
+    assert result["root"] == root
+
+
+def test_discover_project_cwd_fallback(tmp_path):
+    from omivoidlib.ai.project import discover_project
+
+    d = tmp_path / "plain"
+    d.mkdir()
+    with (
+        patch("omivoidlib.ai.project._find_agents_md", return_value=None),
+        patch("omivoidlib.ai.project._git_root", return_value=None),
+    ):
+        result = discover_project(cwd=str(d))
+    assert result["success"] is True
+    assert result["method"] == "cwd"
+    assert result["root"] == d
+
+
+def test_collect_project_secret_exclusion(tmp_path):
+    """Project context never auto-ingests secret material (AI-28)."""
+    from omivoidlib.ai.project import collect_project
+
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "AGENTS.md").write_text("# rules\n")
+    (root / "main.py").write_text("print('hi')\n")
+    (root / ".env").write_text("API_KEY=super-secret\n")
+    (root / "server.key").write_text("PRIVATE KEY\n")
+    (root / "credentials.json").write_text('{"token": "x"}\n')
+    (root / "docs").mkdir()
+
+    with patch("omivoidlib.ai.project._git_state", return_value=None):
+        result = collect_project(cwd=str(root))
+    assert result["success"] is True
+    ctx = result["context"]
+    assert ctx.type == "project"
+    content = ctx.content
+    # identity + instructions present
+    assert "Project: proj" in content
+    assert "# rules" in content
+    # structure lists main.py and docs/ but never secret files
+    assert "- main.py" in content
+    assert "- docs/" in content
+    assert ".env" not in content
+    assert "server.key" not in content
+    assert "credentials.json" not in content
+    # secret content never appears
+    assert "super-secret" not in content
+    assert "PRIVATE KEY" not in content
+
+
+def test_collect_project_no_git_degrades(tmp_path):
+    """Git absence degrades gracefully (docs/ai/06 §17)."""
+    from omivoidlib.ai.project import collect_project
+
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "AGENTS.md").write_text("# rules\n")
+    with patch("omivoidlib.ai.project._git_state", return_value=None):
+        result = collect_project(cwd=str(root))
+    assert result["success"] is True
+    assert result["context"].metadata["git"] is None
+    assert "Git:" not in result["context"].content
+
+
+def test_collect_project_git_state(tmp_path):
+    from omivoidlib.ai.project import collect_project
+
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "AGENTS.md").write_text("# rules\n")
+    with patch(
+        "omivoidlib.ai.project._git_state",
+        return_value={"branch": "main", "clean": True},
+    ):
+        result = collect_project(cwd=str(root))
+    assert result["success"] is True
+    assert result["context"].metadata["git"] == {"branch": "main", "clean": True}
+    assert "Git: main (clean)" in result["context"].content
+
+
+def test_read_agents_md_truncation(tmp_path):
+    """Large AGENTS.md is bounded with an explicit pointer (AI-27)."""
+    from omivoidlib.ai.project import MAX_INSTRUCTIONS_BYTES, _read_agents_md
+
+    p = tmp_path / "AGENTS.md"
+    p.write_text("x" * (MAX_INSTRUCTIONS_BYTES + 500))
+    out = _read_agents_md(p)
+    assert out is not None
+    assert "truncated" in out
+    assert str(p) in out
+    assert len(out.encode("utf-8")) < MAX_INSTRUCTIONS_BYTES + 200
+
+
+def test_ask_with_project_context(tmp_path):
+    """ask() renders project context into the provider prompt (AI-27)."""
+    from omivoidlib.ai.project import collect_project
+
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "AGENTS.md").write_text("# rules\n")
+    with (
+        patch("omivoidlib.ai.providers.pi.binary_available", return_value=True),
+        patch("omivoidlib.ai.providers.pi._auth_ready", return_value=True),
+        patch("omivoidlib.ai.providers.pi._base_reachable", return_value=True),
+        patch("omivoidlib.ai.providers.pi._key_plausible", return_value=True),
+        patch("omivoidlib.ai.providers.pi.ask") as pi_ask,
+    ):
+        pi_ask.return_value = {"success": True, "response": "ok"}
+        collected = collect_project(cwd=str(root))
+        assert collected["success"] is True
+        result = ask(
+            "What is this project?", provider="pi",
+            context=[collected["context"]],
+        )
+    assert result["success"] is True
+    prompt_arg = pi_ask.call_args[0][0]
+    assert "[PROJECT CONTEXT]" in prompt_arg
+    assert "Project: proj" in prompt_arg
+    assert prompt_arg.endswith("What is this project?")
+
+
+# ── Security validation (docs/ai/09 §48, AI-29) ────────────────────────
+
+def test_command_adapter_hostile_argument_not_shell_interpreted(tmp_path):
+    """AI-supplied hostile arguments are data, never shell fragments (§33)."""
+    marker = tmp_path / "pwned"
+    hostile = f"$(touch {marker})"
+    action = make_action(
+        adapter="command",
+        command=["printf", "%s", hostile],
+    )
+    result = run_action(action.id, registry_with(action))
+    assert result["success"] is True
+    assert result["state"]["command"] == ["printf", "%s", hostile]
+    assert not marker.exists()
