@@ -155,6 +155,24 @@ def generate_niri_fragment(registry: Registry, omivoid_cli: str) -> str:
                 )
                 lines.append("    }")
                 lines.append("")
+            elif action.adapter == "dms.ipc" and action.arguments.get("dms"):
+                # DMS IPC action: bind directly to `dms ipc call` so
+                # low-frequency shell keys do not route through the
+                # Omivoid CLI (AGENTS.md §10, docs/07 §29).
+                dms = action.arguments["dms"]
+                target = dms.get("target")
+                function = dms.get("function")
+                if target and function:
+                    dms_args = [str(a) for a in dms.get("args", [])]
+                    spawn_args = " ".join(
+                        f'"{a}"'
+                        for a in ["dms", "ipc", "call", target, function, *dms_args]
+                    )
+                    lines.append(f"    // {action.id}")
+                    lines.append(f"    {kdl_key} {{")
+                    lines.append(f"        spawn {spawn_args}")
+                    lines.append("    }")
+                    lines.append("")
             elif action.arguments.get("command") or action.command:
                 # Shell-handled command declared by the action. The
                 # `arguments.command` form is used by shell.* adapters; the

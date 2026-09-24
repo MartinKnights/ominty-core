@@ -19,15 +19,18 @@ registry_version = 1
 [action."theme.wallpaper.select"]
 
 name = "Select Wallpaper"
-description = "Open the wallpaper carousel to browse and pick a wallpaper."
+description = "Open or close the wallpaper carousel to browse and pick a wallpaper."
 category = "Appearance"
 
 keywords = ["wallpaper", "background", "select", "browse", "carousel", "image"]
 
-keys = []
+# Super+Ctrl+P toggles the carousel overlay (open/close). DMS owns
+# Super+Ctrl+C (center-visible-columns), so it is not used
+# (niri-binding-audit.md).
+keys = ["Super+Ctrl+P"]
 
 adapter = "dms.ipc"
-arguments = { dms = { target = "wallpaperCarousel", function = "open" } }
+arguments = { dms = { target = "wallpaperCarousel", function = "toggle" } }
 
 risk = "state-change"
 confirmation = "never"

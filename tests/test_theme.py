@@ -172,7 +172,7 @@ def test_wallpaper_select_invokes_carousel():
 
     assert result["success"] is True
     assert captured["command"] == [
-        "dms", "ipc", "call", "wallpaperCarousel", "open"
+        "dms", "ipc", "call", "wallpaperCarousel", "toggle"
     ]
 
 
@@ -184,8 +184,9 @@ def test_theme_actions_in_real_registry():
     select = registry.actions["theme.wallpaper.select"]
     assert select.adapter == "dms.ipc"
     assert select.arguments["dms"] == {
-        "target": "wallpaperCarousel", "function": "open"
+        "target": "wallpaperCarousel", "function": "toggle"
     }
+    assert select.keys == ["Super+Ctrl+P"]
 
     nxt = registry.actions["theme.wallpaper.next"]
     assert nxt.arguments["dms"]["function"] == "cycleNext"

@@ -14,27 +14,46 @@ evidence required by DoD §14.
 
 | Item | Outcome |
 |---|---|
-| `theme.wallpaper.select` | Opens the carousel (was broken — see §3) |
+| `theme.wallpaper.select` | Opens/closes the carousel — `Super+Ctrl+P` (was broken) |
 | `theme.wallpaper.next` / `.previous` | Carousel highlight next/previous |
 | `theme.palette.regenerate` | Re-runs matugen from the current wallpaper (new) |
 | `theme.mode.toggle` | DMS light/dark toggle (new) |
 | Wallpaper folder | `~/Wallpapers` (29 images) |
 | Theme → external app (§14) | Already provided by DMS — recorded in §6 |
 
-Registry: **29 actions, 0 warnings**. Tests: **159 passing** (10 new in
-`tests/test_theme.py`).
+Registry: **29 actions, 0 warnings**. Tests: **160 passing** (11 new).
 
 ---
 
 ## 2. Mechanism
 
 ```text
-theme.wallpaper.select    → dms ipc call wallpaperCarousel open
+theme.wallpaper.select    → dms ipc call wallpaperCarousel toggle   (Super+Ctrl+P)
 theme.wallpaper.next      → dms ipc call wallpaperCarousel cycleNext
 theme.wallpaper.previous  → dms ipc call wallpaperCarousel cyclePrevious
 theme.mode.toggle         → dms ipc call theme toggle
 theme.palette.regenerate  → dms.theme adapter → dms matugen generate
 ```
+
+`theme.wallpaper.select` is bound to **`Super+Ctrl+P`** (toggle — press to
+open, press again to close). `Super+Ctrl+C` was the first choice but DMS
+already binds it to `center-visible-columns` (`~/.config/niri/dms/binds.kdl`),
+and niri rejects duplicate keybinds. The catalogue proposed
+`Super+Ctrl+Space`; `Super+Ctrl+P` was selected instead.
+
+The generator now emits niri binds for `dms.ipc` actions:
+
+```kdl
+// theme.wallpaper.select
+Mod+Ctrl+P {
+    spawn "dms" "ipc" "call" "wallpaperCarousel" "toggle"
+}
+```
+
+Previously only `niri.native`, `app.launch`, and `command` actions produced
+binds, so a `dms.ipc` action with `keys` silently generated nothing. Binding
+directly to `dms ipc call` avoids a CLI process hop for a UI action
+(AGENTS.md §10).
 
 `dms.theme` (`adapters/dms/theme.py`) reads the current wallpaper
 (`dms ipc call wallpaper get`) and mode (`… theme getMode`), then runs:
@@ -62,7 +81,7 @@ Function not found.
 
 `wallpaper` exposes only `clear, get, getFor, next, nextFor, prev, prevFor,
 set, setFor` — there is no `select`. The action was repointed to the
-carousel's `open`, which is the actual browse-and-pick surface.
+carousel's `toggle`, which is the actual browse-and-pick surface.
 
 ---
 
@@ -164,7 +183,9 @@ rather than a failure.
 | `adapters/dms/theme.py` | `dms.theme` regeneration adapter (new) |
 | `cli/omivoidlib/adapters.py` | register `dms.theme` |
 | `cli/omivoidlib/registry.py` | known adapter `dms.theme` |
+| `cli/omivoidlib/generator.py` | emit niri binds for `dms.ipc` actions |
 | `tests/test_theme.py` | 10 tests (new) |
+| `tests/test_generator.py` | `dms.ipc` bind test |
 | `~/.config/DankMaterialShell/plugin_settings.json` | carousel `wallpaperDirectory` (backup taken) |
 | `~/Wallpapers/` | 29 wallpapers (moved from `~/Pictures/Backgrounds`) |
 
@@ -197,5 +218,5 @@ $ dms ipc call wallpaper next
   DMS `wallpaper next`/`prev` instead — left as-is because the carousel was
   the requested browsing surface.
 * Changing the carousel folder by file edit needs `dms restart` (see §5).
-* No direct Niri keybindings for Appearance actions (palette/CLI/AI only;
-  niri-binding-audit.md Appearance row was DEFER).
+* Only `theme.wallpaper.select` has a Niri keybinding (`Super+Ctrl+P`);
+  the other Appearance actions are palette/CLI/AI only.

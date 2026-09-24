@@ -83,7 +83,8 @@ docs/04-phase-1-action-catalogue.md).
 | `Super+Space` | help.actions.search | — (free) | **ACCEPT** | See §2. |
 | — | session.lock | `Super+Alt+L` → swaylock (⚠️ not installed) | **DEFER** | DMS lock integration (Stage 13). |
 | — | session.logout / reboot / shutdown | — | **DEFER** | Palette-only in Phase 1. |
-| — | theme.wallpaper.* / palette.regenerate / mode.toggle | — | **IMPLEMENTED (no binding)** | Palette/CLI/AI only — realised via the DMS Wallpaper Carousel and `dms.theme` (theme-implementation.md). Direct keybindings remain deferred. |
+| `Super+Ctrl+P` | theme.wallpaper.select (carousel toggle) | — (free) | **ACCEPT** | New binding. `Super+Ctrl+C` was taken by DMS (`center-visible-columns`). See theme-implementation.md. |
+| — | theme.wallpaper.next / previous / palette.regenerate / mode.toggle | — | **IMPLEMENTED (no binding)** | Palette/CLI/AI only — realised via the DMS Wallpaper Carousel and `dms.theme` (theme-implementation.md). |
 | — | audio.volume.* / mute / microphone | `XF86Audio*` → wpctl/playerctl | **ACCEPT** | Map to existing media-key binds. ⚠️ playerctl not installed (audit finding 4). |
 
 ## 7. Existing Bindings Preserved Unchanged

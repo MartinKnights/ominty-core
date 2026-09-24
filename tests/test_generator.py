@@ -260,6 +260,35 @@ def test_command_adapter_top_level_command_generated():
     assert 'spawn "dms" "ipc" "call" "spotlight" "openQuery" "!ai "' in fragment
 
 
+def test_dms_ipc_adapter_binding_generated():
+    """A dms.ipc action with keys emits `dms ipc call <target> <function>`."""
+    action = Action(
+        id="theme.wallpaper.select",
+        name="Select Wallpaper",
+        description="Toggle the wallpaper carousel",
+        category="Appearance",
+        risk="state-change",
+        confirmation="never",
+        keywords=["wallpaper"],
+        keys=["Super+Ctrl+P"],
+        adapter="dms.ipc",
+        arguments={"dms": {"target": "wallpaperCarousel", "function": "toggle"}},
+        contexts=["global"],
+        platforms=["common"],
+        discoverable=True,
+        palette=True,
+        ai_accessible=True,
+        voice_accessible=False,
+        source_file="test",
+    )
+    fragment = generate_niri_fragment(
+        Registry(actions={action.id: action}), "/opt/omivoid"
+    )
+    assert "Mod+Ctrl+P {" in fragment
+    assert 'spawn "dms" "ipc" "call" "wallpaperCarousel" "toggle"' in fragment
+    assert "// theme.wallpaper.select" in fragment
+
+
 def test_dms_claimed_keys_excluded():
     fragment = generate_niri_fragment(make_registry(), "/opt/omivoid")
     # DMS owns these keys (dms-evaluation.md §4.2); the generator must not bind them.

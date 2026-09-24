@@ -451,6 +451,11 @@ Prefer DMS or the existing configured Bluetooth interface.
 **Risk:** `state-change`
 **Context:** `global`
 
+**Implementation (2026-09-19):** bound to **`Super+Ctrl+P`** — opens/toggles
+the DMS Wallpaper Carousel (`dms ipc call wallpaperCarousel toggle`).
+`Super+Ctrl+C` was rejected (DMS owns it), and the proposal was revised to
+`Super+Ctrl+P`. See `docs/implementation/theme-implementation.md`.
+
 This action should eventually initiate the complete wallpaper/theme workflow.
 
 Expected conceptual flow:
