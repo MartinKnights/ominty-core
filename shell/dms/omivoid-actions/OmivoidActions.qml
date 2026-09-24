@@ -31,9 +31,11 @@ Item {
     signal itemsChanged()
 
     // ---- Configuration ---------------------------------------------------
-    // Path to the Omivoid CLI. Defaults to the in-repository entry point.
-    // Override in plugin settings once Omivoid installs a `omivoid` binary.
-    property string cliPath: "/home/mk/Projects/OmiVoid/omivoid-lmde/cli/omivoid"
+    // Path to the Omivoid CLI. Portable default: the OMIVOID_CLI environment
+    // variable if set, otherwise `omivoid` on PATH. Machine-specific paths
+    // belong in plugin settings (user config), not in this source
+    // (AGENTS.md §22–24).
+    property string cliPath: Quickshell.env("OMIVOID_CLI") || "omivoid"
 
     // Which registry actions to surface.
     //   "all"          — every action

@@ -14,7 +14,7 @@ Two AI providers are available on this machine:
 
 | Provider | Version | Binary | Status |
 |---|---|---|---|
-| Pi | 0.85.1 | `/home/mk/.nvm/versions/node/v22.22.3/bin/pi` | Ready (openai provider) |
+| Pi | 0.85.1 | `~/.nvm/versions/node/v22.22.3/bin/pi` | Ready (openai provider) |
 | Ollama | 0.12.10 | `/usr/local/bin/ollama` | Ready (server running, 5 models) |
 
 Pi is the preferred initial provider (docs/ai/02-pi-integration.md §1). Ollama provides a fully local, offline-capable alternative and is incorporated as a second provider from Phase A (docs/ai/00-ai-architecture.md §7 "local model runner").
@@ -28,7 +28,7 @@ Pi is the preferred initial provider (docs/ai/02-pi-integration.md §1). Ollama 
 | Field | Value |
 |---|---|
 | Version | **0.85.1** |
-| Executable | `/home/mk/.nvm/versions/node/v22.22.3/bin/pi` |
+| Executable | `~/.nvm/versions/node/v22.22.3/bin/pi` |
 | Install method | npm (nvm-managed Node v22.22.3) |
 | In PATH | yes (`pi` resolves) |
 

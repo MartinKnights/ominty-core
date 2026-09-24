@@ -230,7 +230,7 @@ Phase E's selection decision (CLIPBOARD FALLBACK) was already reconciled in
 ```text
 $ omivoid project current
 Project: omivoid-lmde
-Root:    /home/mk/Projects/OmiVoid/omivoid-lmde
+Root:    ~/Projects/OmiVoid/omivoid-lmde
 Method:  AGENTS.md
 
 $ omivoid project context | wc -c

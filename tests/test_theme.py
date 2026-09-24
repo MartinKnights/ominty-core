@@ -45,7 +45,7 @@ def test_dms_theme_regenerate_success():
     def fake_run(command, timeout):
         calls.append(command)
         return _fake_dms(
-            "/home/mk/Pictures/Backgrounds/Dune.jpg", "light"
+            "/tmp/wallpapers/Dune.jpg", "light"
         )(command, timeout)
 
     with (
@@ -60,7 +60,7 @@ def test_dms_theme_regenerate_success():
 
     gen = calls[-1]
     assert gen[:3] == ["dms", "matugen", "generate"]
-    assert gen[gen.index("--value") + 1] == "/home/mk/Pictures/Backgrounds/Dune.jpg"
+    assert gen[gen.index("--value") + 1] == "/tmp/wallpapers/Dune.jpg"
     assert gen[gen.index("--kind") + 1] == "image"
     assert gen[gen.index("--mode") + 1] == "light"
     for flag in ("--state-dir", "--shell-dir", "--config-dir"):

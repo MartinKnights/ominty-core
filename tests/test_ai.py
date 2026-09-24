@@ -768,13 +768,13 @@ def test_is_secret():
     assert not is_secret("docs")
 
 
-def test_discover_project_explicit():
+def test_discover_project_explicit(tmp_path):
     """Explicit root always wins (docs/ai/06 §6)."""
     from omivoidlib.ai.project import discover_project
 
-    result = discover_project(
-        cwd="/tmp", explicit="/home/mk/Projects/OmiVoid/omivoid-lmde"
-    )
+    root = tmp_path / "omivoid-lmde"
+    root.mkdir()
+    result = discover_project(cwd="/tmp", explicit=str(root))
     assert result["success"] is True
     assert result["method"] == "explicit"
     assert result["name"] == "omivoid-lmde"

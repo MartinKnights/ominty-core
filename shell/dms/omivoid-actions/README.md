@@ -59,7 +59,7 @@ the `!!` sentinel (ADR-006 §12).
 | --- | ------- | ------- |
 | `noTrigger` | `true` | Actions appear alongside normal search results (palette merge) |
 | `trigger` | `""` | Optional prefix that activates the provider; empty = always-active |
-| `cliPath` | `/home/mk/Projects/OmiVoid/omivoid-lmde/cli/omivoid` | Omivoid CLI executable |
+| `cliPath` | `$OMIVOID_CLI` or `omivoid` (PATH) | Omivoid CLI executable |
 | `filterMode` | `all` | `all` / `discoverable` / `palette` |
 
 ### Query semantics

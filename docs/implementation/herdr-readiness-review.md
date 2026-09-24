@@ -42,7 +42,7 @@ herdr 0.9.0
 
 $ herdr status
 client:  version 0.9.0, channel stable, protocol 22
-server:  status running, socket /home/mk/.config/herdr/herdr.sock
+server:  status running, socket ~/.config/herdr/herdr.sock
 ```
 
 CLI command groups (all over the socket API):
@@ -222,7 +222,7 @@ of agents*; Omivoid should not duplicate it.
 ## 11. Evidence
 
 ```text
-$ which herdr                → /home/mk/.local/bin/herdr
+$ which herdr                → ~/.local/bin/herdr
 $ herdr --version            → herdr 0.9.0
 $ herdr status               → server running, socket ~/.config/herdr/herdr.sock
 $ herdr machine list         → No saved SSH machines.

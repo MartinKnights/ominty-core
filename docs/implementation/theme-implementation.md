@@ -119,7 +119,7 @@ $ dms ipc call settings get pluginSettings
 … "wallpaperCarousel":{"enabled":true}                 # in-memory
 
 $ cat plugin_settings.json
-… "wallpaperDirectory":"/home/mk/Wallpapers"           # on disk
+… "wallpaperDirectory":"~/Wallpapers"           # on disk
 ```
 
 Neither atomic nor non-atomic external writes updated DMS's in-memory
@@ -130,7 +130,7 @@ override therefore required a DMS restart (`dms restart`), after which:
 
 ```text
 $ dms ipc call settings get pluginSettings
-… "wallpaperDirectory":"/home/mk/Wallpapers"           # in-memory ✓
+… "wallpaperDirectory":"~/Wallpapers"           # in-memory ✓
 # carousel cycles the full range (index 0–28 = 29 images) ✓
 ```
 
@@ -198,7 +198,7 @@ $ omivoid registry validate
 29 action(s), 0 error(s), 0 warning(s), 0 info
 
 $ omivoid action run theme.palette.regenerate --json
-{"success": true, "state": {"mode": "dark", "value": "/home/mk/Wallpapers/…"}}
+{"success": true, "state": {"mode": "dark", "value": "~/Wallpapers/…"}}
 
 $ omivoid action run theme.mode.toggle      → dark → light → dark (restored)
 

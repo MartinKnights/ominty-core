@@ -145,7 +145,7 @@ export OMIVOID_CLI=/path/to/omivoid-lmde/cli/omivoid
 ### 4.1 Procedure
 
 ```bash
-OMIVOID_CLI=/home/mk/Projects/OmiVoid/omivoid-lmde/cli/omivoid \
+OMIVOID_CLI=~/Projects/OmiVoid/omivoid-lmde/cli/omivoid \
   pi --print --mode json --no-session "Open my browser"
 ```
 

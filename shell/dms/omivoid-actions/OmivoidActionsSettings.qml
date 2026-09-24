@@ -101,8 +101,8 @@ PluginSettings {
                 settingKey: "cliPath"
                 label: I18n.tr("Omivoid CLI Path")
                 description: I18n.tr("Executable used to read the registry and run actions")
-                placeholder: "/home/mk/Projects/OmiVoid/omivoid-lmde/cli/omivoid"
-                defaultValue: "/home/mk/Projects/OmiVoid/omivoid-lmde/cli/omivoid"
+                placeholder: "omivoid"
+                defaultValue: "omivoid"
             }
 
             SelectionSetting {

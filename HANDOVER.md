@@ -15,15 +15,15 @@ empty** and awaiting content.
 
 ## Source documents (read these first)
 
-- `/home/mk/Projects/OmiVoid/update/01-A-New-Direction.md` — the pivot to DMS
-- `/home/mk/Projects/OmiVoid/update/02-Omivoid-Interaction-Specification.md` — interaction spec draft v0.1
-- `/home/mk/Projects/OmiVoid/update/03-Omivoid-Action-Registry-Specification.md` — action registry spec draft v0.1
+- `~/Projects/OmiVoid/update/01-A-New-Direction.md` — the pivot to DMS
+- `~/Projects/OmiVoid/update/02-Omivoid-Interaction-Specification.md` — interaction spec draft v0.1
+- `~/Projects/OmiVoid/update/03-Omivoid-Action-Registry-Specification.md` — action registry spec draft v0.1
 
 ## What the next agent should do
 
 1. **Fill in the empty files** in `omivoid-lmde/`:
    - `AGENTS.md` — agent rules for the new project (adapt from
-     `/home/mk/Projects/OmiVoid/AGENT.md`)
+     `~/Projects/OmiVoid/AGENT.md`)
    - `docs/00-project-overview.md` … `docs/10-phase-1-implementation-plan.md`
    - `docs/decisions/ADR-001-niri-as-compositor.md` … `ADR-005-lmde-validation-platform.md`
 2. Content should be derived from the three `update/` documents plus the
@@ -34,9 +34,9 @@ empty** and awaiting content.
 
 ## Key facts to carry
 
-- **Project path:** `/home/mk/Projects/OmiVoid/` (note: user sometimes types
-  `~/home/mk/...` — the correct path has no `~` prefix)
-- **New project:** `/home/mk/Projects/OmiVoid/omivoid-lmde/`
+- **Project path:** `~/Projects/OmiVoid/` (the user sometimes mistypes the
+  path with an extra leading `~` — the correct path has none)
+- **New project:** `~/Projects/OmiVoid/omivoid-lmde/`
 - **Compositor:** Niri 26.04 (installed, validated on Surface Book 1)
 - **Shell:** DMS (DankMaterialShell) — Quickshell-based, Niri-optimized,
   wallpaper-based theming (GTK/Qt/terminals/editors)

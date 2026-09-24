@@ -230,8 +230,8 @@ AI integration is Stage 18–20. This audit records presence only.
 | `~/.config/omivoid/` | **does not exist** — runtime config to be created per docs/12 |
 | `~/.config/quickshell/omivoid/shell.qml` | exists (2257 bytes, minimal shell) |
 | `~/.config/niri/config.kdl` | exists (249 lines, audited above) |
-| OmiVoid repo | `/home/mk/Projects/OmiVoid` (git, branch main) |
-| omivoid-lmde location | `/home/mk/Projects/OmiVoid/omivoid-lmde/` — **currently untracked inside the OmiVoid repo** |
+| OmiVoid repo | `~/Projects/OmiVoid` (git, branch main) |
+| omivoid-lmde location | `~/Projects/OmiVoid/omivoid-lmde/` — **currently untracked inside the OmiVoid repo** |
 
 **Note:** `omivoid-lmde/` currently lives inside the OmiVoid git repository as an untracked directory. The docs describe it as its own repository ("Repository: omivoid-lmde"). Decision needed: keep as subdirectory of OmiVoid repo, or initialise as a separate repository. This does not block Stage 1–7.
 
