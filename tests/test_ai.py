@@ -1,4 +1,4 @@
-"""AI provider and adapter tests — docs/ai/10 §6–11.
+"""AI provider, adapter and capability tests — docs/ai/10 §6–16.
 
 Covers:
 - provider resolution (resolve_provider)
@@ -7,6 +7,7 @@ Covers:
   PROVIDER_FAILED, PROVIDER_TIMEOUT)
 - ai.ask adapter (missing prompt, success, provider error)
 - ai.pi.open adapter (missing role, missing terminal, missing pi, success)
+- capability catalogue (ai_accessible filter, ai.* exclusion, sorting)
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ import subprocess
 import urllib.error
 from unittest.mock import MagicMock, patch
 
-from omivoidlib.ai import ask, default_provider, provider_status
+from omivoidlib.ai import ask, capabilities, default_provider, provider_status
+from omivoidlib.ai.capabilities import list_capabilities
 from omivoidlib.ai.providers import resolve_provider
 from omivoidlib.registry import Action, Registry
 from omivoidlib.runner import run_action
@@ -349,3 +351,60 @@ def test_ai_pi_open_success():
         result = run_action(action.id, registry_with(action))
     assert result["success"] is True
     popen.assert_called_once()
+
+
+# ── Capability catalogue (docs/ai/04, docs/ai/10 §15–16) ──────────────────
+
+def test_capabilities_filters_ai_accessible():
+    """Only actions with ai_accessible=True appear."""
+    a1 = make_action(id="x.open", ai_accessible=True)
+    a2 = make_action(id="x.close", ai_accessible=False)
+    caps = list_capabilities(registry_with(a1, a2))
+    assert len(caps) == 1
+    assert caps[0]["id"] == "x.open"
+
+
+def test_capabilities_excludes_ai_recursive():
+    """Actions whose IDs start with 'ai.' are excluded (AGENTS.md §18)."""
+    a1 = make_action(id="ai.ask", ai_accessible=True)
+    a2 = make_action(id="app.browser.open", ai_accessible=True)
+    caps = list_capabilities(registry_with(a1, a2))
+    assert len(caps) == 1
+    assert caps[0]["id"] == "app.browser.open"
+
+
+def test_capabilities_sorted_by_id():
+    """Output is sorted by action id for stable machine-readable output."""
+    a1 = make_action(id="z.last", ai_accessible=True)
+    a2 = make_action(id="a.first", ai_accessible=True)
+    caps = list_capabilities(registry_with(a1, a2))
+    assert [c["id"] for c in caps] == ["a.first", "z.last"]
+
+
+def test_capabilities_empty_registry():
+    """An empty registry yields an empty capability list."""
+    caps = list_capabilities(Registry())
+    assert caps == []
+
+
+def test_capabilities_includes_policy_metadata():
+    """Each capability entry carries risk and confirmation metadata."""
+    a = make_action(
+        id="test.action",
+        ai_accessible=True,
+        risk="state-change",
+        confirmation="ask",
+    )
+    caps = list_capabilities(registry_with(a))
+    assert caps[0]["risk"] == "state-change"
+    assert caps[0]["confirmation"] == "ask"
+    assert caps[0]["name"] == "Test"
+
+
+def test_capabilities_public_interface():
+    """The public ai.capabilities() delegates to list_capabilities."""
+    a = make_action(id="test.action", ai_accessible=True)
+    reg = registry_with(a)
+    with patch("omivoidlib.ai._capabilities.list_capabilities", return_value=[{"id": "x"}]):
+        result = capabilities()
+    assert result == [{"id": "x"}]

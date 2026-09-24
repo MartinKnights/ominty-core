@@ -3,6 +3,7 @@
     provider_status(name) -> dict
     list_providers() -> list[dict]
     ask(prompt, provider=None, timeout=None) -> dict
+    capabilities() -> list[dict]
     default_provider() -> str
 
 The AI layer resolves providers and routes asks. Provider-specific
@@ -12,6 +13,7 @@ invocation details live inside each provider adapter (docs/ai/01 §4).
 from __future__ import annotations
 
 from ..config import load_ai_config
+from . import capabilities as _capabilities
 from . import providers
 
 
@@ -29,6 +31,15 @@ def provider_status(name: str) -> dict:
 def list_providers() -> list[dict]:
     """Return status for every registered provider."""
     return providers.list_providers()
+
+
+def capabilities() -> list[dict]:
+    """Return the AI-accessible capability list (docs/ai/04 §26).
+
+    Derived from the Action Registry — filtered by ``ai_accessible``
+    with ``ai.*`` recursion excluded (AGENTS.md §17–18).
+    """
+    return _capabilities.list_capabilities()
 
 
 def ask(

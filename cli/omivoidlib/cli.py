@@ -318,6 +318,21 @@ def cmd_ai_ask(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_ai_capabilities(args: argparse.Namespace) -> int:
+    """List AI-accessible capabilities (docs/ai/04 §26, docs/ai/10 §15–16)."""
+    from .ai import capabilities
+
+    caps = capabilities()
+    if args.json:
+        print(json.dumps(caps, indent=2))
+        return 0
+
+    for cap in caps:
+        print(f"{cap['id']:<28} {cap['name']}")
+    print(f"\n{len(caps)} capability/capabilities")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="omivoid",
@@ -416,6 +431,10 @@ def build_parser() -> argparse.ArgumentParser:
     ask_p.add_argument("--timeout", type=float, default=None, help="timeout in seconds")
     ask_p.add_argument("--json", action="store_true", help="JSON output")
     ask_p.set_defaults(func=cmd_ai_ask)
+
+    caps_p = ai_sub.add_parser("capabilities", help="list AI-accessible capabilities")
+    caps_p.add_argument("--json", action="store_true", help="JSON output")
+    caps_p.set_defaults(func=cmd_ai_capabilities)
 
     return parser
 
