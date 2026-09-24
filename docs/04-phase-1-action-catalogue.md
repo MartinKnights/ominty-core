@@ -698,6 +698,16 @@ Actions may be deferred where implementation would be speculative.
 
 The goal is approximately 30–40 working actions by the end of Phase 1.
 
+**Phase 1 implementation (2026-09-19):** **40 actions** implemented and
+validating (0 errors, 0 warnings). By category: Applications 6, Windows 4,
+Navigation 4, Workspaces 2, System 1, Audio 4, Displays 2, Media 3,
+Appearance 5, Capture 2, AI 5, Help 2.
+
+Deferred (documented, not implemented): `session.*` (logout/reboot/
+shutdown — destructive, needs a confirmation design), `network.*`
+(DMS control-center integration), and the remaining window/workspace
+navigation and `window.move` binding conventions.
+
 ---
 
 # 17. Implementation Priority

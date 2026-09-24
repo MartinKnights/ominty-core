@@ -50,3 +50,99 @@ discoverable = true
 palette = true
 ai_accessible = true
 voice_accessible = false
+
+[action."app.files.open"]
+
+name = "Open Files"
+description = "Open the configured file manager."
+category = "Applications"
+
+keywords = ["files", "file manager", "documents", "folders"]
+
+keys = []
+
+adapter = "app.launch"
+arguments = { role = "files" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."app.editor.open"]
+
+name = "Open Editor"
+description = "Open the configured text/code editor."
+category = "Applications"
+
+keywords = ["editor", "code", "text", "ide"]
+
+keys = []
+
+adapter = "app.launch"
+arguments = { role = "editor" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."app.notes.open"]
+
+name = "Open Notes"
+description = "Open the configured notes application."
+category = "Applications"
+
+keywords = ["notes", "notebook", "writing"]
+
+keys = []
+
+adapter = "app.launch"
+arguments = { role = "notes" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."app.mail.open"]
+
+name = "Open Mail"
+description = "Open the configured mail client."
+category = "Applications"
+
+keywords = ["mail", "email", "inbox"]
+
+keys = []
+
+adapter = "app.launch"
+arguments = { role = "mail" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false

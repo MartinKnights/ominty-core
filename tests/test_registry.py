@@ -286,3 +286,36 @@ def test_real_registry_help_actions_use_dms():
 
     search = registry.actions["help.actions.search"]
     assert search.command == ["dms", "ipc", "call", "spotlight", "toggle"]
+
+
+def test_real_registry_application_roles_complete():
+    """All six catalogue application roles are registered (docs/04 §3)."""
+    from pathlib import Path
+
+    registry = load_registry(
+        user_actions_dir=Path("/nonexistent"),
+        overrides_dir=Path("/nonexistent"),
+    )
+    roles = {
+        a.arguments.get("role")
+        for a in registry.actions.values()
+        if a.adapter == "app.launch"
+    }
+    assert {"terminal", "browser", "files", "editor", "notes", "mail"} <= roles
+
+
+def test_real_registry_capture_actions_use_dms():
+    """Capture delegates to DMS and carries no keys (DMS owns the Print family)."""
+    from pathlib import Path
+
+    registry = load_registry(
+        user_actions_dir=Path("/nonexistent"),
+        overrides_dir=Path("/nonexistent"),
+    )
+    full = registry.actions["capture.screenshot.full"]
+    assert full.command == ["dms", "screenshot", "full"]
+    assert full.keys == []
+
+    region = registry.actions["capture.screenshot.region"]
+    assert region.command == ["dms", "screenshot", "region"]
+    assert region.keys == []

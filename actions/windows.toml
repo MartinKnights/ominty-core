@@ -75,3 +75,123 @@ discoverable = true
 palette = true
 ai_accessible = false
 voice_accessible = false
+
+[action."window.focus.up"]
+
+name = "Focus Up"
+description = "Focus the window above."
+category = "Navigation"
+
+keywords = ["focus", "up"]
+
+keys = []
+
+adapter = "niri.native"
+arguments = { action = "focus-window-up" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."window.focus.down"]
+
+name = "Focus Down"
+description = "Focus the window below."
+category = "Navigation"
+
+keywords = ["focus", "down"]
+
+keys = []
+
+adapter = "niri.native"
+arguments = { action = "focus-window-down" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."window.fullscreen.toggle"]
+
+name = "Toggle Fullscreen"
+description = "Toggle fullscreen for the focused window."
+category = "Windows"
+
+keywords = ["fullscreen", "maximize", "toggle"]
+
+keys = []
+
+adapter = "niri.native"
+arguments = { action = "fullscreen-window" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."window.move.left"]
+
+name = "Move Window Left"
+description = "Move the focused column to the left."
+category = "Windows"
+
+keywords = ["move", "left", "column", "reorder"]
+
+keys = []
+
+adapter = "niri.native"
+arguments = { action = "move-column-left" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
+
+[action."window.move.right"]
+
+name = "Move Window Right"
+description = "Move the focused column to the right."
+category = "Windows"
+
+keywords = ["move", "right", "column", "reorder"]
+
+keys = []
+
+adapter = "niri.native"
+arguments = { action = "move-column-right" }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["window"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false
