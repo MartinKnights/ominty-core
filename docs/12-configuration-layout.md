@@ -182,6 +182,10 @@ config/platforms/void.toml
 
 Keep platform configuration minimal.
 
+**Phase 1 status (2026-09-24):** `config/platforms/` is empty; adapter
+resolution implements **platform → common** only (`cli/omivoidlib/adapters.py`).
+No platform-specific adapter is implemented (`adapters/debian/` is empty).
+
 ---
 
 # 9. Machine Profiles
@@ -207,6 +211,10 @@ Machine profiles may include:
 * battery behaviour.
 
 Do not place personal data in reusable machine profiles.
+
+**Phase 1 status (2026-09-24):** the machine layer is **not implemented** —
+`config/machines/` is empty and adapter resolution does not consult it. Recorded
+as an unnecessary/deferred abstraction in `phase-1-exit-review.md` §3.
 
 ---
 
@@ -366,6 +374,17 @@ Example:
 // Do not edit directly.
 ```
 
+**Phase 1 implementation (2026-09-24):** `omivoid registry build` writes this
+file, validating it with `niri validate` first (invalid output is removed). The
+active config includes it **last** in `~/.config/niri/config.kdl`:
+
+```text
+include optional=true "~/.config/omivoid/generated/niri/bindings.kdl"
+```
+
+`optional=true` means a missing fragment degrades to a warning, never a config
+failure. See `docs/implementation/rollback-test.md`.
+
 ---
 
 # 18. Existing Niri Config
@@ -397,6 +416,12 @@ Omivoid should maintain only:
 * documented managed settings.
 
 Do not duplicate the whole DMS configuration tree inside Omivoid.
+
+**Phase 1 implementation (2026-09-24):** DMS config lives at
+`~/.config/DankMaterialShell/`; Omivoid plugins are symlinked into
+`.../plugins/` (the repo remains the source of truth). Documented managed
+settings include `customPowerButtons` (the audio / network / niri restart
+buttons).
 
 ---
 

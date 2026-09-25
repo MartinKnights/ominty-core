@@ -45,7 +45,7 @@ docs/04-phase-1-action-catalogue.md).
 | Proposed binding | Role | Existing binding | Status | Resolution |
 |---|---|---|---|---|
 | `Super+Shift+B` | browser | — (free) | **ACCEPT** | New binding. |
-| `Super+Shift+F` | files | `Mod+Shift+F` → fullscreen-window | **CONFLICT** | fullscreen-window keeps `Mod+Shift+F` (see §2 Super+F). **CHANGE** files to `Super+Shift+D` (Documents), or DEFER the direct binding (files remains reachable via palette/CLI/AI). |
+| `Super+Shift+F` | files | `Mod+Shift+F` → fullscreen-window | **DEFER** | fullscreen-window keeps `Mod+Shift+F` (see §2 Super+F). `app.files.open` stays **keyless** (DEFERRED 2026-09-24) — reachable via the palette/CLI/AI (see §11 #4). |
 | `Super+Shift+E` | editor | `Mod+Shift+E` → quit | **MIGRATE** | quit has a redundant binding (`Ctrl+Alt+Delete`); free `Mod+Shift+E` for the editor role. |
 | `Super+Shift+N` | notes | — (free) | **ACCEPT** | New binding. |
 | `Super+Shift+M` | mail | — (free) | **ACCEPT** | New binding. |
@@ -154,7 +154,7 @@ any edit (AGENTS.md §30).
 | 1 | Free `Mod+K` (removed `focus-window-up`; `Mod+Up` covers it) | **APPLIED** — `config.kdl` edited; backup `config.kdl.bak-omivoid-20260911` |
 | 2 | Free `Mod+Shift+E` (removed `quit`; `Ctrl+Alt+Delete` covers it) | **APPLIED** — `config.kdl` edited |
 | 3 | `window.fullscreen.toggle` → `Mod+Shift+F` | **ALREADY NATIVE** — no change needed |
-| 4 | `app.files.open` → `Super+Shift+D` or DEFER | **PENDING** — decision deferred to Stage 11–12 (palette) |
+| 4 | `app.files.open` → **DEFERRED** (no direct key) | **RESOLVED 2026-09-24** — files stays keyless (`keys = []`) and is reachable via the palette/CLI/AI; no dedicated binding added |
 | 5 | New bindings via generated fragment | **APPLIED** — `~/.config/omivoid/generated/niri/bindings.kdl` |
 
 Generated fragment (`~/.config/omivoid/generated/niri/bindings.kdl`):

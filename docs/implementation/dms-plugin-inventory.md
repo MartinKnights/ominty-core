@@ -192,7 +192,9 @@ omivoid action run theme.palette.regenerate
 This may satisfy Phase 1 event requirements without introducing an Omivoid
 daemon (ADR-006 §28).
 
-**Classification:** EVALUATE → likely ADOPT WITH CONFIGURATION.
+**Classification:** EVALUATED (2026-09-24) → **ADOPT WITH CONFIGURATION** (path
+chosen, not activated — no Phase 1 event→action need; see
+`dankhooks-evaluation.md`).
 
 ## 4.3 dms-command-runner — Command Execution
 
@@ -306,8 +308,10 @@ Based on this audit:
 2. ✅ **Prototype the "Omivoid Actions" DMS launcher plugin** (ADR-006 §10).
    **Result:** built at `shell/dms/omivoid-actions/`; loads 21 registry
    actions; invokes actions via `omivoid action run <id>`. See §6.1.
-3. ⏳ **Evaluate `dankHooks`** for event integration (wallpaper → theme
-   regenerate) to avoid an Omivoid daemon.
+3. ✅ **Evaluate `dankHooks`** for event integration (wallpaper → theme
+   regenerate) to avoid an Omivoid daemon. **Result:** ADOPT WITH
+   CONFIGURATION (not activated — no Phase 1 event→action need); see
+   `dankhooks-evaluation.md`.
 4. ✅ **Retire the Omivoid Quickshell popup.** `Super+K` now opens the DMS
    spotlight with `openQuery "!!"`; `Super+Space` merges Omivoid actions
    into the palette. See §6.2.

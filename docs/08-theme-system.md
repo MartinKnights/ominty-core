@@ -537,6 +537,9 @@ provider and already themes external applications (alacritty, nvim,
 firefox, ghostty, zed, qt5ct/qt6ct, gtk); Omivoid does not build a
 parallel theme engine (AGENTS.md §15).
 
+Also implemented: `theme.mode.toggle` (`dms ipc call theme toggle`). The
+carousel is bound to **`Super+Ctrl+P`** (`Super+Ctrl+C` is owned by DMS).
+
 ---
 
 # 28. User Overrides

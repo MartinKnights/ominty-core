@@ -39,14 +39,15 @@ Current state:
 
 ## Outstanding (Phase 1 close-out)
 
-1. **Desktop validation** (DoD §25/§26): Super+K, Super+Space, logout/login and
-   reboot — perform and record.
-2. **Phase 1 exit architectural review** (DoD §33) — the ten questions.
-3. **`app.files.open` binding decision** (niri-binding-audit item #4:
-   `Super+Shift+D` vs DEFER).
-4. **`dankHooks`** event-integration evaluation (ADR-006 §27–28).
-5. Keep `docs/implementation/` current (docs/08 theme and docs/12 config layout
-   may not yet reflect the deferred/implemented theme work).
+Tracking: `docs/implementation/phase-1-completion-plan.md`.
+
+1. **Desktop validation** (DoD §25/§26): Super+K, Super+Space, Super+Shift+S,
+   Super+A, logout/login and reboot — perform and record.
+2. **Sign off** the Phase 1 exit review (`phase-1-exit-review.md`).
+3. **Repo boundary decision** — keep `omivoid-lmde/` inside the `OmiVoid` repo
+   or split it.
+4. **Tier 2 (pre-Void):** live keybinding authority, service/package adapters,
+   schema + machine-layer cleanup.
 
 ## Key facts to carry
 
