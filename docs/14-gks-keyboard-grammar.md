@@ -696,7 +696,7 @@ GKS should reserve a few **prefixes** as sub-namespaces, so a domain can grow wi
 | Omivoid-owned bindings | `cli/omivoidlib/generator.py` → `~/.config/omivoid/generated/niri/bindings.kdl` |
 | Shell / system / media keys | DMS `dms/binds.kdl` |
 | Compositor dispatch | Niri |
-| Collision handling | include order (Omivoid after DMS) + `DMS_CLAIMED_KEYS` |
+| Collision handling | include order (Omivoid after DMS) + DMS claims parsed live from `dms/binds.kdl` minus `OVERRIDE_KEYS` (static `DMS_CLAIMED_KEYS` is the fallback) |
 
 Two GKS changes fall out of this:
 
