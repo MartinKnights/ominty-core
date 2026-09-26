@@ -92,10 +92,11 @@ Void port is primarily a **packaging** exercise, not a rewrite.
 
 ## 5. Unresolved portability questions
 
-1. **Machine/profile layer unimplemented.** `config/machines/` and
-   `config/platforms/` are empty. Adapter resolution implements
-   platform → common only (`adapters.py`); the documented
-   machine → platform → common order (docs/05 §7) is not yet exercised.
+1. **Machine/profile layer explicitly deferred (decision 2026-09-27).**
+   `config/machines/`, `config/platforms/` and `adapters/machine/` are empty;
+   adapter resolution implements **platform → common** only (`adapters.py`).
+   The machine override leg of the docs/05 §7 order is a reserved, documented
+   extension point, not a Phase 1 requirement.
 2. **No `package.*` action yet; both platform boundaries now exist.**
    `service.restart` and `package.install` adapters define the systemd/runit
    and apt/xbps boundaries: `adapters/debian/{service_restart,package_install}.py`

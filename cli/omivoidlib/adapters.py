@@ -8,7 +8,8 @@ Resolution precedence:
         ↓
     common adapter
 
-Phase 1 implements platform → common (machine-specific adapters deferred).
+Phase 1 implements platform → common; the machine override layer is
+explicitly deferred (docs/05 §7/§16, decision 2026-09-27).
 """
 
 from __future__ import annotations

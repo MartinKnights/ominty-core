@@ -230,6 +230,12 @@ Niri and DMS adapters are capability-specific rather than general precedence lay
 
 An action may explicitly resolve through them.
 
+**Phase 1 implementation (decision 2026-09-27):** adapter resolution
+implements **platform → common** (`cli/omivoidlib/adapters.py`). The
+**machine override layer is explicitly deferred**: `config/machines/` and
+`adapters/machine/` remain reserved but unimplemented. Tracked in
+`void-portability-review.md` §5.2 item 1.
+
 ---
 
 # 8. Common First
@@ -486,6 +492,11 @@ A machine profile may define:
 * GPU-specific options.
 
 Machine-specific behaviour should not contaminate common platform code.
+
+**Phase 1 (decision 2026-09-27):** the machine layer is **explicitly deferred** —
+both `config/machines/` and `adapters/machine/` exist in the resolution model
+(§7) but are not implemented. No Phase 1 action needs a machine override;
+introduce it when the first hardware-specific action appears.
 
 ---
 
