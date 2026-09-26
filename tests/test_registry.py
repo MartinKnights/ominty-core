@@ -62,6 +62,7 @@ def test_valid_toml_loads(tmp_path):
     assert a.confirmation == "never"  # default
     assert a.contexts == ["global"]  # default
     assert a.platforms == ["common"]  # default
+    assert a.key_owner == "omivoid"  # default
 
 
 def test_malformed_toml_raises(tmp_path):
@@ -206,6 +207,90 @@ def test_primary_key_must_be_in_keys(tmp_path):
     )
     issues = validate_registry(registry)
     assert any(i.code == "PRIMARY_KEY_NOT_IN_KEYS" and i.level == "WARNING" for i in issues)
+
+
+# ── Binding ownership (docs/03 §11) ───────────────────────────────────────
+
+def test_key_owner_parsed_and_serialised(tmp_path):
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nkeys = ["Super+X"]\nkey_owner = "dms"\n'),
+    )
+    a = registry.actions["app.a.open"]
+    assert a.key_owner == "dms"
+    assert a.to_dict()["key_owner"] == "dms"
+
+
+def test_plugin_key_owner_allowed(tmp_path):
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nkey_owner = "plugin:omivoidActions"\n'),
+    )
+    issues = validate_registry(registry)
+    assert not any(i.code == "UNKNOWN_KEY_OWNER" for i in issues)
+
+
+def test_unknown_key_owner_warns(tmp_path):
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nkey_owner = "kde"\n'),
+    )
+    issues = validate_registry(registry)
+    assert any(i.code == "UNKNOWN_KEY_OWNER" and i.level == "WARNING" for i in issues)
+
+
+def test_key_owner_overridable(tmp_path):
+    core = tmp_path / "core"
+    core.mkdir()
+    write_toml(core, "apps.toml", VALID_ACTION)
+    overrides = tmp_path / "overrides"
+    overrides.mkdir()
+    write_toml(overrides, "o.toml", 'registry_version = 1\n[override."app.browser.open"]\nkey_owner = "niri"\n')
+    registry = load_registry(core_dir=core, user_actions_dir=tmp_path / "no-user", overrides_dir=overrides)
+    assert registry.actions["app.browser.open"].key_owner == "niri"
+
+
+# ── Implementation shape (docs/03 §21) ────────────────────────────────────
+
+def test_command_requires_command_adapter(tmp_path):
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nadapter = "app.launch"\ncommand = ["firefox"]\n'),
+    )
+    issues = validate_registry(registry)
+    assert any(i.code == "INVALID_COMMAND_SHAPE" and i.level == "ERROR" for i in issues)
+
+
+def test_arguments_and_command_mutually_exclusive(tmp_path):
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nadapter = "command"\ncommand = ["true"]\narguments = { role = "browser" }\n'),
+    )
+    issues = validate_registry(registry)
+    assert any(i.code == "ARGUMENTS_WITH_COMMAND" and i.level == "ERROR" for i in issues)
+
+
+def test_arguments_command_requires_shell_explorer(tmp_path):
+    # help.keys.open is the documented case (ADR-006 §12); any other adapter
+    # using arguments.command is flagged.
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."help.keys.open"]\nname = "H"\ndescription = "d"\ncategory = "Help"\nrisk = "routine"\nadapter = "command"\narguments = { command = ["dms", "toggle"] }\n'),
+    )
+    issues = validate_registry(registry)
+    assert any(i.code == "UNDOCUMENTED_ARGUMENT_COMMAND" and i.level == "WARNING" for i in issues)
+
+
+def test_shell_explorer_arguments_command_clean(tmp_path):
+    registry = load(
+        tmp_path,
+        ("a.toml", 'registry_version = 1\n[action."help.keys.open"]\nname = "H"\ndescription = "d"\ncategory = "Help"\nrisk = "routine"\nadapter = "shell.explorer"\narguments = { command = ["dms", "ipc", "call", "spotlight", "openQuery", "!!"] }\n'),
+    )
+    issues = validate_registry(registry)
+    assert not any(
+        i.code in ("UNDOCUMENTED_ARGUMENT_COMMAND", "INVALID_COMMAND_SHAPE", "ARGUMENTS_WITH_COMMAND")
+        for i in issues
+    )
 
 
 # ── Overrides / merging ───────────────────────────────────────────────────

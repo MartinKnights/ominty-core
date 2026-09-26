@@ -214,6 +214,12 @@ keys = []
 
 adapter = ""
 
+arguments = ""
+
+command = []
+
+key_owner = "omivoid"
+
 cli = []
 
 risk = "routine"
@@ -240,6 +246,10 @@ scope = ""
 priority = 50
 icon = ""
 ```
+
+`key_owner` records which surface **owns the action's binding(s)** (docs/03
+§11); it defaults to `omivoid`. Conventional values are `omivoid`, `niri`,
+`dms`, `gks`, `user`, or `plugin:<id>` for DMS plugin owners.
 
 Do not implement optional fields merely because they exist unless Phase 1 requires them.
 
@@ -346,6 +356,27 @@ primary_key = "Super+Enter"
 ```
 
 identifies the binding presented most prominently to the user.
+
+## Binding Ownership
+
+Every binding has an owner: the surface that owns or claims the key(s). This
+is recorded per action with `key_owner` (default `omivoid`).
+
+Conventional owners:
+
+```text
+omivoid          → the key is an Omivoid registry binding (generated)
+niri             → the compositor owns it (native binding)
+dms              → the shell claims it (e.g. DMS's own shortcuts)
+gks              → the GKS plugin owns it (DMS keyboard help)
+user             → user configuration owns it
+plugin:<id>      → a specific DMS plugin owns it
+```
+
+The default `omivoid` means the key is generated from the registry. Actions
+whose bindings are owned elsewhere (e.g. DMS-claimed keys) use the matching
+`key_owner`; collision handling then lives in the data instead of the
+generator.
 
 ---
 
@@ -582,6 +613,30 @@ adapter = "network.wifi.toggle"
 
 Adapters own implementation.
 
+## Implementation Shape
+
+An action has exactly one implementation form:
+
+| Form | When | Where parameters go |
+| ---- | ---- | ------------------- |
+| `adapter = "command"` | raw argv is acceptable (typically user actions) | top-level `command = [...]` — the argv Omivoid executes, no shell |
+| any other `adapter` | all other cases | `arguments = { ... }` — adapter-defined parameters |
+
+State rule:
+
+1. The top-level `command` list is **exclusively** the `command` adapter's argv.
+   A `command` without `adapter = "command"` is invalid.
+2. `arguments` and `command` are **mutually exclusive**: an action must not set
+   both. The `command` adapter ignores `arguments`.
+3. `arguments.command` is **not** Omivoid-executed argv. It is adapter-specific
+   payload only where an adapter documents it — currently `shell.explorer`
+   (ADR-006 §12), which receives the argv it spawns to open its panel.
+4. Adapter parameters always belong under `arguments` except for the
+   `command` adapter's top-level `command`.
+
+The validator enforces all four rules (`INVALID_COMMAND_SHAPE`,
+`ARGUMENTS_WITH_COMMAND`, `UNDOCUMENTED_ARGUMENT_COMMAND`).
+
 ---
 
 # 22. Adapter Resolution
@@ -773,6 +828,10 @@ local/session
 ```
 
 Later definitions override earlier definitions.
+
+Any schema field, including `key_owner`, bindings and implementation shape
+(adapter/arguments/command), may be overridden; changing an action's
+implementation in an override is permitted but should be rare.
 
 Canonical action identity remains unchanged.
 

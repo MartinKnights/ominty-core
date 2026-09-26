@@ -47,6 +47,11 @@ VALID_CONTEXTS = {
 
 VALID_PLATFORMS = {"common", "debian", "void"}
 
+# Conventional key owners (docs/03 §11): the surface that owns an action's
+# keybinding(s). DMS/Niri-claimed bindings are handled there rather than being
+# emitted by the generator. `plugin:<id>` is used for DMS plugin owners.
+CONVENTIONAL_KEY_OWNERS = {"omivoid", "niri", "dms", "gks", "user"}
+
 # Known Phase 1 adapters (docs/03 §21–22). Unknown adapter names warn
 # during validation; known-but-unimplemented adapters report unavailable
 # at execution time (docs/04 §17 — do not fake availability).
@@ -112,6 +117,7 @@ class Action:
     adapter: str | None = None
     arguments: dict[str, Any] = field(default_factory=dict)
     command: list[str] | None = None
+    key_owner: str = "omivoid"
     cli: list[str] = field(default_factory=list)
     contexts: list[str] = field(default_factory=lambda: ["global"])
     platforms: list[str] = field(default_factory=lambda: ["common"])
@@ -142,6 +148,7 @@ class Action:
             "adapter": self.adapter,
             "arguments": dict(self.arguments),
             "command": list(self.command) if self.command else None,
+            "key_owner": self.key_owner,
             "cli": list(self.cli),
             "contexts": list(self.contexts),
             "platforms": list(self.platforms),
@@ -232,6 +239,7 @@ def _parse_action(id_: str, data: dict[str, Any], source: str) -> Action:
         command=(
             [str(c) for c in data["command"]] if data.get("command") is not None else None
         ),
+        key_owner=str(data.get("key_owner", "omivoid")),
         cli=[str(c) for c in data.get("cli", [])],
         contexts=[str(c) for c in data.get("contexts", ["global"])],
         platforms=[str(p) for p in data.get("platforms", ["common"])],
@@ -351,6 +359,8 @@ def _apply_override(action: Action, odata: dict[str, Any], source: str) -> None:
         action.arguments = dict(odata["arguments"])
     if "command" in odata:
         action.command = [str(c) for c in odata["command"]]
+    if "key_owner" in odata:
+        action.key_owner = str(odata["key_owner"])
     if "cli" in odata:
         action.cli = [str(c) for c in odata["cli"]]
     if "contexts" in odata:
@@ -535,6 +545,56 @@ def validate_registry(registry: Registry) -> list[Issue]:
                     aid,
                 )
             )
+
+        # Binding ownership (docs/03 §11) — which surface owns this action's
+        # binding(s). Unknown conventional values warn; plugin owners use
+        # `plugin:<id>` and are always allowed.
+        if not action.key_owner.startswith("plugin:") and action.key_owner not in CONVENTIONAL_KEY_OWNERS:
+            issues.append(
+                Issue(
+                    "WARNING",
+                    "UNKNOWN_KEY_OWNER",
+                    f"key_owner '{action.key_owner}' is not a conventional key "
+                    f"owner (expected one of {sorted(CONVENTIONAL_KEY_OWNERS)} "
+                    f"or 'plugin:<id>')",
+                    aid,
+                )
+            )
+
+        # Implementation shape (docs/03 §21). The top-level `command` list is
+        # exclusively the `command` adapter's argv (what Omivoid executes).
+        # Everything else passes adapter-specific parameters via `arguments`;
+        # `arguments.command` is only defined where an adapter declares it
+        # (currently only `shell.explorer`, ADR-006 §12).
+        if action.command is not None and action.adapter != "command":
+            issues.append(
+                Issue(
+                    "ERROR",
+                    "INVALID_COMMAND_SHAPE",
+                    "top-level command is only valid with adapter='command'",
+                    aid,
+                )
+            )
+        if action.command is not None and action.arguments:
+            issues.append(
+                Issue(
+                    "ERROR",
+                    "ARGUMENTS_WITH_COMMAND",
+                    "arguments and command are mutually exclusive",
+                    aid,
+                )
+            )
+        if "command" in action.arguments:
+            if action.adapter != "shell.explorer":
+                issues.append(
+                    Issue(
+                        "WARNING",
+                        "UNDOCUMENTED_ARGUMENT_COMMAND",
+                        "arguments.command is only defined for the "
+                        "'shell.explorer' adapter",
+                        aid,
+                    )
+                )
 
         # Bindings.
         for key in action.keys:
