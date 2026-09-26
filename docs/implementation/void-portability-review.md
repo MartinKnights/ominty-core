@@ -37,8 +37,9 @@ These carry to Void unchanged or with re-validation only.
 **Evidence:**
 
 ```text
-$ grep -rnE "apt|dpkg|systemctl" cli/omivoidlib adapters   → none (in portable code)
-$ grep -rhoE "XDG_[A-Z_]+" cli/omivoidlib adapters         → XDG_CONFIG_HOME, XDG_STATE_HOME
+$ grep -rnE "apt|dpkg|systemctl" cli/omivoidlib adapters/common  → none (portable)
+$ grep -rlE "apt|systemctl" adapters/debian                     → service_restart.py, package_install.py (platform-scoped, by design)
+$ grep -rhoE "XDG_[A-Z_]+" cli/omivoidlib adapters              → XDG_CONFIG_HOME, XDG_STATE_HOME
 $ grep -rhoE '"/[a-zA-Z0-9/_.-]+"' cli/omivoidlib adapters
     "/etc/os-release"                 # standard on all Linux
     "/usr/share/quickshell/dms"       # DMS shell dir, overridable via DMS_SHELL_DIR
@@ -54,13 +55,15 @@ distro-specific package queries (`runner.py:_requirement_available`).
 | Component | Path | Nature |
 |---|---|---|
 | Platform detection | `cli/omivoidlib/platform.py` | Maps `ID=linuxmint`/`ID=debian` → `"debian"`, `ID=void` → `"void"` |
-| Debian adapters | `adapters/debian/service_restart.py` | systemd service restart (`service.restart`); `adapters/debian/` otherwise empty |
-| Packaging (planned) | — | `apt` vs `xbps-install` (docs/05 §10–11); not implemented |
+| Debian adapters | `adapters/debian/` | `service_restart.py` (systemd), `package_install.py` (apt) |
+| Packaging | `adapters/debian/`, `adapters/void/` | `package.install` adapter: apt implemented (Debian), `xbps-install` reference (Void) — docs/05 §10–11, §5.2 |
 | Service management | `adapters/debian/`, `adapters/void/` | `service.restart` adapter: systemd implemented (Debian); runit stub (Void) — see §5.2 |
 
-**Key finding:** Phase 1 implemented **no** Debian-specific adapter. The
-`adapters/debian/` directory is empty, so there is no Debian code to port —
-only a platform *label* and documented future boundaries.
+**Key finding:** Phase 1 implements Debian-specific adapters **only at the
+platform boundary**: service control (`service.restart`) and package install
+(`package.install`) — exactly the two categories docs/05 §3 names as
+platform-specific. Everything else is common/Niri/DMS, so the Void port is: new
+`adapters/void/` implementations + packaging, not an interaction-model rewrite.
 
 Application role defaults (`config/apps.toml`: alacritty, librewolf, nemo,
 nvim, obsidian, thunderbird) are Debian/LMDE-flavoured but are **user
@@ -93,14 +96,17 @@ Void port is primarily a **packaging** exercise, not a rewrite.
    `config/platforms/` are empty. Adapter resolution implements
    platform → common only (`adapters.py`); the documented
    machine → platform → common order (docs/05 §7) is not yet exercised.
-2. **Package actions absent; service boundary now exists.** No `package.*`
-   action exists, so the apt/xbps boundary is untested. Service control is
-   abstracted behind the platform-resolved `service.restart` adapter:
-   `adapters/debian/service_restart.py` (systemd, implemented) and
-   `adapters/void/service_restart.py` (runit: system-scope `sv restart`
-   best-effort; **user-scope returns `PLATFORM_UNSUPPORTED`** — Void session
-   processes are Void-phase work).
-3. **`adapters/void/` does not exist.** Future work per docs/05 §5.
+2. **No `package.*` action yet; both platform boundaries now exist.**
+   `service.restart` and `package.install` adapters define the systemd/runit
+   and apt/xbps boundaries: `adapters/debian/{service_restart,package_install}.py`
+   (implemented, systemd + apt), `adapters/void/{service_restart,package_install}.py`
+   (reference, runit + `xbps-install`; **user-scope service restart returns
+   `PLATFORM_UNSUPPORTED`**, and both package adapters require root →
+   `PERMISSION_DENIED` otherwise). No Phase 1 action references
+   `package.install` — that is docs/05 §10's "future action" boundary.
+3. **`adapters/void/` is a reference, not yet exercised.** Service + package
+   stubs exist per docs/05 §5/§20; they are unverified on a Void host (Void-phase
+   work).
 4. **DMS version compatibility on Void.** DMS is packaged for Debian here;
    its availability/version on Void needs validation before relying on the
    `dms.ipc`/`dms.theme` surface (incl. `dms matugen`).
@@ -123,8 +129,9 @@ Void port is primarily a **packaging** exercise, not a rewrite.
 
 The portability posture is **strong**: the portable core is clean (no
 distro-specific calls, XDG paths, PATH-based dependency checks), and the
-Debian-specific surface is currently limited to a platform label and an
-empty adapter directory. The expected Void work is packaging plus two new
-platform adapters (package/service) and re-validation of DMS/Niri paths —
+Debian-specific surface is limited to two platform adapters (service +
+package). The expected Void work is packaging plus the two `adapters/void/`
+reference implementations being exercised and validated on a Void host, and
+re-validation of DMS/Niri paths —
 not architectural change. The open questions above should be resolved
 before the Void phase begins.

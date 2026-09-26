@@ -296,6 +296,16 @@ xbps-install
 
 directly.
 
+**Implementation status:** the `package.install` adapter boundary exists —
+`adapters/debian/package_install.py` (`apt-get install -y`) and
+`adapters/void/package_install.py` (`xbps-install -y`), resolved by platform
+like `service.restart`. Both require root and return `PERMISSION_DENIED` for
+unprivileged runs; elevation policy is the caller's concern (the action layer),
+not the adapter's. No Phase 1 action references `package.install` yet — the
+adapter is the defined boundary that a future `package.*` action resolves
+through. Adapter modules follow the convention name
+`adapters/<platform>/package_install.py`.
+
 ---
 
 # 11. Package Names

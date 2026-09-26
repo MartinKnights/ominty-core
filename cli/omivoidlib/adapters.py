@@ -42,6 +42,7 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
 # location): the file is `adapters/<platform>/<name_underscored>.py`.
 CONVENTION_ADAPTERS = {
     "service.restart",
+    "package.install",
 }
 
 KNOWN_ADAPTERS = set(ADAPTER_LOCATIONS) | CONVENTION_ADAPTERS
