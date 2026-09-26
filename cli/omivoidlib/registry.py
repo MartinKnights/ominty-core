@@ -58,6 +58,8 @@ KNOWN_ADAPTERS = {
     "shell.palette",
     "dms.ipc",
     "dms.theme",
+    # Platform-resolved service control (systemd/runit) — docs/05.
+    "service.restart",
     "ai.pi.open",
     "ai.ask",
     "ai.clipboard.explain",

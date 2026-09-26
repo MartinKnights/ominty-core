@@ -38,7 +38,13 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
     "ai.clipboard.summarise": ("common", "ai_clipboard_summarise.py"),
 }
 
-KNOWN_ADAPTERS = set(ADAPTER_LOCATIONS)
+# Adapters resolved by the platform → common convention below (no fixed
+# location): the file is `adapters/<platform>/<name_underscored>.py`.
+CONVENTION_ADAPTERS = {
+    "service.restart",
+}
+
+KNOWN_ADAPTERS = set(ADAPTER_LOCATIONS) | CONVENTION_ADAPTERS
 
 
 def resolve_adapter_path(adapter_name: str) -> Path | None:

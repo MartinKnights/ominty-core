@@ -18,15 +18,17 @@ keywords = ["audio", "sound", "pipewire", "wireplumber", "restart"]
 
 keys = []
 
-adapter = "command"
-command = ["systemctl", "--user", "restart", "wireplumber", "pipewire", "pipewire-pulse"]
+# The service manager is abstracted behind the platform-resolved
+# `service.restart` adapter (systemd on LMDE, runit on Void); the action does
+# not name `systemctl` (AGENTS.md §21, docs/05).
+adapter = "service.restart"
+arguments = { scope = "user", units = ["wireplumber", "pipewire", "pipewire-pulse"] }
 
 risk = "state-change"
 confirmation = "never"
 
 contexts = ["global"]
 platforms = ["common"]
-requires = ["systemctl"]
 
 discoverable = true
 palette = true

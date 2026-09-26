@@ -54,9 +54,9 @@ distro-specific package queries (`runner.py:_requirement_available`).
 | Component | Path | Nature |
 |---|---|---|
 | Platform detection | `cli/omivoidlib/platform.py` | Maps `ID=linuxmint`/`ID=debian` → `"debian"`, `ID=void` → `"void"` |
-| Debian adapters | `adapters/debian/` | **Empty** — no Debian-specific adapter implemented in Phase 1 |
+| Debian adapters | `adapters/debian/service_restart.py` | systemd service restart (`service.restart`); `adapters/debian/` otherwise empty |
 | Packaging (planned) | — | `apt` vs `xbps-install` (docs/05 §10–11); not implemented |
-| Service management (planned) | — | systemd vs runit (docs/05 §12–13); not implemented |
+| Service management | `adapters/debian/`, `adapters/void/` | `service.restart` adapter: systemd implemented (Debian); runit stub (Void) — see §5.2 |
 
 **Key finding:** Phase 1 implemented **no** Debian-specific adapter. The
 `adapters/debian/` directory is empty, so there is no Debian code to port —
@@ -93,8 +93,13 @@ Void port is primarily a **packaging** exercise, not a rewrite.
    `config/platforms/` are empty. Adapter resolution implements
    platform → common only (`adapters.py`); the documented
    machine → platform → common order (docs/05 §7) is not yet exercised.
-2. **Package/service actions absent.** No `package.*` or `service.*` action
-   exists yet, so the apt/xbps and systemd/runit boundaries are untested.
+2. **Package actions absent; service boundary now exists.** No `package.*`
+   action exists, so the apt/xbps boundary is untested. Service control is
+   abstracted behind the platform-resolved `service.restart` adapter:
+   `adapters/debian/service_restart.py` (systemd, implemented) and
+   `adapters/void/service_restart.py` (runit: system-scope `sv restart`
+   best-effort; **user-scope returns `PLATFORM_UNSUPPORTED`** — Void session
+   processes are Void-phase work).
 3. **`adapters/void/` does not exist.** Future work per docs/05 §5.
 4. **DMS version compatibility on Void.** DMS is packaged for Debian here;
    its availability/version on Void needs validation before relying on the

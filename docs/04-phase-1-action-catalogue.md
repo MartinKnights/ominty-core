@@ -325,9 +325,9 @@ Prefer integration with the selected shell/session mechanism.
 **Risk:** `state-change`
 **Context:** `global`
 
-Restarts the PipeWire audio stack
-(`systemctl --user restart wireplumber pipewire pipewire-pulse`). Surfaced as a
-DMS power-menu button (`customPowerButtons`); carries no keybinding.
+Restarts the PipeWire audio stack via the platform-resolved `service.restart`
+adapter (systemd `systemctl --user restart` on LMDE; runit on Void). Surfaced as
+a DMS power-menu button (`customPowerButtons`); carries no keybinding.
 
 ---
 

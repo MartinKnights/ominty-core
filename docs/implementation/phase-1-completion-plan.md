@@ -34,8 +34,8 @@ declared complete.
 
 | # | Task | Owner | Size | Deliverable | Status |
 |---|---|---|---|---|---|
-| 8 | **Live keybinding authority** — replace the static `DMS_CLAIMED_KEYS` set in `generator.py` with a parse of the live `~/.config/niri/dms/binds.kdl` (fall back to the static set) | Agent | M | generator change + tests | TODO |
-| 9 | **Service adapter** — abstract `systemctl --user` ↔ runit (`sv`); route `system.audio.restart` and the restart buttons through it | Agent | M | `adapters/<platform>/service.py` + action updates | TODO |
+| 8 | **Live keybinding authority** — replace the static `DMS_CLAIMED_KEYS` set in `generator.py` with a parse of the live `~/.config/niri/dms/binds.kdl` (fall back to the static set) | Agent | M | generator change + tests | ✅ DONE (`456d81d`) |
+| 9 | **Service adapter** — abstract `systemctl --user` ↔ runit (`sv`); route `system.audio.restart` through it | Agent | M | `adapters/{debian,void}/service_restart.py` + action update | ✅ DONE |
 | 10 | **Package adapter** — `apt` ↔ `xbps-install` boundary (docs/05 §10–11) | Agent | M | adapter + spec note | TODO |
 | 11 | **Schema: ownership/claim + adapter/command shape** — add an owner/claim field; state the `arguments.command` vs top-level `command` rule | Agent | S | `docs/03` + `registry.py` | TODO |
 | 12 | **Machine layer** — implement platform→common resolution or mark the machine layer explicitly deferred | Agent | S | `docs/05` + decision | TODO |
