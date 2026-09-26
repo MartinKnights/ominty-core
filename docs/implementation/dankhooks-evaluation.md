@@ -1,8 +1,8 @@
 # dankHooks Evaluation (ADR-006 §27–28)
 
-**Date:** 2026-09-24
+**Date:** 2026-09-24 (activated 2026-09-27)
 **Stage:** Phase 1 close-out
-**Status:** Complete
+**Status:** Installed and wired
 **Sources:** `~/.config/DankMaterialShell/plugins/.repos/.../DankHooks/` (v1.0.9),
 `docs/implementation/dms-plugin-inventory.md` §4.2
 
@@ -65,14 +65,15 @@ current need.
 
 ## 4. Recommendation
 
-**ADOPT WITH CONFIGURATION — path chosen, not activated.**
+**ADOPTED AND ACTIVATED (2026-09-27).**
 
 - Record `dankHooks` as the designated event bridge (satisfies ADR-006 §27,
   avoids an Omivoid daemon).
-- **Do not install or wire it yet**: there is no concrete Phase 1 event→action
-  need, and AGENTS.md §35 favours not adding a daemon speculatively.
-- When a real need appears (e.g. a future `theme.*`/`ai.*` reaction, or
-  Omivoid-owned regeneration), install and configure it as below.
+- The original evaluation recommended **not activating** it yet: there was no
+  mandatory Phase 1 event→action need, and AGENTS.md §35 favours not adding a
+  daemon speculatively. On 2026-09-27 the project decided the Omivoid-owned
+  regeneration reaction **is** a real need and activated the bridge (§6). The
+  recipe below documents the intended wiring, now carried out.
 
 ### Activation recipe (for when it is needed)
 
@@ -106,7 +107,38 @@ current need.
 
 ## 5. Outcome
 
-Evaluation **complete**: `dankHooks` is the correct event-integration mechanism
-(ADOPT WITH CONFIGURATION) and requires no Phase 1 work beyond recording the
-decision and the activation recipe. `dms-plugin-inventory.md` §4.2 updated to
-match.
+Evaluation **complete**; the decision was **activated on 2026-09-27** (§6). The
+`onWallpaperChanged` → `theme.palette.regenerate` bridge is wired and verified up
+to the action boundary; the remaining step is a real-event desktop test.
+
+## 6. Activation (2026-09-27)
+
+Wired the event→action bridge for wallpaper changes.
+
+| Piece | Detail |
+|---|---|
+| Plugin | `dankHooks` v1.0.9 — `dms plugins install dankHooks` (`plugins.lock.json` updated) |
+| Dispatcher | `cli/omivoid-hook` (repo; symlinked to `~/.local/bin/omivoid-hook`): `onWallpaperChanged` → `omivoid action run theme.palette.regenerate` |
+| Hook config | `plugin_settings.json` → `dankHooks.enabled = true`, `dankHooks.wallpaperPath = ~/.local/bin/omivoid-hook` (backup saved: `plugin_settings.json.bak-omivoid-hook-*`) |
+| Audit trail | mapped hooks append `ISO8601 onWallpaperChanged <path>` to `$XDG_STATE_HOME/omivoid/hook.log` (`~/.local/state/omivoid/hook.log`) |
+
+Rationale for the specific mapping: `theme.palette.regenerate` re-runs the
+matugen pipeline from the current wallpaper (docs/08 §27). DMS already
+regenerates on a wallpaper change, so the hook-triggered run is usually a
+no-change no-op ("No color changes detected" → success); the value is the
+working event bridge + audit trail for future `theme.*`/`ai.*` reactions,
+not a second generation pass.
+
+**Verified 2026-09-27:**
+
+- Dispatcher chain: `omivoid-hook onWallpaperChanged <current-wallpaper>` →
+  `OK: theme.palette.regenerate` (rc 0) + `hook.log` line.
+- `dms restart` reloads the plugin cleanly; `dms plugins list` shows `Dank Hooks`.
+
+**Manual desktop test (open):** trigger a real wallpaper change (e.g. next in the
+wallpaper carousel) and confirm a `hook.log` line appears and the palette
+regenerates. Restore the wallpaper afterwards. (No `dms ipc` wallpaper setter
+exists, so a UI trigger is required.)
+
+Caveats from §4 still apply: hook scripts run as the user; keep mappings
+low-frequency.

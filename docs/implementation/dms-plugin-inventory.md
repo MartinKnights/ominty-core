@@ -175,26 +175,25 @@ Omivoid interaction explorer.
 | Capabilities | `watch-events` |
 | Compositors | any |
 | Purpose | Trigger scripts based on various system events |
-| Status | reviewed |
+| Status | **installed + wired** (2026-09-27) |
 
-**Omivoid role:** **Event bridge candidate** (ADR-006 §27).
-
-Potential model:
+**Omivoid role:** **Event bridge** (ADR-006 §27) — `onWallpaperChanged` →
+`theme.palette.regenerate`.
 
 ```text
 DMS event (wallpaper changed, etc.)
    ↓
-dankHooks
+dankHooks (pluginData.wallpaperPath)
+   ↓
+cli/omivoid-hook  (→ audit line in $XDG_STATE_HOME/omivoid/hook.log)
    ↓
 omivoid action run theme.palette.regenerate
 ```
 
-This may satisfy Phase 1 event requirements without introducing an Omivoid
-daemon (ADR-006 §28).
+Satisfies the Phase 1 event requirement without an Omivoid daemon (ADR-006 §28).
 
-**Classification:** EVALUATED (2026-09-24) → **ADOPT WITH CONFIGURATION** (path
-chosen, not activated — no Phase 1 event→action need; see
-`dankhooks-evaluation.md`).
+**Classification:** EVALUATED (2026-09-24) → **ADOPTED AND ACTIVATED** (2026-09-27);
+see `dankhooks-evaluation.md` §4/§6.
 
 ## 4.3 dms-command-runner — Command Execution
 
@@ -291,7 +290,7 @@ Strong local-first fit.
 | `Super+Space` universal palette | DankLauncherV2 spotlight | — | **Omivoid Actions launcher provider (wired: always-active / merge)** | Custom launcher (rejected) |
 | `Super+A` AI namespace | — | aiAssistant (reference only) | Future Omivoid AI provider | Future |
 | `Super+P` project namespace | — | taskwarrior/todoLauncher (defer) | Future Omivoid project provider | Future |
-| Event integration | — | dankHooks (evaluate) | Future | Omivoid daemon (deferred) |
+| Event integration | — | dankHooks (installed) | Active | Omivoid daemon (deferred) |
 | Wallpaper/theme | WallpaperBackground, DankDash | wallpaperCarousel (installed) | Future theme provider | Custom theme engine (rejected) |
 | Screenshots | `dms screenshot` | quickCapture (installed) | — | — |
 | Audio/brightness/media | `dms ipc call` | — | — | — |

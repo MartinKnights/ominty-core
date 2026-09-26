@@ -20,7 +20,7 @@ Size: S ≈ <1 h, M ≈ half day, L ≈ multi-session.
 | 1 | **Desktop validation** — Super+K, Super+Space, Super+Shift+S, Super+A, logout/login, reboot | **User** | S | `docs/implementation/desktop-validation.md` (filled checklist) | TODO |
 | 2 | **Exit review sign-off** — accept `phase-1-exit-review.md` | **User** | S | status Draft → Accepted | TODO |
 | 3 | **`app.files.open` binding decision** — recommend **DEFER** (no key; reachable via palette/CLI/AI) | Agent | S | `niri-binding-audit.md` item #4 → DEFER | TODO |
-| 4 | **`dankHooks` evaluation** — event bridge for `theme.palette.regenerate` on wallpaper change | Agent (+User to install) | M | `docs/implementation/dankhooks-evaluation.md` | TODO |
+| 4 | **`dankHooks` evaluation** — event bridge for `theme.palette.regenerate` on wallpaper change | Agent (+User to install) | M | `docs/implementation/dankhooks-evaluation.md` | ✅ DONE (activated 2026-09-27) |
 | 5 | **docs/08 (theme) + docs/12 (config layout) reconciliation** | Agent | S | both docs reflect the implementation | TODO |
 | 6 | **Link + commit** the exit review from `PROGRESS.md` / `HANDOVER.md` | Agent | S | commit | TODO |
 | 7 | **Repo-boundary decision** — keep `omivoid-lmde/` inside the `OmiVoid` repo, or split | **User** | S | decision recorded | TODO |

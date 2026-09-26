@@ -535,6 +535,10 @@ This action may be deferred if the provider does not expose a clean mechanism.
 
 Regenerate the theme palette from the current wallpaper.
 
+Also wired as the reaction to the `dankHooks` `onWallpaperChanged` event via
+`cli/omivoid-hook` (docs/implementation/dankhooks-evaluation.md §6) — a working
+event→action bridge without an Omivoid daemon.
+
 ---
 
 ## `theme.mode.toggle`
