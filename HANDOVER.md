@@ -39,7 +39,9 @@ Current state:
 
 ## Outstanding (Phase 1 close-out)
 
-Tracking: `docs/implementation/phase-1-completion-plan.md`.
+Tracking: `docs/implementation/phase-1-completion-plan.md`. For the owner's
+view of everything needing a decision/signature, see
+`docs/implementation/user-sign-offs.md`.
 
 1. **Desktop validation** (DoD §25/§26): Super+K, Super+Space, Super+Shift+S,
    Super+A, logout/login and reboot — perform and record.

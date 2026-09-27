@@ -28,6 +28,10 @@ Size: S ≈ <1 h, M ≈ half day, L ≈ multi-session.
 **Exit criterion:** items 1–2 done + Tier-1 agent items committed → Phase 1
 declared complete.
 
+> **User sign-offs:** everything needing your decision or signature — the three
+> Tier-1 items below plus the #13 go/defer choice — is explained in
+> `docs/implementation/user-sign-offs.md`.
+
 ---
 
 ## Tier 2 — Pre-Void hardening (exit-review findings)
