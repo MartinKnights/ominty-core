@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-24
 **Stage:** Phase 1 close-out
-**Status:** Draft — for user review
+**Status:** Accepted — by project owner, 2026-09-27
 **Reviewed against:** `docs/13-phase-1-definition-of-done.md` §33
 **Implementation head:** `f78340e` (44 actions, 173 tests)
 

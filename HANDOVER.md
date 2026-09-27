@@ -43,19 +43,20 @@ Tracking: `docs/implementation/phase-1-completion-plan.md`. For the owner's
 view of everything needing a decision/signature, see
 `docs/implementation/user-sign-offs.md`.
 
-1. **Desktop validation** (DoD §25/§26): Super+K, Super+Space, Super+Shift+S,
-   Super+A, logout/login and reboot — perform and record.
-2. **Sign off** the Phase 1 exit review (`phase-1-exit-review.md`).
-3. **Repo boundary decision** — keep `omivoid-lmde/` inside the `OmiVoid` repo
-   or split it.
-4. **Tier 2 (pre-Void):** live keybinding authority, service/package adapters,
-   schema + machine-layer cleanup.
+**Close-out status (2026-09-27):**
+1. ✅ **Desktop validation** — PASS, recorded (`desktop-validation.md`, DoD §25/§26).
+2. ✅ **Exit review** — Accepted by the owner (`phase-1-exit-review.md`).
+3. ✅ **Repo boundary** — **split**: `omivoid-lmde/` is its own repository.
+4. Remaining: **#13** DMS "surface" contract (go/defer; default defer), **#3**
+   `app.files.open` → DEFER, **#5** docs/08 + docs/12 reconciliation, and the
+   **#4** dankHooks live wallpaper-change check.
 
 ## Key facts to carry
 
-- **Project path:** `~/Projects/OmiVoid/omivoid-lmde/`. The git repo root is
-  `~/Projects/OmiVoid`; `omivoid-lmde/` lives inside it (repo-boundary decision
-  still open).
+- **Project path:** `~/Projects/OmiVoid/omivoid-lmde/`, which is now **its own
+  git repository** (split from the umbrella repo 2026-09-27). `PROGRESS.md`
+  lives in the umbrella repo (`~/Projects/OmiVoid/PROGRESS.md`) and tracks the
+  project from outside.
 - **CLI:** `omivoid` — symlinked into `~/.local/bin` → `cli/omivoid`. Python 3.13
   stdlib + pytest only; no third-party runtime deps.
 - **Compositor:** Niri 26.04 (Surface Book 1). **Shell:** DMS (Quickshell).

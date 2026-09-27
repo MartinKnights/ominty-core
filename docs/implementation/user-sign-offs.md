@@ -9,12 +9,26 @@ blockers** — Phase 1 is declared complete only when both are done. Item 7 is a
 Tier 1 decision (does not block declaration, but should be settled before the
 Void phase). Item 13 (appendix) is Tier 2 and opportunistic.
 
-| Item | What you decide/sign | Blocker? | After you sign, I will… |
-|---|---|---|---|
-| **1. Desktop validation** | Perform and record the manual desktop tests | Yes (DoD §25/§26) | Reference the filled checklist from `PROGRESS.md` |
-| **2. Exit review acceptance** | Accept `phase-1-exit-review.md` (Draft → Accepted) | Yes | Flip status, commit |
-| **3. Repo-boundary decision** | Keep one repo, or split `omivoid-lmde/` out | No | Record the decision |
-| **13. DMS "surface" contract** *(appendix)* | Say go / defer | No | Write the design note, or park it |
+| Item                                        | What you decide/sign                               | Blocker?          | After you sign, I will…                           |
+| ------------------------------------------- | -------------------------------------------------- | ----------------- | ------------------------------------------------- |
+| **1. Desktop validation**                   | Perform and record the manual desktop tests        | Yes (DoD §25/§26) | Reference the filled checklist from `PROGRESS.md` |
+| **2. Exit review acceptance**               | Accept `phase-1-exit-review.md` (Draft → Accepted) | Yes               | Flip status, commit                               |
+| **3. Repo-boundary decision**               | Keep one repo, or split `omivoid-lmde/` out        | No                | Record the decision                               |
+| **13. DMS "surface" contract** *(appendix)* | Say go / defer                                     | No                | Write the design note, or park it                 |
+
+---
+
+## Status — resolved 2026-09-27
+
+- **1. Desktop validation** — ✅ **done:** `desktop-validation.md` §A–D all pass,
+  regression checks clear, **Result: PASS** (date 27-09-2026, DoD §25/§26).
+- **2. Exit review acceptance** — ✅ **done:** accepted by the owner,
+  `phase-1-exit-review.md` status → **Accepted** (2026-09-27).
+- **3. Repo boundary** — ✅ **decided: split.** `omivoid-lmde/` is now its own
+  git repository (history-preserving, 2026-09-27); the umbrella repo keeps
+  `PROGRESS.md`. Decisions on #1/#2/#3 also logged in `PROGRESS.md`.
+- **13. DMS "surface" contract** — still open; default recommendation remains
+  **defer to Phase 2**.
 
 ---
 
@@ -38,14 +52,14 @@ docs/implementation/desktop-validation.md
 Fill in **Date / Operator / Implementation head**, then work through the five
 sections, ticking boxes:
 
-| Section | What it tests |
-|---|---|
-| **A** | Automated pre-checks (`omivoid registry validate`, `niri validate`, DMS active, fragment present, `omivoid` on PATH, plugins installed) |
-| **B** | Discovery & keybindings: `Super+K` explorer, `Super+Space` palette, `Super+Shift+S` GKS cheat sheet, `Super+A` AI menu, app launch, wallpaper carousel |
-| **C** | Power-menu buttons (`Super+X`): Restart Audio, Restart Network, Reload Niri, built-in Restart DMS |
-| **D** | Session lifecycle (**DoD §26**): log out, log in, reboot, verify everything still works after each |
-| **E** | Results/failures: any test that failed `Expected`, plus the three regression checks |
-| **F** | Sign-off: overall **PASS / PASS WITH NOTES / FAIL** + your signature |
+| Section | What it tests                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **A**   | Automated pre-checks (`omivoid registry validate`, `niri validate`, DMS active, fragment present, `omivoid` on PATH, plugins installed)                |
+| **B**   | Discovery & keybindings: `Super+K` explorer, `Super+Space` palette, `Super+Shift+S` GKS cheat sheet, `Super+A` AI menu, app launch, wallpaper carousel |
+| **C**   | Power-menu buttons (`Super+X`): Restart Audio, Restart Network, Reload Niri, built-in Restart DMS                                                      |
+| **D**   | Session lifecycle (**DoD §26**): log out, log in, reboot, verify everything still works after each                                                     |
+| **E**   | Results/failures: any test that failed `Expected`, plus the three regression checks                                                                    |
+| **F**   | Sign-off: overall **PASS / PASS WITH NOTES / FAIL** + your signature                                                                                   |
 
 **Estimate:** ~30–45 minutes, including one reboot. Run section **C4** (Restart
 Network) only when briefly losing Wi-Fi is acceptable.

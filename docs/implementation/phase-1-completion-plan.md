@@ -17,20 +17,26 @@ Size: S ≈ <1 h, M ≈ half day, L ≈ multi-session.
 
 | # | Task | Owner | Size | Deliverable | Status |
 |---|---|---|---|---|---|
-| 1 | **Desktop validation** — Super+K, Super+Space, Super+Shift+S, Super+A, logout/login, reboot | **User** | S | `docs/implementation/desktop-validation.md` (filled checklist) | TODO |
-| 2 | **Exit review sign-off** — accept `phase-1-exit-review.md` | **User** | S | status Draft → Accepted | TODO |
+| 1 | **Desktop validation** — Super+K, Super+Space, Super+Shift+S, Super+A, logout/login, reboot | **User** | S | `docs/implementation/desktop-validation.md` (filled checklist) | ✅ DONE (PASS, 27-09-2026) |
+| 2 | **Exit review sign-off** — accept `phase-1-exit-review.md` | **User** | S | status Draft → Accepted | ✅ DONE (Accepted 2026-09-27) |
 | 3 | **`app.files.open` binding decision** — recommend **DEFER** (no key; reachable via palette/CLI/AI) | Agent | S | `niri-binding-audit.md` item #4 → DEFER | TODO |
 | 4 | **`dankHooks` evaluation** — event bridge for `theme.palette.regenerate` on wallpaper change | Agent (+User to install) | M | `docs/implementation/dankhooks-evaluation.md` | ✅ DONE (activated 2026-09-27) |
 | 5 | **docs/08 (theme) + docs/12 (config layout) reconciliation** | Agent | S | both docs reflect the implementation | TODO |
-| 6 | **Link + commit** the exit review from `PROGRESS.md` / `HANDOVER.md` | Agent | S | commit | TODO |
-| 7 | **Repo-boundary decision** — keep `omivoid-lmde/` inside the `OmiVoid` repo, or split | **User** | S | decision recorded | TODO |
+| 6 | **Link + commit** the exit review from `PROGRESS.md` / `HANDOVER.md` | Agent | S | commit | ✅ DONE (`de0a001`-era; Accepted + linked 2026-09-27) |
+| 7 | **Repo-boundary decision** — keep `omivoid-lmde/` inside the `OmiVoid` repo, or split | **User** | S | decision recorded | ✅ DONE (**split**, 2026-09-27) |
 
 **Exit criterion:** items 1–2 done + Tier-1 agent items committed → Phase 1
-declared complete.
+declared complete. **Met 2026-09-27** — items 1 and 2 are done; remaining
+Tier-1 rows are non-blocking housekeeping (#3, #5).
 
 > **User sign-offs:** everything needing your decision or signature — the three
 > Tier-1 items below plus the #13 go/defer choice — is explained in
-> `docs/implementation/user-sign-offs.md`.
+> `docs/implementation/user-sign-offs.md`. All decided 2026-09-27 (see top of
+> that file); status per row.
+
+> **Repo note:** with the 2026-09-27 split, this document (and everything under
+> `omivoid-lmde/`) now lives in its **own git repository**. `../PROGRESS.md`
+> is external — it lives in the umbrella repo `~/Projects/OmiVoid`.
 
 ---
 
@@ -60,6 +66,10 @@ architectural change expected.
 
 ## Immediate next actions
 
-- **Agent can start now:** #3, #4, #5, #6 (Tier 1), then #8–#9.
-- **Needs the user:** #1 (interactive tests), #2 (sign-off), #7 (repo decision).
-- #4 installation of `dankHooks` needs user approval (system package/plugin).
+- **Declared Phase 1 complete** (DoD §38): items 1–2 done 2026-09-27; repo
+  boundary decided (split).
+- **Agent items still open:** #13 (DMS surface contract — user to say go/defer;
+  default defer), #3 (`app.files.open` → DEFER), #5 (docs/08 + docs/12
+  reconciliation).
+- #4 dankHooks manual desktop test (real wallpaper change) remains a live
+  verification item.
