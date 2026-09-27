@@ -1,4 +1,4 @@
-# Handover — Omivoid LMDE (2026-09-27)
+# Handover — Omivoid LMDE (2026-09-28)
 
 > Brief handover for the next agent session. Read this first, then the
 > documents listed below (and `../PROGRESS.md`, the living progress log).
@@ -58,6 +58,9 @@ view of everything needing a decision/signature, see
   remote** (`origin`, `MartinKnights/omivoid-lmde`). `PROGRESS.md`
   lives in the umbrella repo (`~/Projects/OmiVoid/PROGRESS.md`) and tracks the
   project from outside.
+- **Next phase: Void on this device.** The install kit is staged on the ENYO
+  drive (`SB1_backup/void-install/` + `SB1_backup/Projects/OmiVoid-Install`).
+  The device will be wiped — this LMDE system is the last one.
 - **CLI:** `omivoid` — symlinked into `~/.local/bin` → `cli/omivoid`. Python 3.13
   stdlib + pytest only; no third-party runtime deps.
 - **Compositor:** Niri 26.04 (Surface Book 1). **Shell:** DMS (Quickshell).
@@ -68,6 +71,23 @@ view of everything needing a decision/signature, see
   generated — fix the registry or the generator, never the file.
 - **Personal paths:** do not commit `/home/mk` paths; use `$OMIVOID_CLI` /
   `omivoid` on PATH (AGENTS.md §22/§33).
+
+## Recently done (2026-09-28)
+
+- **Void pivot: local install on this device.** Void will replace LMDE 7 on
+  the Surface Book 1 itself (not a remote machine over SSH). The
+  `OmiVoid-install` repo was rewritten for the local workflow
+  (`370133d`): new `docs/void-hardware.md` (verified hardware facts + swap
+  recommendation) and `docs/wifi-install.md` (wpa_supplicant + dhcpcd from
+  the base glibc image), refreshed `package-list.md` (DMS Void repo at
+  `void.danklinux.com`, niri in void-packages, iptsd from source), local
+  install sequence in `void-install-plan.md`, `ssh-setup.md` demoted to
+  optional. Submodule bumped to `2b29965` (`7b39277`).
+- **SB1_backup on the ENYO drive** (`/media/mk/ENYO/SB1_backup/`): configs,
+  local tools, 9 AI agent zips, SSH keys, dotfiles, and Ollama models (25G,
+  user-run sudo copy). Void install kit staged in `void-install/`: Wi-Fi
+  firmware `pcie8897_uapsta.bin`, iptsd source, Void base ISO (downloading).
+- Distribution phase (session 19): three GitHub repos + device backup.
 
 ## Recently done (2026-09-27)
 
