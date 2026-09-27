@@ -1,4 +1,4 @@
-# Handover — Omivoid LMDE (2026-09-24)
+# Handover — Omivoid LMDE (2026-09-27)
 
 > Brief handover for the next agent session. Read this first, then the
 > documents listed below (and `../PROGRESS.md`, the living progress log).
@@ -54,7 +54,8 @@ view of everything needing a decision/signature, see
 ## Key facts to carry
 
 - **Project path:** `~/Projects/OmiVoid/omivoid-lmde/`, which is now **its own
-  git repository** (split from the umbrella repo 2026-09-27). `PROGRESS.md`
+  git repository** (split from the umbrella repo 2026-09-27) with a **GitHub
+  remote** (`origin`, `MartinKnights/omivoid-lmde`). `PROGRESS.md`
   lives in the umbrella repo (`~/Projects/OmiVoid/PROGRESS.md`) and tracks the
   project from outside.
 - **CLI:** `omivoid` — symlinked into `~/.local/bin` → `cli/omivoid`. Python 3.13
@@ -67,6 +68,18 @@ view of everything needing a decision/signature, see
   generated — fix the registry or the generator, never the file.
 - **Personal paths:** do not commit `/home/mk` paths; use `$OMIVOID_CLI` /
   `omivoid` on PATH (AGENTS.md §22/§33).
+
+## Recently done (2026-09-27)
+
+- **Distribution phase started** — this repo is published on GitHub
+  (`github.com/MartinKnights/omivoid-lmde`, public, `main`, 27 commits).
+  The Debian distribution layer is `github.com/MartinKnights/O-my-Deb`
+  (public; this repo is its submodule). The Void build is
+  `github.com/MartinKnights/OmiVoid-install` (private).
+- **Device backed up** to `/media/mk/ENYO/omivoid-backup-2026-09-27/`
+  (git bundles, live configs, debs, package inventory, RESTORE.md) —
+  ready for the Void transfer.
+- Desktop validation PASS + exit review Accepted + repo split (session 18).
 
 ## Recently done (2026-09-24)
 
