@@ -1,5 +1,10 @@
 # Handover — Ominty LMDE (2026-09-27)
 
+> **Historical snapshot.** This document records the state of the project as of
+> 2026-09-27, before the OmiVoid → Ominty rebrand. Several references below are
+> superseded. For current instructions see [`AGENTS.md`](AGENTS.md) and the
+> distribution repo's root `AGENTS.md`.
+
 > Brief handover for the next agent session. Read this first, then the
 > documents listed below (and `../PROGRESS.md`, the living progress log).
 
@@ -73,7 +78,7 @@ view of everything needing a decision/signature, see
 
 - **Distribution phase started** — this repo is published on GitHub
   (`github.com/MartinKnights/ominty-core`, public, `main`, 27 commits).
-  The Debian distribution layer is `github.com/MartinKnights/O-my-Deb`
+  The Debian distribution layer is `github.com/MartinKnights/Ominty` (renamed from `O-my-Deb`)
   (public; this repo is its submodule). The Void build is
   `github.com/MartinKnights/Ominty-install` (private).
 - **Device backed up** to `/media/mk/ENYO/ominty-backup-2026-09-27/`

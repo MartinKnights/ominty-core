@@ -615,10 +615,35 @@ def test_main_rejects_unknown_layer(monkeypatch):
 def test_main_exit_code_reflects_readiness(monkeypatch, capsys):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_apt_sources", lambda: {})
-    monkeypatch.setattr(insp, "_apt_pins", lambda: {})
+    monkeypatch.setattr(insp, "_apt_pins", lambda: [])
     monkeypatch.setenv("XDG_SESSION_TYPE", "x11")
     monkeypatch.setenv("XDG_CURRENT_DESKTOP", "X-Cinnamon")
-    # Missing CLI symlinks are blocking, so a bare machine must exit non-zero.
-    code = insp.main(["--layer", "editor"])
+
+    # _check_configs reads the real ~/.config, so stub it. Otherwise this test
+    # would depend on whether the machine running the suite happens to have the
+    # CLI symlinks installed.
+    blocking = ([], [insp.Finding("config.stub", "fail", "stubbed", "fix", "blocking")])
+    monkeypatch.setattr(insp, "_check_configs", lambda: blocking)
+
+    assert insp.main(["--layer", "editor"]) == 1
     capsys.readouterr()
-    assert code == 1
+
+    # Clear the blocker and the exit code must follow.
+    monkeypatch.setattr(insp, "_check_configs", lambda: ({}, []))
+    assert insp.main(["--layer", "editor"]) == 0
+    capsys.readouterr()
+
+
+def test_main_exit_code_ignores_outstanding_choices(monkeypatch, capsys):
+    """An unanswered question must not make the machine look unready."""
+    monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
+    monkeypatch.setattr(insp, "_apt_sources", lambda: {})
+    monkeypatch.setattr(insp, "_apt_pins", lambda: [])
+    monkeypatch.setattr(insp, "_check_configs", lambda: ({}, []))
+    monkeypatch.setenv("XDG_SESSION_TYPE", "x11")
+    monkeypatch.setenv("XDG_CURRENT_DESKTOP", "X-Cinnamon")
+
+    assert insp.main(["--json", "--layer", "editor"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["summary"]["required_choices"]  # questions are still listed
+    assert report["summary"]["ready"] is True
