@@ -447,12 +447,37 @@ def cmd_keybinds(args: argparse.Namespace) -> int:
     return 0
 
 
+def _inspect_main(args: argparse.Namespace) -> int:
+    """Delegate to inspect.main() so it owns its own flags."""
+    from .inspect import main as inspect_main
+
+    argv: list[str] = []
+    if getattr(args, "json", False):
+        argv.append("--json")
+    for layer in getattr(args, "layer", None) or []:
+        argv.extend(["--layer", layer])
+    return inspect_main(argv)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ominty",
         description="Ominty desktop CLI — action registry and execution.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
+
+    # inspect
+    inspect_p = sub.add_parser(
+        "inspect",
+        help="audit this machine for the Ominty layer (read-only)",
+    )
+    inspect_p.add_argument("--json", action="store_true", help="JSON output")
+    inspect_p.add_argument(
+        "--layer",
+        action="append",
+        help="restrict findings to these layer ids (repeatable)",
+    )
+    inspect_p.set_defaults(func=lambda a: _inspect_main(a))
 
     # action
     action_p = sub.add_parser("action", help="action registry operations")
