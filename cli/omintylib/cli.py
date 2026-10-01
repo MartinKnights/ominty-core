@@ -447,6 +447,13 @@ def cmd_keybinds(args: argparse.Namespace) -> int:
     return 0
 
 
+def _layers_main(args: argparse.Namespace) -> int:
+    """Delegate to inspect.cmd_layers so the manifest has one owner."""
+    from .inspect import cmd_layers
+
+    return cmd_layers(args)
+
+
 def _inspect_main(args: argparse.Namespace) -> int:
     """Delegate to inspect.main() so it owns its own flags."""
     from .inspect import main as inspect_main
@@ -465,6 +472,24 @@ def build_parser() -> argparse.ArgumentParser:
         description="Ominty desktop CLI — action registry and execution.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
+
+    # layers
+    layers_p = sub.add_parser(
+        "layers",
+        help="print the layer manifest (what install.sh provisions)",
+    )
+    layers_p.add_argument(
+        "--format",
+        choices=("text", "json", "shell", "ids"),
+        default="text",
+        help="output format; 'shell' emits source<TAB>name for install.sh",
+    )
+    layers_p.add_argument(
+        "--layer",
+        action="append",
+        help="restrict to these layer ids (repeatable)",
+    )
+    layers_p.set_defaults(func=_layers_main)
 
     # inspect
     inspect_p = sub.add_parser(

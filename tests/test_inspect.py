@@ -7,6 +7,7 @@ on the report-building logic rather than on this machine's real state.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -499,6 +500,97 @@ def test_layer_filter_keeps_choices(monkeypatch, capsys):
     report = json.loads(capsys.readouterr().out)
     # Choices are global decisions and must not be filtered away.
     assert report["choices"]
+
+
+# --- layers manifest -------------------------------------------------------
+
+
+def test_layers_payload_is_complete():
+    payload = insp.layers_payload()
+    assert payload["order"] == [layer.id for layer in LAYERS]
+    for layer_id in payload["order"]:
+        layer = payload["layers"][layer_id]
+        assert layer["id"] == layer_id
+        assert layer["label"]
+        assert layer["description"]
+        assert layer["packages"]
+
+
+def test_layers_shell_format_is_tab_separated(capsys):
+    import argparse
+
+    args = argparse.Namespace(layer=None, format="shell")
+    assert insp.cmd_layers(args) == 0
+    lines = [ln for ln in capsys.readouterr().out.splitlines() if ln.strip()]
+
+    required = {
+        pkg.name
+        for layer in LAYERS
+        for pkg in layer.packages
+        if pkg.required
+    }
+    seen = {}
+    for line in lines:
+        source, _, name = line.partition("\t")
+        assert source in ("apt", "obs", "local"), f"bad source in {line!r}"
+        seen[name] = source
+    assert set(seen) == required
+
+    # install.sh depends on these two being in the desktop layer.
+    assert seen["dms"] == "obs"
+    assert seen["niri"] == "local"
+
+
+def test_layers_json_round_trip(capsys):
+    import argparse
+
+    args = argparse.Namespace(layer=None, format="json")
+    assert insp.cmd_layers(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == insp.layers_payload()
+
+
+def test_layers_filter(capsys):
+    import argparse
+
+    args = argparse.Namespace(layer=["cli"], format="json")
+    assert insp.cmd_layers(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert list(payload["layers"]) == ["cli"]
+
+
+def test_layers_rejects_unknown_id(capsys):
+    import argparse
+
+    args = argparse.Namespace(layer=["nope"], format="json")
+    assert insp.cmd_layers(args) == 2
+    assert "unknown layer" in capsys.readouterr().err
+
+
+def test_layers_ids_format(capsys):
+    import argparse
+
+    args = argparse.Namespace(layer=None, format="ids")
+    assert insp.cmd_layers(args) == 0
+    ids = capsys.readouterr().out.split()
+    assert ids == [layer.id for layer in LAYERS]
+
+
+def test_install_sh_uses_the_manifest_not_a_hardcoded_list():
+    """Guards against the installer drifting back to its own package list."""
+    repo = Path(__file__).resolve().parent.parent.parent
+    script = repo / "install.sh"
+    if not script.is_file():
+        pytest.skip("install.sh not present (running outside the distribution repo)")
+
+    text = script.read_text()
+    assert "layer_packages" in text, "install.sh no longer reads the manifest"
+    assert "resolve_layers" in text
+    # quickshell must stay excluded from the bulk Debian list, because it needs
+    # an explicit target release rather than the default one.
+    assert "apt quickshell" in text
+    # The layer ids must come from the manifest, not a second hardcoded list.
+    assert "$OMINTY_CLI\" layers --format shell" in text
 
 
 def test_main_layer_filter_narrows_report(monkeypatch, capsys):

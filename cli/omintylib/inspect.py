@@ -33,6 +33,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -98,6 +99,7 @@ _DESKTOP = Layer(
         Package("xdg-desktop-portal", "apt", "desktop portal interface"),
         Package("xdg-desktop-portal-gtk", "apt", "GTK portal backend"),
         Package("network-manager", "apt", "network management"),
+        Package("nemo", "apt", "file manager (LMDE's Cinnamon file manager)"),
     ),
 )
 
@@ -1082,6 +1084,84 @@ def inspect() -> dict:
             },
         },
     }
+
+
+def layers_payload() -> dict:
+    """The layer manifest, independent of the host.
+
+    This is the single source of truth for what each layer contains.
+    install.sh consumes it so the installer and the audit cannot drift apart.
+    """
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "layers": {
+            layer.id: {
+                "id": layer.id,
+                "label": layer.label,
+                "description": layer.description,
+                "provisioned": layer.provisioned,
+                "packages": [
+                    {
+                        "name": pkg.name,
+                        "source": pkg.source,
+                        "required": pkg.required,
+                        "purpose": pkg.purpose,
+                    }
+                    for pkg in layer.packages
+                ],
+            }
+            for layer in LAYERS
+        },
+        "order": [layer.id for layer in LAYERS],
+    }
+
+
+def cmd_layers(args) -> int:
+    """`ominty layers` — print the layer manifest."""
+    payload = layers_payload()
+    selected = getattr(args, "layer", None)
+    if selected:
+        unknown = set(selected) - set(payload["layers"])
+        if unknown:
+            print(
+                f"unknown layer id(s): {', '.join(sorted(unknown))}; "
+                f"choose from {', '.join(payload['order'])}",
+                file=sys.stderr,
+            )
+            return 2
+        payload["layers"] = {
+            k: v for k, v in payload["layers"].items() if k in selected
+        }
+
+    if getattr(args, "format", "text") == "json":
+        print(json.dumps(payload, indent=2))
+        return 0
+
+    if getattr(args, "format", "text") == "ids":
+        # One layer id per line, for shell error messages.
+        for layer_id in payload["layers"]:
+            print(layer_id)
+        return 0
+
+    if getattr(args, "format", "text") == "shell":
+        # Tab-separated so install.sh can read it without a JSON parser.
+        for layer in payload["layers"].values():
+            for pkg in layer["packages"]:
+                if pkg["required"]:
+                    print(f"{pkg['source']}\t{pkg['name']}")
+        return 0
+
+    for layer_id in payload["order"]:
+        layer = payload["layers"].get(layer_id)
+        if layer is None:
+            continue
+        tag = "" if layer["provisioned"] else "  (not yet installed by install.sh)"
+        print(f"\n{layer['label']} [{layer_id}]{tag}")
+        print(f"  {layer['description']}")
+        for pkg in layer["packages"]:
+            flag = "" if pkg["required"] else "  (optional)"
+            print(f"    {pkg['name']:<22} {pkg['source']:<6} {pkg['purpose']}{flag}")
+    return 0
 
 
 def format_text(report: dict) -> str:
