@@ -705,6 +705,333 @@ def _check_session() -> tuple[dict, list[Finding]]:
 
 
 # ---------------------------------------------------------------------------
+# Choice points
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ChoiceOption:
+    """One answer a user can give to a choice point."""
+
+    value: str
+    label: str
+    detail: str = ""
+    #: Filled in at report time — whether this option is viable on this host.
+    available: bool = True
+    #: Why it is unavailable, when it is not.
+    unavailable_reason: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "value": self.value,
+            "label": self.label,
+            "detail": self.detail,
+            "available": self.available,
+            "unavailable_reason": self.unavailable_reason,
+        }
+
+
+@dataclass(frozen=True)
+class Choice:
+    """A question the agent must put to the user before applying changes."""
+
+    id: str
+    question: str
+    options: tuple[ChoiceOption, ...]
+    #: A single value for single-select choices; a list for multi-select ones.
+    default: str | list[str]
+    #: Why this needs a human, and why it cannot be defaulted silently.
+    rationale: str
+    #: True when the install genuinely cannot proceed without an answer.
+    required: bool = False
+    #: True when more than one option may be chosen at once.
+    multiple: bool = False
+
+    def to_dict(self, detected: dict | None = None) -> dict:
+        return {
+            "id": self.id,
+            "question": self.question,
+            "required": self.required,
+            "multiple": self.multiple,
+            "rationale": self.rationale,
+            "default": self.default,
+            "detected": detected or {},
+            "options": [o.to_dict() for o in self.options],
+        }
+
+
+def _provider_availability() -> dict[str, dict]:
+    """Live status per registered AI provider, reusing the AI layer's owners.
+
+    Imported lazily and defensively: inspect must still produce a report if
+    the AI layer is broken or partially unavailable.
+    """
+    try:
+        from .ai import list_providers
+
+        return {st["provider"]: st for st in list_providers()}
+    except Exception:  # pragma: no cover - defensive
+        return {}
+
+
+def _choice_llm_provider() -> tuple[Choice, dict]:
+    """Which LLM backs the AI actions, if any."""
+    status = _provider_availability()
+    try:
+        from .ai import default_provider
+
+        current = default_provider()
+    except Exception:  # pragma: no cover - defensive
+        current = ""
+
+    def option(value: str, label: str, detail: str) -> ChoiceOption:
+        st = status.get(value)
+        if st is None:
+            # Not probed (e.g. the AI layer failed to import). Do not claim
+            # it is unavailable — that would wrongly steer the user.
+            return ChoiceOption(value, label, detail)
+        state = st.get("state")
+        ok = state == "available"
+        reason = ""
+        if not ok:
+            reason = st.get("detail") or f"provider status: {state}"
+            detail = f"{detail} — {reason}"
+        return ChoiceOption(value, label, detail, ok, reason)
+
+    choice = Choice(
+        id="llm.provider",
+        question=(
+            "Which LLM should power the AI actions (Super+A), or should AI be "
+            "left unconfigured?"
+        ),
+        required=True,
+        rationale=(
+            "AI actions need a provider before the configuration can be "
+            "written. The choice determines ~/.config/ominty/ai.toml and "
+            "whether any model is downloaded, so it must not be guessed."
+        ),
+        default="ollama",
+        options=(
+            option(
+                "ollama",
+                "Ollama (local models)",
+                "Runs models on this machine. Private and offline; needs RAM "
+                "for the chosen model.",
+            ),
+            option(
+                "pi",
+                "pi",
+                "The pi agent/provider already present in this environment.",
+            ),
+            option(
+                "none",
+                "No LLM",
+                "Install the desktop without AI. The AI keybinding is left "
+                "inactive and can be enabled later.",
+            ),
+        ),
+    )
+    detected = {
+        "configured_provider": current,
+        "config_file": str(Path.home() / ".config" / "ominty" / "ai.toml"),
+        "provider_status": status,
+    }
+    return choice, detected
+
+
+def _choice_layers() -> tuple[Choice, dict]:
+    """Which layers to install beyond the mandatory desktop."""
+    optional = [layer for layer in LAYERS if not layer.provisioned]
+    return (
+        Choice(
+            id="layers",
+            question=(
+                "The desktop layer is the desktop itself. Which of these "
+                "optional groups should be installed too?"
+            ),
+            required=False,
+            multiple=True,
+            rationale=(
+                "These layers reflect a personal preference set, not a "
+                "requirement of a working desktop, so the user chooses."
+            ),
+            default=[layer.id for layer in optional],
+            options=tuple(
+                ChoiceOption(
+                    layer.id,
+                    layer.label,
+                    f"{layer.description} "
+                    f"({sum(len(l2.packages) for l2 in LAYERS if l2.id == layer.id)} packages)",
+                )
+                for layer in optional
+            ),
+        ),
+        {
+            "required_layer": "desktop",
+            "optional_layers": [layer.id for layer in optional],
+            "provisioned_layers": [layer.id for layer in LAYERS if layer.provisioned],
+        },
+    )
+
+
+def _choice_default_session() -> tuple[Choice, dict]:
+    """Whether to make Niri the default login session."""
+    return (
+        Choice(
+            id="session.default",
+            question=(
+                "Should Niri become the session started on login, or should "
+                "the current session stay the default?"
+            ),
+            required=True,
+            rationale=(
+                "Changing the default session alters how the machine boots "
+                "into a desktop and is easy to get wrong over SSH, so it "
+                "needs explicit consent and a stated fallback."
+            ),
+            default="keep",
+            options=(
+                ChoiceOption(
+                    "set",
+                    "Set Niri as default",
+                    "Available from the next login. Keep the current session "
+                    "selectable as a fallback.",
+                ),
+                ChoiceOption(
+                    "keep",
+                    "Leave the default unchanged",
+                    "Pick Niri manually at the login screen. Safest.",
+                ),
+            ),
+        ),
+        {"note": "The existing session must remain selectable as a fallback."},
+    )
+
+
+def _choice_existing_configs() -> tuple[Choice, dict]:
+    """What to do about configuration already on the machine."""
+    from .registry import xdg_config_home
+
+    config_home = xdg_config_home()
+    detected: dict[str, object] = {}
+    # Pre-rebrand installs used ~/.config/omivoid and omivoid* plugin names.
+    legacy_config = config_home / "omivoid"
+    detected["legacy_config_dir"] = {
+        "path": str(legacy_config),
+        "present": legacy_config.exists(),
+    }
+    detected["active_config_dirs"] = {
+        name: (config_home / name).exists()
+        for name in ("niri", "DankMaterialShell", "ominty")
+    }
+
+    return (
+        Choice(
+            id="config.migration",
+            question=(
+                "Configuration already exists on this machine. Replace it "
+                "with Ominty's defaults, or keep it and change only what is "
+                "missing?"
+            ),
+            required=True,
+            rationale=(
+                "Overwriting user configuration is destructive. AGENTS.md §30 "
+                "requires a tested rollback path, so the user chooses whether "
+                "to replace or preserve."
+            ),
+            default="keep",
+            options=(
+                ChoiceOption(
+                    "keep",
+                    "Keep existing configuration",
+                    "Only write files that do not exist yet. Nothing is lost.",
+                ),
+                ChoiceOption(
+                    "backup",
+                    "Back up, then replace",
+                    "Copy existing files to a timestamped .bak-ominty-* "
+                    "sibling before writing Ominty's defaults.",
+                ),
+            ),
+        ),
+        detected,
+    )
+
+
+def _choice_dms_plugins() -> tuple[Choice, dict]:
+    """Whether to enable the third-party DMS plugins."""
+    return (
+        Choice(
+            id="plugins.dms",
+            question=(
+                "Install the third-party DankMaterialShell plugins "
+                "(KDE Connect, launcher keys, quick capture, wallpaper "
+                "carousel)?"
+            ),
+            required=False,
+            rationale=(
+                "These come from the DMS plugin registry rather than from "
+                "Ominty itself, so installing them is a separate decision."
+            ),
+            default="yes",
+            options=(
+                ChoiceOption("yes", "Install plugins", "Adds the DMS plugin symlinks."),
+                ChoiceOption(
+                    "no",
+                    "Ominty plugins only",
+                    "Keeps omintyActions and omintyKeybinds, skips the rest.",
+                ),
+            ),
+        ),
+        {"plugins": ["dankHooks", "dankKDEConnect", "dankLauncherKeys",
+                     "quickCapture", "wallpaperCarousel"]},
+    )
+
+
+CHOICE_BUILDERS = (
+    _choice_llm_provider,
+    _choice_layers,
+    _choice_default_session,
+    _choice_existing_configs,
+    _choice_dms_plugins,
+)
+
+
+def _build_choices() -> tuple[list[dict], list[Finding]]:
+    """Build every choice point plus findings for unanswered required ones."""
+    choices: list[dict] = []
+    findings: list[Finding] = []
+
+    for build in CHOICE_BUILDERS:
+        try:
+            choice, detected = build()
+        except Exception as exc:  # pragma: no cover - defensive
+            findings.append(
+                Finding(
+                    f"choice.{build.__name__.lstrip('_choice_')}",
+                    "warn",
+                    f"Could not evaluate choice point: {exc}",
+                    "Ask the user this question directly.",
+                )
+            )
+            continue
+
+        choices.append(choice.to_dict(detected))
+
+        if choice.required:
+            findings.append(
+                Finding(
+                    f"choice.{choice.id}",
+                    "warn",
+                    f"Required decision outstanding: {choice.id}",
+                    f"Ask the user: {choice.question}",
+                )
+            )
+
+    return choices, findings
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -718,12 +1045,16 @@ def inspect() -> dict:
     layers_info, f_layers = _check_layers(osr)
     configs, f_configs = _check_configs()
     session, f_session = _check_session()
+    choices, f_choices = _build_choices()
 
-    all_findings = f_platform + f_hardware + f_layers + f_configs + f_session
+    all_findings = (
+        f_platform + f_hardware + f_layers + f_configs + f_session + f_choices
+    )
     blocking = [f.id for f in all_findings if f.severity == "blocking"]
     warnings = [f.id for f in all_findings if f.status == "warn"]
 
     sudo_ok = _have_sudo()
+    outstanding = [c["id"] for c in choices if c["required"]]
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -735,11 +1066,15 @@ def inspect() -> dict:
         "layers": layers_info["layers"],
         "apt": layers_info["apt"],
         "configs": configs,
+        "choices": choices,
         "findings": [f.to_dict() for f in all_findings],
         "summary": {
+            # A machine is installable when nothing blocks it. Outstanding
+            # choices are questions to ask, not failures.
             "ready": not blocking,
             "blocking": blocking,
             "warnings": warnings,
+            "required_choices": outstanding,
             "counts": {
                 "pass": sum(1 for f in all_findings if f.status == "pass"),
                 "warn": sum(1 for f in all_findings if f.status == "warn"),
@@ -779,12 +1114,37 @@ def format_text(report: dict) -> str:
         if f["fix"]:
             lines.append(f"        -> {f['fix']}")
 
+    lines.append("")
+    lines.append("Choices:")
+    for choice in report.get("choices", []):
+        flag = "required" if choice["required"] else "optional"
+        multi = ", multi-select" if choice.get("multiple") else ""
+        lines.append(f"  [{flag}{multi}] {choice['id']}")
+        lines.append(f"      {choice['question']}")
+        chosen = choice["default"]
+        if not isinstance(chosen, list):
+            chosen = [chosen]
+        for option in choice["options"]:
+            mark = " " if option["available"] else "x"
+            note = (
+                f"  ({option['unavailable_reason']})"
+                if not option["available"]
+                else ""
+            )
+            is_default = " (default)" if option["value"] in chosen else ""
+            lines.append(
+                f"        {mark} {option['value']:<10} {option['label']}{is_default}{note}"
+            )
+
     counts = report["summary"]["counts"]
+    outstanding = report["summary"].get("required_choices") or []
     lines.append("")
     lines.append(
         f"{counts['pass']} pass, {counts['warn']} warn, {counts['fail']} fail — "
         f"{'ready' if report['summary']['ready'] else 'NOT ready'} to install"
     )
+    if outstanding:
+        lines.append(f"ask the user about: {', '.join(outstanding)}")
     return "\n".join(lines)
 
 

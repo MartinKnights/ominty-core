@@ -329,10 +329,176 @@ def test_format_text_renders_layers(monkeypatch):
 def test_main_accepts_flags(flag, monkeypatch, capsys):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_apt_sources", lambda: {})
-    monkeypatch.setattr(insp, "_apt_pins", lambda: {})
+    monkeypatch.setattr(insp, "_apt_pins", lambda: [])
     argv = [flag, "desktop"] if flag == "--layer" else [flag]
     insp.main(argv)
     assert capsys.readouterr().out.strip()
+
+
+# --- choice points ---------------------------------------------------------
+
+
+def _stub_report_deps(monkeypatch):
+    monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
+    monkeypatch.setattr(insp, "_apt_sources", lambda: {})
+    monkeypatch.setattr(insp, "_apt_pins", lambda: [])
+
+
+def test_choice_points_are_well_formed(monkeypatch):
+    _stub_report_deps(monkeypatch)
+    choices, findings = insp._build_choices()
+
+    assert choices, "no choice points built"
+    ids = [c["id"] for c in choices]
+    assert len(ids) == len(set(ids)), "duplicate choice id"
+
+    for choice in choices:
+        assert choice["question"], f"{choice['id']} has no question"
+        assert choice["rationale"], f"{choice['id']} has no rationale"
+        assert choice["options"], f"{choice['id']} has no options"
+        values = [o["value"] for o in choice["options"]]
+        assert len(values) == len(set(values)), f"{choice['id']} duplicate option"
+        # A multi-select choice defaults to a list; every default must name a
+        # real option.
+        defaults = (
+            choice["default"]
+            if isinstance(choice["default"], list)
+            else [choice["default"]]
+        )
+        for value in defaults:
+            assert value in values, f"{choice['id']} default not an option"
+        assert isinstance(choice["default"], list) == choice["multiple"], (
+            f"{choice['id']} default type must match multiple"
+        )
+
+    # Every required choice must raise a finding so the agent notices it.
+    finding_ids = {f.id for f in findings}
+    for choice in choices:
+        if choice["required"]:
+            assert f"choice.{choice['id']}" in finding_ids
+
+
+def test_llm_provider_choice_reports_availability(monkeypatch):
+    monkeypatch.setattr(
+        insp,
+        "_provider_availability",
+        lambda: {
+            "ollama": {"provider": "ollama", "state": "available", "detail": ""},
+            "pi": {"provider": "pi", "state": "unavailable", "detail": "pi not found"},
+        },
+    )
+    choice, detected = insp._choice_llm_provider()
+
+    options = {o.value: o for o in choice.options}
+    assert options["ollama"].available is True
+    assert options["pi"].available is False
+    assert "pi not found" in options["pi"].unavailable_reason
+    assert "none" in options  # declining AI must always remain possible
+    assert detected["provider_status"]["ollama"]["state"] == "available"
+
+
+def test_llm_provider_choice_survives_broken_ai_layer(monkeypatch):
+    """A broken AI layer must degrade, not break the whole audit."""
+    import omintylib.ai as ai_mod
+
+    def boom():
+        raise RuntimeError("ai layer exploded")
+
+    monkeypatch.setattr(ai_mod, "list_providers", boom)
+    monkeypatch.setattr(ai_mod, "default_provider", boom, raising=False)
+
+    choice, detected = insp._choice_llm_provider()
+    # Options must stay available rather than being wrongly marked unusable.
+    assert all(o.available for o in choice.options)
+    assert detected["provider_status"] == {}
+
+
+def test_unknown_provider_is_not_claimed_unavailable(monkeypatch):
+    monkeypatch.setattr(insp, "_provider_availability", lambda: {})
+    choice, _ = insp._choice_llm_provider()
+    assert all(o.available for o in choice.options)
+
+
+def test_layers_choice_lists_only_unprovisioned_layers(monkeypatch):
+    choice, detected = insp._choice_layers()
+    optional = {layer.id for layer in LAYERS if not layer.provisioned}
+    assert {o.value for o in choice.options} == optional
+    assert detected["required_layer"] == "desktop"
+    assert detected["provisioned_layers"] == [
+        layer.id for layer in LAYERS if layer.provisioned
+    ]
+
+
+def test_config_migration_choice_detects_legacy_dir(tmp_path, monkeypatch):
+    from omintylib import registry
+
+    config_home = tmp_path / ".config"
+    (config_home / "omivoid").mkdir(parents=True)  # pre-rebrand install
+    (config_home / "niri").mkdir()
+    monkeypatch.setattr(registry, "xdg_config_home", lambda: config_home)
+
+    _choice, detected = insp._choice_existing_configs()
+    assert detected["legacy_config_dir"]["present"] is True
+    assert detected["active_config_dirs"]["niri"] is True
+    assert detected["active_config_dirs"]["ominty"] is False
+
+
+def test_config_migration_choice_keeps_and_backs_up(tmp_path, monkeypatch):
+    from omintylib import registry
+
+    monkeypatch.setattr(registry, "xdg_config_home", lambda: tmp_path / ".config")
+    choice, _ = insp._choice_existing_configs()
+    values = [o.value for o in choice.options]
+    assert values == ["keep", "backup"]
+    assert choice.required is True
+
+
+def test_required_choices_in_summary(monkeypatch):
+    _stub_report_deps(monkeypatch)
+    monkeypatch.setattr(insp, "_have_sudo", lambda: True)
+    monkeypatch.setattr(insp, "_os_release", lambda: LMDE)
+
+    summary = inspect()["summary"]
+    required = summary["required_choices"]
+    assert "llm.provider" in required
+    assert "session.default" in required
+    assert "config.migration" in required
+    assert "layers" not in required  # optional choices are not required
+
+
+def test_choices_survive_json_round_trip(monkeypatch):
+    _stub_report_deps(monkeypatch)
+    monkeypatch.setattr(insp, "_have_sudo", lambda: True)
+    monkeypatch.setattr(insp, "_os_release", lambda: LMDE)
+
+    report = json.loads(json.dumps(inspect()))
+    assert "choices" in report
+    for choice in report["choices"]:
+        assert set(choice) == {
+            "id", "question", "required", "multiple", "rationale",
+            "default", "detected", "options",
+        }
+        for option in choice["options"]:
+            assert set(option) == {
+                "value", "label", "detail", "available", "unavailable_reason",
+            }
+
+
+def test_format_text_lists_choices(monkeypatch):
+    _stub_report_deps(monkeypatch)
+    text = format_text(inspect())
+    assert "Choices:" in text
+    assert "llm.provider" in text
+    assert "[required]" in text
+    assert "ask the user about:" in text
+
+
+def test_layer_filter_keeps_choices(monkeypatch, capsys):
+    _stub_report_deps(monkeypatch)
+    insp.main(["--json", "--layer", "cli"])
+    report = json.loads(capsys.readouterr().out)
+    # Choices are global decisions and must not be filtered away.
+    assert report["choices"]
 
 
 def test_main_layer_filter_narrows_report(monkeypatch, capsys):
