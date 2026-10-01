@@ -1,7 +1,7 @@
 """Tests for the universal action search backend (docs/10 §16)."""
 
-from omivoidlib.registry import Action, Registry
-from omivoidlib.search import search_actions
+from omintylib.registry import Action, Registry
+from omintylib.search import search_actions
 
 
 def make_registry() -> Registry:

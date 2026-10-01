@@ -1,4 +1,4 @@
-# AI Environment Audit — omivoid-lmde
+# AI Environment Audit — ominty-core
 
 **Date:** 2026-09-12
 **Stage:** AI-0 (docs/ai/10-ai-phase-1-implementation-plan.md §4)
@@ -46,7 +46,7 @@ Pi is unconfigured at the Pi-native level. Provider readiness is currently satis
 
 ### 2.3 CLI interface (verified 0.85.1)
 
-Key invocation options relevant to Omivoid integration:
+Key invocation options relevant to Ominty integration:
 
 | Option | Purpose |
 |---|---|
@@ -92,13 +92,13 @@ Root cause:
 1. `OPENAI_API_KEY` is the literal placeholder value `anything` (8 chars) — not a real credential.
 2. `OPENAI_API_BASE` (`http://localhost:4000`) is **not reachable** — no proxy is running on that port.
 
-`pi auth check` reports "ready" merely because a key env var exists; it does not validate the key or the base URL. The Pi provider adapter therefore validates **key plausibility** (rejects known placeholders and keys shorter than 20 chars) and **base reachability** before reporting `available`. With the current environment, `omivoid ai provider status pi` correctly reports `misconfigured`.
+`pi auth check` reports "ready" merely because a key env var exists; it does not validate the key or the base URL. The Pi provider adapter therefore validates **key plausibility** (rejects known placeholders and keys shorter than 20 chars) and **base reachability** before reporting `available`. With the current environment, `ominty ai provider status pi` correctly reports `misconfigured`.
 
 **Impact:** the Pi CLI proof cannot succeed until either a real key is provided or the `localhost:4000` proxy is started. Ollama provides the working local proof path (fully local, no key required).
 
 ### 2.5 Provider/model catalogue
 
-`pi --list-models` exposes the openai provider catalogue (gpt-4, gpt-4o, gpt-5.x, etc.). Model selection belongs below the Omivoid interaction contract (docs/ai/00-ai-architecture.md §16) and is not hard-coded in Omivoid.
+`pi --list-models` exposes the openai provider catalogue (gpt-4, gpt-4o, gpt-5.x, etc.). Model selection belongs below the Ominty interaction contract (docs/ai/00-ai-architecture.md §16) and is not hard-coded in Ominty.
 
 ---
 
@@ -138,7 +138,7 @@ Ollama provides a fully local inference path: no API key required, works offline
 
 The DMS `aiAssistant` plugin exists in the DMS source tree and is documented in `docs/implementation/dms-plugin-inventory.md` §4.4.
 
-**Status: REFERENCE ONLY.** DMS aiAssistant is a presentation-layer reference. Omivoid's `ai_accessible`/`risk`/`confirmation` registry policy remains authoritative (AGENTS.md §17). No DMS AI plugin is enabled or required for Phase A.
+**Status: REFERENCE ONLY.** DMS aiAssistant is a presentation-layer reference. Ominty's `ai_accessible`/`risk`/`confirmation` registry policy remains authoritative (AGENTS.md §17). No DMS AI plugin is enabled or required for Phase A.
 
 ---
 
@@ -150,7 +150,7 @@ None. No AI-related key bindings exist in the Niri configuration or the action r
 
 ## 6. Existing Project AI Configuration
 
-None. No `[ai]` configuration exists in `config/` or `~/.config/omivoid/`. The `ai` namespace is registered in the registry (docs/03 §4) but no `ai.*` actions exist yet.
+None. No `[ai]` configuration exists in `config/` or `~/.config/ominty/`. The `ai` namespace is registered in the registry (docs/03 §4) but no `ai.*` actions exist yet.
 
 ---
 

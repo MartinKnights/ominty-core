@@ -6,7 +6,7 @@ The generic action must not hard-code Pi semantics (docs/ai/02 §13).
 
 from __future__ import annotations
 
-from omivoidlib.ai import ask as ai_ask
+from omintylib.ai import ask as ai_ask
 
 
 def run(action, args: dict) -> dict:

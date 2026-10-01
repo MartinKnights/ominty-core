@@ -1,4 +1,4 @@
-# Omivoid action registry — windows
+# Ominty action registry — windows
 # Schema version 1 (docs/03-action-registry-spec.md)
 # Window actions use native Niri operations (docs/03 §23, Contract 4).
 

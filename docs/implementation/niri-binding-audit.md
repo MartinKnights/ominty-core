@@ -1,11 +1,11 @@
-# Niri Binding Audit — omivoid-lmde
+# Niri Binding Audit — ominty-core
 
 **Date:** 2026-09-10
 **Stage:** 8 (docs/10-phase-1-implementation-plan.md §12)
 **Status:** Complete
 
 Compares the existing Niri configuration (`~/.config/niri/config.kdl`, 249 lines)
-against the proposed Omivoid bindings (docs/02-interaction-spec.md §5–6,
+against the proposed Ominty bindings (docs/02-interaction-spec.md §5–6,
 docs/04-phase-1-action-catalogue.md).
 
 **Note:** In Niri, `Mod` defaults to `Super`. `Mod+X` ≡ `Super+X` throughout.
@@ -20,14 +20,14 @@ docs/04-phase-1-action-catalogue.md).
 | `COMPATIBLE` | Coexists with an existing binding without conflict |
 | `CONFLICT` | Proposed binding collides with an existing binding for a different action |
 | `CHANGE` | Proposed binding adjusted to avoid a conflict |
-| `MIGRATE` | Existing binding moved/freed to make room for a core Omivoid action |
+| `MIGRATE` | Existing binding moved/freed to make room for a core Ominty action |
 | `DEFER` | No binding applied in Phase 1 |
 
 ---
 
 ## 2. Immediate Actions (docs/02 §5)
 
-| Proposed binding | Omivoid action | Existing binding | Status | Resolution |
+| Proposed binding | Ominty action | Existing binding | Status | Resolution |
 |---|---|---|---|---|
 | `Super+Enter` | app.terminal.open | — (free) | **ACCEPT** | New binding. Existing `Mod+T` → alacritty remains (COMPATIBLE). |
 | `Super+Space` | help.actions.search | — (free) | **ACCEPT** | New binding. Existing `Mod+D` → fuzzel remains (COMPATIBLE; may be superseded by the palette in Stage 11–12). |
@@ -89,7 +89,7 @@ docs/04-phase-1-action-catalogue.md).
 
 ## 7. Existing Bindings Preserved Unchanged
 
-The following existing bindings have no Omivoid counterpart and remain untouched:
+The following existing bindings have no Ominty counterpart and remain untouched:
 
 - `Mod+Shift+Slash` → show-hotkey-overlay (COMPATIBLE with Super+K explorer)
 - `Mod+O` → toggle-overview
@@ -134,14 +134,14 @@ The following existing bindings have no Omivoid counterpart and remain untouched
 | `playerctl` not installed (media keys bound) | Install playerctl or use DMS media handling (Stage 13) |
 | `brightnessctl` not installed (brightness keys bound) | Install brightnessctl or use DMS equivalent (Stage 13) |
 | `swaylock` not installed (lock bound) | DMS lock integration (Stage 13) |
-| `Mod+D` → fuzzel vs `Super+Space` palette | Coexist; fuzzel may be superseded by the Omivoid palette (Stage 11–12) |
+| `Mod+D` → fuzzel vs `Super+Space` palette | Coexist; fuzzel may be superseded by the Ominty palette (Stage 11–12) |
 | `Mod+T` → alacritty vs `Super+Enter` | Coexist; both launch the terminal role |
 
 ## 10. Application Plan
 
 Changes are applied in Stage 9–10 via a **generated Niri fragment** (include file),
 not by rewriting `config.kdl`. The existing config is preserved; the fragment
-adds Omivoid bindings and the two MIGRATE changes are applied as a minimal,
+adds Ominty bindings and the two MIGRATE changes are applied as a minimal,
 documented edit to the existing config (removing the two redundant binds).
 
 Backup: `~/.config/niri/config.kdl` is copied to a timestamped backup before
@@ -151,27 +151,27 @@ any edit (AGENTS.md §30).
 
 | # | Change | Status |
 |---|---|---|
-| 1 | Free `Mod+K` (removed `focus-window-up`; `Mod+Up` covers it) | **APPLIED** — `config.kdl` edited; backup `config.kdl.bak-omivoid-20260911` |
+| 1 | Free `Mod+K` (removed `focus-window-up`; `Mod+Up` covers it) | **APPLIED** — `config.kdl` edited; backup `config.kdl.bak-ominty-20260911` |
 | 2 | Free `Mod+Shift+E` (removed `quit`; `Ctrl+Alt+Delete` covers it) | **APPLIED** — `config.kdl` edited |
 | 3 | `window.fullscreen.toggle` → `Mod+Shift+F` | **ALREADY NATIVE** — no change needed |
 | 4 | `app.files.open` → **DEFERRED** (no direct key) | **RESOLVED 2026-09-24** — files stays keyless (`keys = []`) and is reachable via the palette/CLI/AI; no dedicated binding added |
-| 5 | New bindings via generated fragment | **APPLIED** — `~/.config/omivoid/generated/niri/bindings.kdl` |
+| 5 | New bindings via generated fragment | **APPLIED** — `~/.config/ominty/generated/niri/bindings.kdl` |
 
-Generated fragment (`~/.config/omivoid/generated/niri/bindings.kdl`):
+Generated fragment (`~/.config/ominty/generated/niri/bindings.kdl`):
 
-- `Mod+Return` → spawn omivoid `app.terminal.open` (registry → adapter)
-- `Mod+Shift+B` → spawn omivoid `app.browser.open` (registry → adapter)
+- `Mod+Return` → spawn ominty `app.terminal.open` (registry → adapter)
+- `Mod+Shift+B` → spawn ominty `app.browser.open` (registry → adapter)
 - `Mod+Q` → `close-window` (native)
 - `Mod+Left` / `Mod+Right` → `focus-column-left` / `focus-column-right` (native)
 - `Mod+Page_Down` / `Mod+Page_Up` → `focus-workspace-down` / `focus-workspace-up` (native)
 
 Integration: `config.kdl` ends with
-`include optional=true "~/.config/omivoid/generated/niri/bindings.kdl"`.
-The include is positional (last), so Omivoid bindings take precedence on any
+`include optional=true "~/.config/ominty/generated/niri/bindings.kdl"`.
+The include is positional (last), so Ominty bindings take precedence on any
 future conflict. `optional=true` means a missing generated file degrades to a
 warning, never a config failure. `niri validate` passes on the full config.
 
-Generator: `omivoid registry build` (validates registry → generates → validates
+Generator: `ominty registry build` (validates registry → generates → validates
 fragment with `niri validate` before writing; `--dry-run` prints without writing;
 invalid output is removed, never left in place).
 

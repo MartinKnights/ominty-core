@@ -14,9 +14,9 @@ least one rollback test has been performed successfully
 
 | Artifact | Backups |
 |---|---|
-| Niri config | 4 timestamped copies (`config.kdl.backup*`, `.bak-dms-pre-*`, `.bak-omivoid-*`) |
-| Omivoid generated fragment | regenerable from the Action Registry |
-| DMS `plugin_settings.json` | `plugin_settings.json.bak-*` (incl. pre-Omivoid) |
+| Niri config | 4 timestamped copies (`config.kdl.backup*`, `.bak-dms-pre-*`, `.bak-ominty-*`) |
+| Ominty generated fragment | regenerable from the Action Registry |
+| DMS `plugin_settings.json` | `plugin_settings.json.bak-*` (incl. pre-Ominty) |
 
 Backup strategy (environment-audit §11): a timestamped copy is taken before
 each significant configuration change.
@@ -25,8 +25,8 @@ each significant configuration change.
 
 ## 2. Drill A — generated fragment loss → regenerate
 
-The Omivoid-owned Niri fragment
-(`~/.config/omivoid/generated/niri/bindings.kdl`) is derived from the Action
+The Ominty-owned Niri fragment
+(`~/.config/ominty/generated/niri/bindings.kdl`) is derived from the Action
 Registry, so its rollback is: lose it → rebuild it.
 
 ```text
@@ -52,7 +52,7 @@ Each backup was validated in place with `niri validate -c`:
 config.kdl.backup1789157721              → config is valid
 config.kdl.backup.2026-09-11_15-53-46    → config is valid
 config.kdl.bak-dms-pre-20260911-155305    → config is valid
-config.kdl.bak-omivoid-20260911           → config is valid
+config.kdl.bak-ominty-20260911           → config is valid
 ```
 
 **Result:** all backups parse as valid Niri configurations and are therefore
@@ -85,9 +85,9 @@ A file-level restore was performed on the live config path, then rolled back
 **Regenerate the Niri fragment from the registry:**
 
 ```bash
-cd omivoid-lmde/cli
-python3 -c "from omivoidlib.registry import load_registry; \
-            from omivoidlib.generator import build_fragment; \
+cd ominty-core/cli
+python3 -c "from omintylib.registry import load_registry; \
+            from omintylib.generator import build_fragment; \
             print(build_fragment(load_registry())[1])"
 ```
 

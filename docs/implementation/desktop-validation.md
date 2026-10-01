@@ -23,12 +23,12 @@ Run these before the interactive tests and again after reboot (§D).
 
 | Check             | Command                                                                                                     | Expected                                                 | Pass |
 | ----------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ---- |
-| Registry valid    | `omivoid registry validate`                                                                                 | `44 action(s), 0 error(s), 0 warning(s)`                 | [x]  |
+| Registry valid    | `ominty registry validate`                                                                                 | `44 action(s), 0 error(s), 0 warning(s)`                 | [x]  |
 | Niri config valid | `niri validate -c ~/.config/niri/config.kdl`                                                                | `config is valid`                                        | [x]  |
 | DMS running       | `systemctl --user is-active dms`                                                                            | `active`                                                 | [x]  |
-| Fragment present  | `tail -3 ~/.config/niri/config.kdl`                                                                         | includes `~/.config/omivoid/generated/niri/bindings.kdl` | [x]  |
-| omivoid on PATH   | `command -v omivoid`                                                                                        | a path (e.g. `~/.local/bin/omivoid`)                     | [x]  |
-| Plugin installed  | `ls ~/.config/DankMaterialShell/plugins/omivoidKeybinds ~/.config/DankMaterialShell/plugins/omivoidActions` | both present (symlinks)                                  | [x]  |
+| Fragment present  | `tail -3 ~/.config/niri/config.kdl`                                                                         | includes `~/.config/ominty/generated/niri/bindings.kdl` | [x]  |
+| ominty on PATH   | `command -v ominty`                                                                                        | a path (e.g. `~/.local/bin/ominty`)                     | [x]  |
+| Plugin installed  | `ls ~/.config/DankMaterialShell/plugins/omintyKeybinds ~/.config/DankMaterialShell/plugins/omintyActions` | both present (symlinks)                                  | [x]  |
 
 ---
 
@@ -36,9 +36,9 @@ Run these before the interactive tests and again after reboot (§D).
 
 | #   | Test                  | How                                   | Expected                                                                                                    | Pass |
 | --- | --------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---- |
-| B1  | Interaction explorer  | Press `Super+K`                       | DMS spotlight opens showing the Omivoid actions ("explorer" mode)                                           | [x]  |
+| B1  | Interaction explorer  | Press `Super+K`                       | DMS spotlight opens showing the Ominty actions ("explorer" mode)                                           | [x]  |
 | B2  | Explorer search       | With B1 open, type `browser`          | The browser action filters in                                                                               | [x]  |
-| B3  | Universal palette     | Press `Super+Space`, type `volume`    | Apps **and** Omivoid actions appear together                                                                | [x]  |
+| B3  | Universal palette     | Press `Super+Space`, type `volume`    | Apps **and** Ominty actions appear together                                                                | [x]  |
 | B4  | **Cheat sheet (GKS)** | Press `Super+Shift+S`                 | Read-only tabbed overlay opens (Apps / Navigate / Desktop / Workspaces / System / AI / Projects / Hardware) | [x]  |
 | B5  | Cheat-sheet search    | In B4, type `workspace`               | Rows filter live; text is legible (white on dark)                                                           | [x]  |
 | B6  | Cheat-sheet tabs      | In B4, click each tab                 | No overlapping labels; `Workspaces` tab populated; `Hardware` shows `F1`–`F7`                               | [x]  |

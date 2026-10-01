@@ -1,10 +1,10 @@
-"""Omivoid configuration loading (docs/12-configuration-layout.md).
+"""Ominty configuration loading (docs/12-configuration-layout.md).
 
 Phase 1 loads application roles with precedence:
 
     core defaults (config/apps.toml)
         ↓
-    user configuration (~/.config/omivoid/apps.toml)
+    user configuration (~/.config/ominty/apps.toml)
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ def load_apps_config() -> dict[str, str]:
 def load_ai_config() -> dict:
     """Load the [ai] configuration table (docs/ai/10 §9, docs/ai/02 §16).
 
-    Precedence: config/ai.toml < ~/.config/omivoid/ai.toml.
+    Precedence: config/ai.toml < ~/.config/ominty/ai.toml.
     Per-provider tables merge so a user override of one provider keeps
     the other provider's core defaults.
     """

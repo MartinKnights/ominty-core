@@ -7,8 +7,8 @@
 `docs/implementation/dms-plugin-inventory.md` §4.2
 
 ADR-006 §27–28 ask whether a DMS plugin can provide the event integration the
-Omivoid roadmap needs (e.g. wallpaper changed → regenerate theme) **without an
-Omivoid daemon**. `dankHooks` was the candidate.
+Ominty roadmap needs (e.g. wallpaper changed → regenerate theme) **without an
+Ominty daemon**. `dankHooks` was the candidate.
 
 ---
 
@@ -31,7 +31,7 @@ behaviour lives entirely in the script the user points each hook at.
 
 ## 2. Relevant hooks
 
-| Hook | Value | Possible Omivoid use |
+| Hook | Value | Possible Ominty use |
 |---|---|---|
 | `onWallpaperChanged` | wallpaper path | (re)generate theme output |
 | `onMatugenCompleted` | `<mode>:<result>` | react to DMS palette generation |
@@ -45,7 +45,7 @@ behaviour lives entirely in the script the user points each hook at.
 ## 3. Fit against the requirement
 
 `dankHooks` **matches** the ADR-006 §27 requirement: it is a first-party DMS
-daemon that can trigger an Omivoid action on a DMS event without a new Omivoid
+daemon that can trigger an Ominty action on a DMS event without a new Ominty
 process. The intended wiring is:
 
 ```text
@@ -53,12 +53,12 @@ DMS event (e.g. wallpaper changed)
    ↓
 dankHooks  →  script
    ↓
-omivoid action run <id>
+ominty action run <id>
 ```
 
 **However, Phase 1 has no mandatory event→action hook to wire.** DMS already
 owns the theme pipeline and regenerates via matugen on wallpaper change (the
-`onMatugenCompleted` hook exists precisely because DMS drives it). Omivoid's
+`onMatugenCompleted` hook exists precisely because DMS drives it). Ominty's
 `theme.palette.regenerate` is a *manual* regeneration action, not something that
 must fire on the event. So the bridge is valuable as **architecture**, not as a
 current need.
@@ -68,10 +68,10 @@ current need.
 **ADOPTED AND ACTIVATED (2026-09-27).**
 
 - Record `dankHooks` as the designated event bridge (satisfies ADR-006 §27,
-  avoids an Omivoid daemon).
+  avoids an Ominty daemon).
 - The original evaluation recommended **not activating** it yet: there was no
   mandatory Phase 1 event→action need, and AGENTS.md §35 favours not adding a
-  daemon speculatively. On 2026-09-27 the project decided the Omivoid-owned
+  daemon speculatively. On 2026-09-27 the project decided the Ominty-owned
   regeneration reaction **is** a real need and activated the bridge (§6). The
   recipe below documents the intended wiring, now carried out.
 
@@ -81,14 +81,14 @@ current need.
    ```text
    dms plugins install dankHooks
    ```
-2. Add a thin dispatcher the hook can call, e.g. `cli/omivoid-hook` (or a small
+2. Add a thin dispatcher the hook can call, e.g. `cli/ominty-hook` (or a small
    shell script) that maps a hook name to an action:
    ```sh
    #!/bin/sh
    # args: <hookName> <value>
    case "$1" in
-     onWallpaperChanged) exec omivoid action run theme.palette.regenerate ;;
-     # add mappings as Omivoid-owned reactions are introduced
+     onWallpaperChanged) exec ominty action run theme.palette.regenerate ;;
+     # add mappings as Ominty-owned reactions are introduced
      *) : ;;
    esac
    ```
@@ -118,9 +118,9 @@ Wired the event→action bridge for wallpaper changes.
 | Piece | Detail |
 |---|---|
 | Plugin | `dankHooks` v1.0.9 — `dms plugins install dankHooks` (`plugins.lock.json` updated) |
-| Dispatcher | `cli/omivoid-hook` (repo; symlinked to `~/.local/bin/omivoid-hook`): `onWallpaperChanged` → `omivoid action run theme.palette.regenerate` |
-| Hook config | `plugin_settings.json` → `dankHooks.enabled = true`, `dankHooks.wallpaperPath = ~/.local/bin/omivoid-hook` (backup saved: `plugin_settings.json.bak-omivoid-hook-*`) |
-| Audit trail | mapped hooks append `ISO8601 onWallpaperChanged <path>` to `$XDG_STATE_HOME/omivoid/hook.log` (`~/.local/state/omivoid/hook.log`) |
+| Dispatcher | `cli/ominty-hook` (repo; symlinked to `~/.local/bin/ominty-hook`): `onWallpaperChanged` → `ominty action run theme.palette.regenerate` |
+| Hook config | `plugin_settings.json` → `dankHooks.enabled = true`, `dankHooks.wallpaperPath = ~/.local/bin/ominty-hook` (backup saved: `plugin_settings.json.bak-ominty-hook-*`) |
+| Audit trail | mapped hooks append `ISO8601 onWallpaperChanged <path>` to `$XDG_STATE_HOME/ominty/hook.log` (`~/.local/state/ominty/hook.log`) |
 
 Rationale for the specific mapping: `theme.palette.regenerate` re-runs the
 matugen pipeline from the current wallpaper (docs/08 §27). DMS already
@@ -131,7 +131,7 @@ not a second generation pass.
 
 **Verified 2026-09-27:**
 
-- Dispatcher chain: `omivoid-hook onWallpaperChanged <current-wallpaper>` →
+- Dispatcher chain: `ominty-hook onWallpaperChanged <current-wallpaper>` →
   `OK: theme.palette.regenerate` (rc 0) + `hook.log` line.
 - `dms restart` reloads the plugin cleanly; `dms plugins list` shows `Dank Hooks`.
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 
-from omivoidlib.config import load_apps_config
+from omintylib.config import load_apps_config
 
 
 def run(action, args: dict) -> dict:

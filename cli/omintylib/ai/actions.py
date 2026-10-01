@@ -6,7 +6,7 @@ Composes the AI policy gate with the single action runner:
         ↓
     policy (ai/policy)
         ↓
-    runner (cli/omivoidlib/runner.py)
+    runner (cli/omintylib/runner.py)
 
 There is one execution path — the AI layer does not re-implement
 adapters or command execution (docs/ai/10 §25).

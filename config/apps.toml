@@ -1,9 +1,9 @@
-# Omivoid application roles — portable defaults
+# Ominty application roles — portable defaults
 # docs/12-configuration-layout.md §6, docs/03-action-registry-spec.md §26
 #
 # Application actions resolve roles rather than hard-coded executables.
 # Values below are portable defaults; users may override through
-# ~/.config/omivoid/apps.toml (user configuration wins).
+# ~/.config/ominty/apps.toml (user configuration wins).
 #
 # Values established by the environment audit (docs/implementation/environment-audit.md §9).
 

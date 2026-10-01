@@ -1,4 +1,4 @@
-"""dms.theme adapter — Omivoid theme operations via DMS (docs/08 §27).
+"""dms.theme adapter — Ominty theme operations via DMS (docs/08 §27).
 
 `regenerate` re-runs the DMS matugen pipeline from the **current**
 wallpaper without changing it (docs/08 §27 — useful after editing

@@ -1,4 +1,4 @@
-# Omivoid Phase 1 — User Sign-off Package
+# Ominty Phase 1 — User Sign-off Package
 
 **Purpose:** everything *you* (the project owner) need to decide or sign during
 Phase 1 close-out, each explained. Agent-owned items and the one open design
@@ -13,7 +13,7 @@ Void phase). Item 13 (appendix) is Tier 2 and opportunistic.
 | ------------------------------------------- | -------------------------------------------------- | ----------------- | ------------------------------------------------- |
 | **1. Desktop validation**                   | Perform and record the manual desktop tests        | Yes (DoD §25/§26) | Reference the filled checklist from `PROGRESS.md` |
 | **2. Exit review acceptance**               | Accept `phase-1-exit-review.md` (Draft → Accepted) | Yes               | Flip status, commit                               |
-| **3. Repo-boundary decision**               | Keep one repo, or split `omivoid-lmde/` out        | No                | Record the decision                               |
+| **3. Repo-boundary decision**               | Keep one repo, or split `ominty-core/` out        | No                | Record the decision                               |
 | **13. DMS "surface" contract** *(appendix)* | Say go / defer                                     | No                | Write the design note, or park it                 |
 
 ---
@@ -24,7 +24,7 @@ Void phase). Item 13 (appendix) is Tier 2 and opportunistic.
   regression checks clear, **Result: PASS** (date 27-09-2026, DoD §25/§26).
 - **2. Exit review acceptance** — ✅ **done:** accepted by the owner,
   `phase-1-exit-review.md` status → **Accepted** (2026-09-27).
-- **3. Repo boundary** — ✅ **decided: split.** `omivoid-lmde/` is now its own
+- **3. Repo boundary** — ✅ **decided: split.** `ominty-core/` is now its own
   git repository (history-preserving, 2026-09-27); the umbrella repo keeps
   `PROGRESS.md`. Decisions on #1/#2/#3 also logged in `PROGRESS.md`.
 - **13. DMS "surface" contract** — still open; default recommendation remains
@@ -54,7 +54,7 @@ sections, ticking boxes:
 
 | Section | What it tests                                                                                                                                          |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **A**   | Automated pre-checks (`omivoid registry validate`, `niri validate`, DMS active, fragment present, `omivoid` on PATH, plugins installed)                |
+| **A**   | Automated pre-checks (`ominty registry validate`, `niri validate`, DMS active, fragment present, `ominty` on PATH, plugins installed)                |
 | **B**   | Discovery & keybindings: `Super+K` explorer, `Super+Space` palette, `Super+Shift+S` GKS cheat sheet, `Super+A` AI menu, app launch, wallpaper carousel |
 | **C**   | Power-menu buttons (`Super+X`): Restart Audio, Restart Network, Reload Niri, built-in Restart DMS                                                      |
 | **D**   | Session lifecycle (**DoD §26**): log out, log in, reboot, verify everything still works after each                                                     |
@@ -99,10 +99,10 @@ committed.
 ## 3. Repo-boundary decision (completion plan #7)
 
 **What it is.** A structural decision: today there is **one** git repository
-(`~/Projects/OmiVoid`) that contains both the design/umbrella material
+(`~/Projects/Ominty`) that contains both the design/umbrella material
 (`docs/`, `PROGRESS.md`, `hardware/`, `niri/`, `quickshell/`, `upstream/`, …)
-**and** the implementing tree `omivoid-lmde/` as a plain subdirectory. There is
-no separate `omivoid-lmde.git`. Do we keep that, or split `omivoid-lmde/` into
+**and** the implementing tree `ominty-core/` as a plain subdirectory. There is
+no separate `ominty-core.git`. Do we keep that, or split `ominty-core/` into
 its own repository?
 
 **Why it's yours.** It decides where history, remotes and CI live long-term —
@@ -118,10 +118,10 @@ the project becomes public (AGENTS.md §32/§37) and as the Void phase begins.
   hygiene needs care so umbrella noise and implementation noise don't tangle;
   publishing just the implementation is harder.
 
-**Option B — split `omivoid-lmde/` into its own repository.**
+**Option B — split `ominty-core/` into its own repository.**
 
 - *Advantages:* clean separation of design vs implementation; independent
-  remote/CI; `omivoid-lmde` can be published on its own; context stays tight
+  remote/CI; `ominty-core` can be published on its own; context stays tight
   for future agents.
 - *Disadvantages:* a migration step (fresh history or filter-repo); the
   cross-references to `PROGRESS.md`/umbrella docs would need explaining or
@@ -146,12 +146,12 @@ This is the last open Tier 2 item. The completion plan calls it:
 
 ### The problem it solves
 
-Three DMS plugins currently consume Omivoid's action registry, and each
+Three DMS plugins currently consume Ominty's action registry, and each
 hard-codes its own idea of what an "action row" is:
 
-1. **`omivoidActions`** — the `Super+Space` palette shows actions alongside
+1. **`omintyActions`** — the `Super+Space` palette shows actions alongside
    apps;
-2. **`omivoidKeybinds` / GKS** — the `Super+Shift+S` cheat sheet renders
+2. **`omintyKeybinds` / GKS** — the `Super+Shift+S` cheat sheet renders
    actions as keybinding rows;
 3. **the DMS power menu** — `customPowerButtons` renders the three system
    restart actions as buttons.
@@ -169,7 +169,7 @@ and which actions belong to which surface.
 One canonical way to render registry data in any DMS plugin:
 
 1. **A generated, disposable runtime registry** — e.g.
-   `~/.cache/omivoid/registry.json`, exactly the pattern docs/03 §33 already
+   `~/.cache/ominty/registry.json`, exactly the pattern docs/03 §33 already
    reserves. The TOML stays the source of truth; the JSON is a stale-able
    snapshot.
 2. **A defined row shape** — a small, documented schema every plugin consumes:
@@ -179,7 +179,7 @@ One canonical way to render registry data in any DMS plugin:
    row" (title, subtitle, icon, sort) and one search prefix behaviour, instead
    of each plugin replicating it.
 
-The result (ADR-006 §2.2): DMS remains a **consumer** of Omivoid actions — it
+The result (ADR-006 §2.2): DMS remains a **consumer** of Ominty actions — it
 just stops hand-duplicating how it renders them.
 
 ### Why it's marked L and "may defer to Phase 2"
@@ -194,7 +194,7 @@ building parallel machinery. Hence "opportunistic".
 
 - **Default recommendation: defer to Phase 2.** The exit review already judged
   it non-blocking, and Phase 1 close-out doesn't need it. Revisit when a *fourth*
-  consumer appears or when the registry build (`~/.cache/omivoid/registry.json`)
+  consumer appears or when the registry build (`~/.cache/ominty/registry.json`)
   is needed for another reason.
 - **Want it now:** the actual deliverable for #13 is the **design note** (row
   schema + JSON shape + consumer list), not the full implementation. I'd write

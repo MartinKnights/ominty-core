@@ -1,8 +1,8 @@
-# Omivoid AI configuration — portable defaults
+# Ominty AI configuration — portable defaults
 # docs/12-configuration-layout.md, docs/ai/10 §9, docs/ai/02 §16
 #
 # Provider selection for generic AI actions (ai.ask). Users may override
-# through ~/.config/omivoid/ai.toml (user configuration wins).
+# through ~/.config/ominty/ai.toml (user configuration wins).
 #
 # Values established by the AI environment audit
 # (docs/implementation/ai-environment-audit.md).

@@ -1,6 +1,6 @@
-# Omivoid LMDE — DankMaterialShell Integration Specification
+# Ominty LMDE — DankMaterialShell Integration Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 **Shell framework:** Quickshell
 **Shell candidate:** DankMaterialShell (DMS)
@@ -9,11 +9,11 @@
 
 # 1. Purpose
 
-This document defines how Omivoid should evaluate and integrate DankMaterialShell.
+This document defines how Ominty should evaluate and integrate DankMaterialShell.
 
-DMS is considered a strong candidate for providing much of the graphical desktop shell required by Omivoid.
+DMS is considered a strong candidate for providing much of the graphical desktop shell required by Ominty.
 
-The purpose of the integration is to reuse mature shell functionality while preserving Omivoid's independent interaction architecture.
+The purpose of the integration is to reuse mature shell functionality while preserving Ominty's independent interaction architecture.
 
 ---
 
@@ -40,7 +40,7 @@ It should inspect:
 The intended relationship is:
 
 ```text
-Omivoid Interaction Architecture
+Ominty Interaction Architecture
           │
           ├── Action Registry
           ├── Keyboard Grammar
@@ -56,7 +56,7 @@ Omivoid Interaction Architecture
 
 DMS is a provider of shell functionality.
 
-It is not the definition of Omivoid.
+It is not the definition of Ominty.
 
 ---
 
@@ -88,7 +88,7 @@ Exact features should be confirmed against the installed version during implemen
 
 # 5. Integration Before Duplication
 
-If DMS provides a capability adequately, Omivoid should not rebuild it.
+If DMS provides a capability adequately, Ominty should not rebuild it.
 
 For example:
 
@@ -104,15 +104,15 @@ network.bluetooth.open
 DMS Bluetooth interface
 ```
 
-rather than creating a separate Omivoid Bluetooth UI.
+rather than creating a separate Ominty Bluetooth UI.
 
 The same applies to audio, Wi-Fi and wallpaper controls where appropriate.
 
 ---
 
-# 6. Omivoid Responsibilities
+# 6. Ominty Responsibilities
 
-Omivoid remains responsible for:
+Ominty remains responsible for:
 
 * action IDs;
 * action metadata;
@@ -192,13 +192,13 @@ A fork would significantly increase maintenance burden.
 
 # 10. Custom Quickshell Components
 
-Custom Omivoid Quickshell components are acceptable where DMS does not provide the required interaction.
+Custom Ominty Quickshell components are acceptable where DMS does not provide the required interaction.
 
 Likely candidates include:
 
 * `Super+K` Interaction Explorer;
 * chord continuation overlay;
-* Omivoid-specific AI palette;
+* Ominty-specific AI palette;
 * project palette.
 
 Before implementing each component, confirm that DMS does not already provide an adequate extension point or equivalent UI.
@@ -207,7 +207,7 @@ Before implementing each component, confirm that DMS does not already provide an
 
 # 11. `Super+K`
 
-The Omivoid Interaction Explorer is a core Omivoid feature.
+The Ominty Interaction Explorer is a core Ominty feature.
 
 Preferred order of implementation:
 
@@ -215,7 +215,7 @@ Preferred order of implementation:
 2. determine whether DMS plugin/extension mechanisms can host the UI;
 3. implement a separate Quickshell component only if necessary.
 
-Regardless of UI implementation, its data should come from the Omivoid Action Registry.
+Regardless of UI implementation, its data should come from the Ominty Action Registry.
 
 ---
 
@@ -223,9 +223,9 @@ Regardless of UI implementation, its data should come from the Omivoid Action Re
 
 DMS may already provide launcher functionality.
 
-If that launcher can expose arbitrary Omivoid actions cleanly, extend or integrate with it.
+If that launcher can expose arbitrary Ominty actions cleanly, extend or integrate with it.
 
-If it is application-only and cannot satisfy the Omivoid command/action model, then Omivoid may require a dedicated palette.
+If it is application-only and cannot satisfy the Ominty command/action model, then Ominty may require a dedicated palette.
 
 Do not create two visually competing launchers without a clear reason.
 
@@ -256,7 +256,7 @@ If DMS provides the notification daemon and history:
 
 * use it;
 * avoid starting an additional notification daemon;
-* route Omivoid action feedback through standard notification interfaces where appropriate.
+* route Ominty action feedback through standard notification interfaces where appropriate.
 
 There must not be competing notification daemons.
 
@@ -272,7 +272,7 @@ Do not introduce a second OSD stack.
 
 # 16. Power Menu
 
-If DMS provides a suitable power menu, Omivoid actions such as:
+If DMS provides a suitable power menu, Ominty actions such as:
 
 ```text
 session.lock
@@ -283,7 +283,7 @@ session.shutdown
 
 may be accessible from it.
 
-The underlying action semantics remain governed by Omivoid.
+The underlying action semantics remain governed by Ominty.
 
 ---
 
@@ -291,7 +291,7 @@ The underlying action semantics remain governed by Omivoid.
 
 DMS is expected to play a central role in wallpaper selection.
 
-The Omivoid action remains:
+The Ominty action remains:
 
 ```text
 theme.wallpaper.select
@@ -299,7 +299,7 @@ theme.wallpaper.select
 
 DMS may provide the implementation.
 
-Wallpaper selection should integrate with the Omivoid theme system rather than remain an isolated shell preference.
+Wallpaper selection should integrate with the Ominty theme system rather than remain an isolated shell preference.
 
 ---
 
@@ -307,9 +307,9 @@ Wallpaper selection should integrate with the Omivoid theme system rather than r
 
 DMS may use Matugen for dynamic colour generation.
 
-Omivoid should leverage this where appropriate.
+Ominty should leverage this where appropriate.
 
-However, Omivoid's architectural goal is:
+However, Ominty's architectural goal is:
 
 ```text
 Wallpaper
@@ -335,7 +335,7 @@ The theme system specification defines this boundary in more detail.
 
 DMS should remain responsible for normal tray rendering if available.
 
-Omivoid should not build an independent tray.
+Ominty should not build an independent tray.
 
 ---
 
@@ -347,7 +347,7 @@ This is presentation.
 
 Niri remains authoritative for workspace behaviour.
 
-Omivoid does not need to proxy basic workspace-state communication unless required for a specific feature.
+Ominty does not need to proxy basic workspace-state communication unless required for a specific feature.
 
 ---
 
@@ -355,7 +355,7 @@ Omivoid does not need to proxy basic workspace-state communication unless requir
 
 If DMS provides application launching, it may continue doing so.
 
-However, Omivoid application role actions must remain available.
+However, Ominty application role actions must remain available.
 
 Example:
 
@@ -383,13 +383,13 @@ The shell should not drift visually from:
 
 # 23. DMS Configuration
 
-DMS-specific configuration should remain separate from core Omivoid configuration.
+DMS-specific configuration should remain separate from core Ominty configuration.
 
 Recommended logical split:
 
 ```text
 config/
-    Omivoid settings
+    Ominty settings
 
 dms/
     DMS-specific integration
@@ -416,7 +416,7 @@ This will make future upgrades easier to diagnose.
 
 # 25. Failure Isolation
 
-A DMS failure should not invalidate the entire Omivoid action model.
+A DMS failure should not invalidate the entire Ominty action model.
 
 Where possible:
 
@@ -480,7 +480,7 @@ At the end of the initial evaluation, classify each needed shell capability as:
 ```text
 USE DMS
 EXTEND DMS
-OMIVOID COMPONENT
+OMINTY COMPONENT
 DEFER
 ```
 
@@ -494,13 +494,13 @@ DMS integration is successful when:
 
 * it reduces rather than increases shell complexity;
 * duplicated shell functionality is avoided;
-* Omivoid actions can invoke relevant DMS capabilities;
+* Ominty actions can invoke relevant DMS capabilities;
 * DMS remains replaceable;
-* custom Omivoid UI exists only where justified;
+* custom Ominty UI exists only where justified;
 * Niri remains authoritative for compositor state;
 * theme integration remains coherent;
 * the desktop feels like one environment rather than several overlapping shells.
 
 The guiding rule is:
 
-> **Use DMS as infrastructure where it is strong; build Omivoid where the interaction architecture requires something DMS does not provide.**
+> **Use DMS as infrastructure where it is strong; build Ominty where the interaction architecture requires something DMS does not provide.**

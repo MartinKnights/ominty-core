@@ -1,4 +1,4 @@
-# Omivoid — Global Keybindings System (GKS)
+# Ominty — Global Keybindings System (GKS)
 
 **Document:** 14
 **Status:** Phase 1 specification (GKS-1)
@@ -612,7 +612,7 @@ Two qualifications make the list usable:
 | Same combo, GKS vs DE default | `Super+K` (GKS explorer vs Niri `focus-window-up`) | **GKS wins** — the GKS layer sits above the DE default |
 | Same combo, user override | user re-points `Super+E` | User wins for that slot |
 
-The third row is exactly the `Mod+K` shadow already found in this project: Omivoid's include sits *after* DMS's, so the GKS claim wins. GKS makes that **intentional** rather than accidental.
+The third row is exactly the `Mod+K` shadow already found in this project: Ominty's include sits *after* DMS's, so the GKS claim wins. GKS makes that **intentional** rather than accidental.
 
 ### 17.2 The resolution algorithm
 
@@ -652,7 +652,7 @@ generator              (emits the Niri bindings fragment)
 Niri (dispatch)  +  DMS (shell-level binds)
 ```
 
-**GKS is a design law; the registry is its implementation.** The generator is the only thing allowed to write Omivoid's Niri binds — never a hand-edited fragment.
+**GKS is a design law; the registry is its implementation.** The generator is the only thing allowed to write Ominty's Niri binds — never a hand-edited fragment.
 
 ---
 
@@ -688,15 +688,15 @@ GKS should reserve a few **prefixes** as sub-namespaces, so a domain can grow wi
 
 ---
 
-21. Mapping GKS onto this implementation (Niri / DMS / Omivoid)
+21. Mapping GKS onto this implementation (Niri / DMS / Ominty)
 
 | GKS concern | Where it lives today |
 |---|---|
 | Canonical meaning | `actions/*.toml` (registry) |
-| Omivoid-owned bindings | `cli/omivoidlib/generator.py` → `~/.config/omivoid/generated/niri/bindings.kdl` |
+| Ominty-owned bindings | `cli/omintylib/generator.py` → `~/.config/ominty/generated/niri/bindings.kdl` |
 | Shell / system / media keys | DMS `dms/binds.kdl` |
 | Compositor dispatch | Niri |
-| Collision handling | include order (Omivoid after DMS) + DMS claims parsed live from `dms/binds.kdl` minus `OVERRIDE_KEYS` (static `DMS_CLAIMED_KEYS` is the fallback) |
+| Collision handling | include order (Ominty after DMS) + DMS claims parsed live from `dms/binds.kdl` minus `OVERRIDE_KEYS` (static `DMS_CLAIMED_KEYS` is the fallback) |
 
 Two GKS changes fall out of this:
 
@@ -737,16 +737,16 @@ The full, generated list lives in
 
 **Behaviour:**
 
-- Each tab groups by prefix and lists `key → action` — the same shape as the generated `omivoid-keybindings-by-modifier.md`.
+- Each tab groups by prefix and lists `key → action` — the same shape as the generated `ominty-keybindings-by-modifier.md`.
 - Search filters across *all* tabs.
 - Rows are generated from the **live** sources (registry + Niri + DMS) so the sheet can never drift from reality.
 - Where a universal `Ctrl` convention is shown, it is marked as *reference only*.
 
 **Implementation sketch (DMS + Quickshell):**
 
-- Today `Super+K` opens the DMS spotlight in explorer mode (`!` / `!!` sentinel) via the `omivoidActions` plugin.
+- Today `Super+K` opens the DMS spotlight in explorer mode (`!` / `!!` sentinel) via the `omintyActions` plugin.
 - A tabbed cheat sheet is a **DMS plugin surface** — a `PluginComponent` containing a `TabBar` + `ListView`.
-- Its data comes from a new command, `omivoid keybinds --json`, which merges the three sources and tags each row with its GKS domain.
+- Its data comes from a new command, `ominty keybinds --json`, which merges the three sources and tags each row with its GKS domain.
 - Fallback: extend DMS's built-in hotkey overlay (`show-hotkey-overlay`) if it can accept pre-grouped data.
 
 ---
@@ -764,7 +764,7 @@ The full, generated list lives in
 
 1. **Lock the grammar** ("GKS-1") and the reserved prefixes (§18, §19).
 2. **Resolve known collisions** (`Mod+K`, `Mod+P`) using the priority algorithm (§17).
-3. **Add `omivoid keybinds --json`** — merge registry + Niri + DMS, tag with domain.
+3. **Add `ominty keybinds --json`** — merge registry + Niri + DMS, tag with domain.
 4. **Build the tabbed cheat-sheet plugin** on that data (§22).
 5. **Audit the existing bindings** against the laws (§20); fix violations.
 6. **Freeze and version the grammar** as `docs/14-gks-keyboard-grammar.md`.
@@ -815,7 +815,7 @@ Implementation decisions:
 
 | Item | Decision |
 |---|---|
-| Cheat sheet | **Own DMS plugin** (`omivoidKeybinds`, `popoutContent` surface), *not* a fork of DMS's `KeybindsModal` |
+| Cheat sheet | **Own DMS plugin** (`omintyKeybinds`, `popoutContent` surface), *not* a fork of DMS's `KeybindsModal` |
 | Explorer invocation | `Super+K` (`help.keys.open`) opens the interaction explorer |
-| Cheat-sheet invocation | `Super+Shift+S` (`help.keybinds.open`) opens the tabbed cheat sheet via `dms ipc call omivoidKeybinds toggle` |
-| Data source | `omivoid keybinds --json` (merges registry + Niri + DMS, tags each row with its GKS domain) |
+| Cheat-sheet invocation | `Super+Shift+S` (`help.keybinds.open`) opens the tabbed cheat sheet via `dms ipc call omintyKeybinds toggle` |
+| Data source | `ominty keybinds --json` (merges registry + Niri + DMS, tags each row with its GKS domain) |

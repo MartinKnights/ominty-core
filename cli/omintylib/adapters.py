@@ -76,7 +76,7 @@ def load_adapter(adapter_name: str):
     if path is None or not path.is_file():
         raise KeyError(adapter_name)
     spec = importlib.util.spec_from_file_location(
-        f"omivoid_adapter_{adapter_name.replace('.', '_')}", path
+        f"ominty_adapter_{adapter_name.replace('.', '_')}", path
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

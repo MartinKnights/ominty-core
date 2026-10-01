@@ -13,9 +13,9 @@ from __future__ import annotations
 import subprocess
 from unittest.mock import patch
 
-from omivoidlib.adapters import load_adapter
-from omivoidlib.registry import load_registry
-from omivoidlib.runner import run_action
+from omintylib.adapters import load_adapter
+from omintylib.registry import load_registry
+from omintylib.runner import run_action
 
 
 def _load_theme_adapter():

@@ -1,4 +1,4 @@
-# Omivoid action registry — help
+# Ominty action registry — help
 # Schema version 1 (docs/03-action-registry-spec.md)
 # Help actions are core Phase 1 actions (docs/04 §12).
 
@@ -21,7 +21,7 @@ keywords = ["help", "keys", "shortcuts", "explorer", "discover"]
 keys = ["Super+K"]
 
 # ADR-006 §12: Super+K is served through the DMS launcher provider.
-# The Omivoid Actions plugin interprets a leading "!!" as "show all actions"
+# The Ominty Actions plugin interprets a leading "!!" as "show all actions"
 # (two characters because the DMS launcher ignores single-character queries
 # in its plugin phase), so the spotlight opens as an interaction explorer /
 # cheatsheet. The former Quickshell popup is retired.
@@ -48,7 +48,7 @@ category = "Help"
 keywords = ["search", "palette", "actions", "run", "launcher"]
 
 # Super+Space is claimed by DMS (spotlight launcher, dms-evaluation.md §4.2).
-# The action maps to DMS spotlight; the Omivoid popup is retired for search.
+# The action maps to DMS spotlight; the Ominty popup is retired for search.
 keys = ["Super+Space"]
 
 adapter = "command"
@@ -74,11 +74,11 @@ category = "Help"
 keywords = ["keybindings", "keys", "cheatsheet", "shortcuts", "gks", "sheet"]
 
 # Mod+Shift+K is claimed by DMS (move-window-up, dms/binds.kdl), so the cheat
-# sheet uses Super+Shift+S, which is free. Opens the omivoidKeybinds DMS plugin.
+# sheet uses Super+Shift+S, which is free. Opens the omintyKeybinds DMS plugin.
 keys = ["Super+Shift+S"]
 
 adapter = "command"
-command = ["dms", "ipc", "call", "omivoidKeybinds", "toggle"]
+command = ["dms", "ipc", "call", "omintyKeybinds", "toggle"]
 
 risk = "routine"
 confirmation = "never"

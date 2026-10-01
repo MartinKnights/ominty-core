@@ -1,4 +1,4 @@
-"""Omivoid AI layer — public interface (docs/ai/00, docs/ai/01).
+"""Ominty AI layer — public interface (docs/ai/00, docs/ai/01).
 
     provider_status(name) -> dict
     list_providers() -> list[dict]

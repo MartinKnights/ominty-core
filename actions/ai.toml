@@ -1,4 +1,4 @@
-# Omivoid action registry — AI
+# Ominty action registry — AI
 # Schema version 1 (docs/03-action-registry-spec.md)
 # docs/ai/10 §8 (ai.pi.open), §9 (ai.ask), §23–25 (Super+A namespace)
 
@@ -13,7 +13,7 @@ description = "AI and agent operations"
 # AI-17/AI-18: DMS has no AI surface and Niri has no keybinding chords
 # (docs/implementation/ai-dms-evaluation.md §6). The AI prefix is therefore
 # presented by the DMS spotlight in AI mode via the "!ai" sentinel, handled
-# by the Omivoid Actions launcher plugin.
+# by the Ominty Actions launcher plugin.
 [action."ai.menu.open"]
 
 name = "AI Menu"

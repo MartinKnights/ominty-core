@@ -10,7 +10,7 @@
 # 1. Purpose
 
 This document records the evaluation of DMS core capabilities and DMS
-plugins against Omivoid requirements, per ADR-006 (DMS Plugin-First
+plugins against Ominty requirements, per ADR-006 (DMS Plugin-First
 Integration).
 
 The decision path for every desktop-facing requirement is:
@@ -22,7 +22,7 @@ Existing Plugin
    ↓
 Extend Plugin
    ↓
-Omivoid Plugin
+Ominty Plugin
    ↓
 Standalone Component
 ```
@@ -45,7 +45,7 @@ REJECT
 DMS 1.6.1 ships the following built-in modules (verified in
 `/usr/share/quickshell/dms/Modules/`):
 
-| Module | Purpose | Omivoid Relevance |
+| Module | Purpose | Ominty Relevance |
 | ------ | ------- | ----------------- |
 | DankBar | Top bar | Shell presentation (USE DMS) |
 | DankDash | Dashboard overlay | Wallpaper browsing (`Mod+Y`) |
@@ -68,7 +68,7 @@ DMS 1.6.1 ships the following built-in modules (verified in
 | KeybindsModal | Keybinding viewer/editor | **Super+K candidate** |
 | DankLauncherV2 | Spotlight launcher | **Super+Space candidate** |
 
-**Classification:** DMS core provides the shell presentation layer. Omivoid
+**Classification:** DMS core provides the shell presentation layer. Ominty
 consumes it via `dms ipc call` and the generated Niri fragment.
 
 ---
@@ -87,10 +87,10 @@ consumes it via `dms ipc call` and the generated Niri fragment.
 | Purpose | Control connected devices via KDE Connect/Valent |
 
 **Classification:** ADOPT WITH CONFIGURATION (user-installed; phone
-integration is a personal convenience, not core Omivoid).
+integration is a personal convenience, not core Ominty).
 
-**Omivoid role:** None directly. May later surface as a `phone.*` action
-namespace if Omivoid exposes device actions.
+**Ominty role:** None directly. May later surface as a `phone.*` action
+namespace if Ominty exposes device actions.
 
 ## 3.2 quickCapture (Quick Capture)
 
@@ -105,7 +105,7 @@ namespace if Omivoid exposes device actions.
 
 **Classification:** ADOPT WITH CONFIGURATION (user-installed).
 
-**Omivoid role:** DMS already binds `Print`/`Ctrl+Print`/`Alt+Print` to
+**Ominty role:** DMS already binds `Print`/`Ctrl+Print`/`Alt+Print` to
 `dms screenshot`. quickCapture extends this with annotation/recording.
 `capture.screenshot.*` actions in the registry map to `dms screenshot`
 (adapter `dms.ipc`), which quickCapture may enhance.
@@ -123,7 +123,7 @@ namespace if Omivoid exposes device actions.
 
 **Classification:** ADOPT WITH CONFIGURATION (user-installed).
 
-**Omivoid role:** `theme.wallpaper.select` / `theme.wallpaper.next` may
+**Ominty role:** `theme.wallpaper.select` / `theme.wallpaper.next` may
 integrate with this plugin's IPC (`noctalia msg plugin
 yngwe/wallpaperCarousel:service all <event>`) or with DMS core wallpaper
 handling. Evaluation pending at the theme stage.
@@ -144,27 +144,27 @@ handling. Evaluation pending at the theme stage.
 | Status | reviewed |
 | Installed for evaluation | yes (trigger `\`) |
 
-**Omivoid role:** **`Super+K` candidate** (ADR-006 §12).
+**Ominty role:** **`Super+K` candidate** (ADR-006 §12).
 
 **Evaluation result (2026-09-11):**
 
 - Source of data: `dms keybinds show <provider>` (`DankLauncherKeys.qml`
   `Process.command`), the same parser used by the DMS keybinds modal.
-- **The parser does not resolve the Omivoid Niri include.** Verified:
+- **The parser does not resolve the Ominty Niri include.** Verified:
   `dms keybinds show niri` reports `Mod+K → focus-window-up`
   (`source=dms-default`) and does not list `Mod+Return`, `Mod+Shift+B` or
-  the Omivoid override of `Mod+K`.
+  the Ominty override of `Mod+K`.
 - The plugin has no extension surface for injecting external registry data;
   it consumes only the DMS keybinds parser output.
-- It cannot surface Omivoid action names, descriptions, categories or
+- It cannot surface Ominty action names, descriptions, categories or
   keywords.
 
 **Conclusion:** dankLauncherKeys cannot satisfy the ADR-006 §12 requirement
-that the `Super+K` interface consume Omivoid registry data. It remains
+that the `Super+K` interface consume Ominty registry data. It remains
 useful as a general compositor/DMS keybind search.
 
 **Classification:** REFERENCE ONLY (for `Super+K`). Not adopted as the
-Omivoid interaction explorer.
+Ominty interaction explorer.
 
 ## 4.2 dankHooks — Event Integration
 
@@ -177,7 +177,7 @@ Omivoid interaction explorer.
 | Purpose | Trigger scripts based on various system events |
 | Status | **installed + wired** (2026-09-27) |
 
-**Omivoid role:** **Event bridge** (ADR-006 §27) — `onWallpaperChanged` →
+**Ominty role:** **Event bridge** (ADR-006 §27) — `onWallpaperChanged` →
 `theme.palette.regenerate`.
 
 ```text
@@ -185,12 +185,12 @@ DMS event (wallpaper changed, etc.)
    ↓
 dankHooks (pluginData.wallpaperPath)
    ↓
-cli/omivoid-hook  (→ audit line in $XDG_STATE_HOME/omivoid/hook.log)
+cli/ominty-hook  (→ audit line in $XDG_STATE_HOME/ominty/hook.log)
    ↓
-omivoid action run theme.palette.regenerate
+ominty action run theme.palette.regenerate
 ```
 
-Satisfies the Phase 1 event requirement without an Omivoid daemon (ADR-006 §28).
+Satisfies the Phase 1 event requirement without an Ominty daemon (ADR-006 §28).
 
 **Classification:** EVALUATED (2026-09-24) → **ADOPTED AND ACTIVATED** (2026-09-27);
 see `dankhooks-evaluation.md` §4/§6.
@@ -206,11 +206,11 @@ see `dankhooks-evaluation.md` §4/§6.
 | Purpose | Execute shell commands from the launcher with history tracking |
 | Status | reviewed |
 
-**Omivoid role:** Expert interface (ADR-006 §29). Arbitrary shell execution
-must NOT replace canonical Omivoid actions for normal workflows.
+**Ominty role:** Expert interface (ADR-006 §29). Arbitrary shell execution
+must NOT replace canonical Ominty actions for normal workflows.
 
-**Classification:** REFERENCE ONLY (or DEFER). Omivoid actions should be
-invoked via `omivoid action run <id>`, not raw shell.
+**Classification:** REFERENCE ONLY (or DEFER). Ominty actions should be
+invoked via `ominty action run <id>`, not raw shell.
 
 ## 4.4 aiAssistant — AI Chat
 
@@ -224,10 +224,10 @@ invoked via `omivoid action run <id>`, not raw shell.
 | Purpose | Integrated AI chat assistant with markdown, multiple providers, streaming |
 | Status | reviewed |
 
-**Omivoid role:** AI presentation layer candidate (ADR-006 §31). Must NOT
-replace the Omivoid AI architecture (Pi, Herdr, Action Registry policy).
+**Ominty role:** AI presentation layer candidate (ADR-006 §31). Must NOT
+replace the Ominty AI architecture (Pi, Herdr, Action Registry policy).
 
-**Classification:** REFERENCE ONLY for Phase 1. Omivoid AI policy
+**Classification:** REFERENCE ONLY for Phase 1. Ominty AI policy
 (`ai_accessible`, `risk`, `confirmation`) governs AI capability access.
 
 ## 4.5 tailscale — Tailscale Manager
@@ -242,7 +242,7 @@ replace the Omivoid AI architecture (Pi, Herdr, Action Registry policy).
 | Purpose | Tailscale-toggle plugin for DankBar |
 | Status | **unmaintained, deprecated** |
 
-**Omivoid role:** Network UI (ADR-006 §18 suggested "Adopt candidate").
+**Ominty role:** Network UI (ADR-006 §18 suggested "Adopt candidate").
 
 **Classification:** REJECT (deprecated/unmaintained). If Tailscale UI is
 needed, evaluate alternatives or defer.
@@ -259,7 +259,7 @@ needed, evaluate alternatives or defer.
 | Purpose | See pending tasks in status bar, create tasks, check off |
 | Status | reviewed |
 
-**Omivoid role:** Project workflow candidate (ADR-006 §18: "Defer/Evaluate").
+**Ominty role:** Project workflow candidate (ADR-006 §18: "Defer/Evaluate").
 Strong local-first fit.
 
 **Classification:** DEFER for Phase 1. Project workflow is reserved
@@ -276,21 +276,21 @@ Strong local-first fit.
 | Purpose | Simple todo list from the launcher |
 | Status | reviewed |
 
-**Omivoid role:** Project workflow candidate.
+**Ominty role:** Project workflow candidate.
 
 **Classification:** DEFER for Phase 1 (same rationale as taskwarrior).
 
 ---
 
-# 5. Omivoid Requirement Mapping
+# 5. Ominty Requirement Mapping
 
-| Requirement | DMS Core | Existing Plugin | Omivoid Plugin | Standalone |
+| Requirement | DMS Core | Existing Plugin | Ominty Plugin | Standalone |
 | ----------- | -------- | --------------- | -------------- | ---------- |
-| `Super+K` interaction explorer | KeybindsModal (partial — no Omivoid data) | dankLauncherKeys (REFERENCE ONLY — cannot consume registry) | **Omivoid Actions launcher provider (wired: `openQuery "!!"`)** | Omivoid popup (retired) |
-| `Super+Space` universal palette | DankLauncherV2 spotlight | — | **Omivoid Actions launcher provider (wired: always-active / merge)** | Custom launcher (rejected) |
-| `Super+A` AI namespace | — | aiAssistant (reference only) | Future Omivoid AI provider | Future |
-| `Super+P` project namespace | — | taskwarrior/todoLauncher (defer) | Future Omivoid project provider | Future |
-| Event integration | — | dankHooks (installed) | Active | Omivoid daemon (deferred) |
+| `Super+K` interaction explorer | KeybindsModal (partial — no Ominty data) | dankLauncherKeys (REFERENCE ONLY — cannot consume registry) | **Ominty Actions launcher provider (wired: `openQuery "!!"`)** | Ominty popup (retired) |
+| `Super+Space` universal palette | DankLauncherV2 spotlight | — | **Ominty Actions launcher provider (wired: always-active / merge)** | Custom launcher (rejected) |
+| `Super+A` AI namespace | — | aiAssistant (reference only) | Future Ominty AI provider | Future |
+| `Super+P` project namespace | — | taskwarrior/todoLauncher (defer) | Future Ominty project provider | Future |
+| Event integration | — | dankHooks (installed) | Active | Ominty daemon (deferred) |
 | Wallpaper/theme | WallpaperBackground, DankDash | wallpaperCarousel (installed) | Future theme provider | Custom theme engine (rejected) |
 | Screenshots | `dms screenshot` | quickCapture (installed) | — | — |
 | Audio/brightness/media | `dms ipc call` | — | — | — |
@@ -302,41 +302,41 @@ Strong local-first fit.
 Based on this audit:
 
 1. ✅ **Install and evaluate `dankLauncherKeys`** for `Super+K` (ADR-006 §12).
-   **Result:** cannot consume Omivoid registry data; classified REFERENCE
+   **Result:** cannot consume Ominty registry data; classified REFERENCE
    ONLY.
-2. ✅ **Prototype the "Omivoid Actions" DMS launcher plugin** (ADR-006 §10).
-   **Result:** built at `shell/dms/omivoid-actions/`; loads 21 registry
-   actions; invokes actions via `omivoid action run <id>`. See §6.1.
+2. ✅ **Prototype the "Ominty Actions" DMS launcher plugin** (ADR-006 §10).
+   **Result:** built at `shell/dms/ominty-actions/`; loads 21 registry
+   actions; invokes actions via `ominty action run <id>`. See §6.1.
 3. ✅ **Evaluate `dankHooks`** for event integration (wallpaper → theme
-   regenerate) to avoid an Omivoid daemon. **Result:** ADOPT WITH
+   regenerate) to avoid an Ominty daemon. **Result:** ADOPT WITH
    CONFIGURATION (not activated — no Phase 1 event→action need); see
    `dankhooks-evaluation.md`.
-4. ✅ **Retire the Omivoid Quickshell popup.** `Super+K` now opens the DMS
-   spotlight with `openQuery "!!"`; `Super+Space` merges Omivoid actions
+4. ✅ **Retire the Ominty Quickshell popup.** `Super+K` now opens the DMS
+   spotlight with `openQuery "!!"`; `Super+Space` merges Ominty actions
    into the palette. See §6.2.
 5. ⏳ **Defer** AI presentation, project workflow, and Tailscale UI to later
    stages.
 
-## 6.1 Omivoid Actions plugin prototype
+## 6.1 Ominty Actions plugin prototype
 
 | Field | Value |
 | ----- | ----- |
-| Location | `shell/dms/omivoid-actions/` |
-| Plugin ID | `omivoidActions` |
+| Location | `shell/dms/ominty-actions/` |
+| Plugin ID | `omintyActions` |
 | Type | `launcher` (capabilities `launcher`, `action-registry`) |
 | Activation | always-active (palette merge) by default; optional trigger |
 | Explorer | `!!` query sentinel (Super+K) |
-| Data source | `omivoid action list --json` |
-| Execution | `omivoid action run <id>` |
+| Data source | `ominty action list --json` |
+| Execution | `ominty action run <id>` |
 | Install (dev) | symlink into `~/.config/DankMaterialShell/plugins/` |
 
 Verified 2026-09-11:
 
 ```text
-DMS: Plugin loaded: omivoidActions
-DMS: [OmivoidActions] Activation mode: always-active (palette merge)
-DMS: [OmivoidActions] Loaded 21 actions from registry
-DMS: [OmivoidActions] Explorer requested: 21 actions
+DMS: Plugin loaded: omintyActions
+DMS: [OmintyActions] Activation mode: always-active (palette merge)
+DMS: [OmintyActions] Loaded 21 actions from registry
+DMS: [OmintyActions] Explorer requested: 21 actions
 ```
 
 ## 6.2 `Super+K` / `Super+Space` wiring
@@ -344,19 +344,19 @@ DMS: [OmivoidActions] Explorer requested: 21 actions
 | Path | Binding | Mechanism |
 | ---- | ------- | --------- |
 | Interaction explorer | `Super+K` | `help.keys.open` → adapter `shell.explorer` → spawn `dms ipc call spotlight openQuery "!!"` |
-| Keybindings cheat sheet | `Super+Shift+S` | `help.keybinds.open` → adapter `command` → spawn `dms ipc call omivoidKeybinds toggle` (own `omivoidKeybinds` DMS plugin, tabbed by GKS domain) |
+| Keybindings cheat sheet | `Super+Shift+S` | `help.keybinds.open` → adapter `command` → spawn `dms ipc call omintyKeybinds toggle` (own `omintyKeybinds` DMS plugin, tabbed by GKS domain) |
 | Universal palette | `Super+Space` (DMS `Mod+Space`) | plugin is always-active, so `getItems(query)` runs alongside app search (`help.actions.search` toggles the spotlight) |
 
 Design notes:
 
 - The plugin is registered **always-active** (`noTrigger = true`,
-  `trigger = ""`) so Omivoid actions merge into every search (ADR-006 §13).
+  `trigger = ""`) so Ominty actions merge into every search (ADR-006 §13).
 - The `Super+K` explorer uses the `!!` sentinel because the DMS launcher
   ignores single-character queries in its plugin phase; the plugin treats a
   leading run of `!` as an explicit explorer request.
 - The `shell.explorer` adapter (`adapters/dms/explorer.py`) makes the action
   runnable from every surface (CLI, AI, palette), not only the Niri binding.
-- The former Omivoid Quickshell popup is retired.
+- The former Ominty Quickshell popup is retired.
 
 Verified live 2026-09-11:
 
@@ -373,7 +373,7 @@ dms ipc call spotlight openQuery "volume"  → Palette query: 3 actions
 # 7. Plugin Locking
 
 DMS supports plugin locking via `plugins.lock.json`
-(`~/.config/DankMaterialShell/plugins.lock.json`). Omivoid-supported
+(`~/.config/DankMaterialShell/plugins.lock.json`). Ominty-supported
 plugins should be recorded there for reproducible installations
 (ADR-006 §32).
 
@@ -393,16 +393,16 @@ Current lockfile records:
 
 Resolved during this audit:
 
-- ✅ Can `dankLauncherKeys` consume Omivoid registry data? **No** — it
+- ✅ Can `dankLauncherKeys` consume Ominty registry data? **No** — it
   consumes only `dms keybinds show <provider>`, which does not resolve the
-  Omivoid include.
+  Ominty include.
 - ✅ Does the DMS launcher plugin contract support dynamic item loading from
   an external process? **Yes** — `getItems()` + `Process` reading
-  `omivoid action list --json` works (21 actions loaded).
-- ✅ Should the Omivoid Actions plugin use a trigger prefix or
+  `ominty action list --json` works (21 actions loaded).
+- ✅ Should the Ominty Actions plugin use a trigger prefix or
   always-visible mode? **Always-visible (palette merge) is the Phase 1
   default**; a trigger prefix remains available via settings.
-- ✅ For `Super+Space`, should Omivoid actions merge into every search or
+- ✅ For `Super+Space`, should Ominty actions merge into every search or
   stay behind a trigger? **Merge** (ADR-006 §13; user decision
   2026-09-11).
 - ✅ Should `Super+K` open the launcher with a trigger or a dedicated
@@ -412,7 +412,7 @@ Resolved during this audit:
 
 Still open:
 
-- Does `dankHooks` support the specific events Omivoid needs (wallpaper
+- Does `dankHooks` support the specific events Ominty needs (wallpaper
   changed, session events)?
 
 ---
@@ -423,5 +423,5 @@ This inventory should be updated when:
 
 - the DMS plugin registry changes materially;
 - a plugin's maintenance status changes;
-- a new Omivoid requirement maps to a plugin;
+- a new Ominty requirement maps to a plugin;
 - a plugin is adopted, extended, or rejected.

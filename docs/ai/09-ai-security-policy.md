@@ -1,6 +1,6 @@
-# Omivoid AI Security Policy
+# Ominty AI Security Policy
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 09
 **Status:** Phase 1 Security Specification
@@ -9,7 +9,7 @@
 
 # 1. Purpose
 
-This document defines security principles governing AI interaction with Omivoid.
+This document defines security principles governing AI interaction with Ominty.
 
 AI introduces a new trust boundary because model-generated decisions may result in:
 
@@ -168,7 +168,7 @@ AI invocation must respect these policies.
 
 # 10. Confirmation Boundary
 
-Confirmation is performed by Omivoid.
+Confirmation is performed by Ominty.
 
 The AI provider cannot approve its own action.
 
@@ -193,7 +193,7 @@ before approving a significant operation.
 
 Pi may legitimately require shell access for open-ended development work.
 
-Shell access and Omivoid capability access are separate security surfaces.
+Shell access and Ominty capability access are separate security surfaces.
 
 Do not pretend the Action Registry alone creates a complete sandbox around Pi.
 
@@ -211,7 +211,7 @@ Privileged operations require explicit design and user involvement.
 
 AI should not routinely run as root.
 
-Omivoid desktop AI integration must operate as the normal user unless a specifically authorised action requires elevation.
+Ominty desktop AI integration must operate as the normal user unless a specifically authorised action requires elevation.
 
 ---
 
@@ -273,7 +273,7 @@ Such content is data, not automatically trusted instructions.
 Conceptually:
 
 ```text
-Omivoid security policy
+Ominty security policy
         ↓
 provider/tool policy
         ↓
@@ -292,7 +292,7 @@ External content must not override higher-level policy.
 
 Files such as `AGENTS.md` may legitimately contain project instructions.
 
-Their authority is limited to the project/workflow and cannot override Omivoid security controls.
+Their authority is limited to the project/workflow and cannot override Ominty security controls.
 
 ---
 
@@ -467,7 +467,7 @@ Operational logging should favour metadata.
 
 # 36. Auditability
 
-For AI-triggered Omivoid actions, useful audit data includes:
+For AI-triggered Ominty actions, useful audit data includes:
 
 ```text
 timestamp
@@ -629,4 +629,4 @@ A new review is required before adding:
 
 # 50. Guiding Principle
 
-> **AI can propose and request. Omivoid remains the authority that decides what the desktop actually does.**
+> **AI can propose and request. Ominty remains the authority that decides what the desktop actually does.**

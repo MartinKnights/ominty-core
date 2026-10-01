@@ -55,7 +55,7 @@ UNIVERSAL_CONVENTIONS: tuple[tuple[str, str], ...] = (
 )
 
 # Source priority: later sources win a key collision (docs/14 §17).
-_SOURCE_ORDER = {"Niri": 0, "DMS": 1, "OmiVoid": 2}
+_SOURCE_ORDER = {"Niri": 0, "DMS": 1, "Ominty": 2}
 
 # ---- Human-readable labels (cheat sheet) --------------------------------
 # Both columns must read as plain English: no XF86 codes, no spawn commands,
@@ -122,7 +122,7 @@ ACTION_LABELS: dict[str, str] = {
     'spawn "dms" "ipc" "call" "mpris" "playPause"': "Play/Pause",
     'spawn "dms" "ipc" "call" "notepad" "toggle"': "Notepad",
     'spawn "dms" "ipc" "call" "notifications" "toggle"': "Notifications",
-    'spawn "dms" "ipc" "call" "omivoidKeybinds" "toggle"': "Keybindings Cheat Sheet",
+    'spawn "dms" "ipc" "call" "omintyKeybinds" "toggle"': "Keybindings Cheat Sheet",
     'spawn "dms" "ipc" "call" "powermenu" "toggle"': "Power Menu",
     'spawn "dms" "ipc" "call" "processlist" "focusOrToggle"': "Task Manager",
     'spawn "dms" "ipc" "call" "settings" "focusOrToggle"': "Settings",
@@ -140,7 +140,7 @@ ACTION_LABELS: dict[str, str] = {
     'spawn "ghostty"': "Terminal",
 }
 
-# Registry action IDs (chords, and omivoid-run spawns).
+# Registry action IDs (chords, and ominty-run spawns).
 REGISTRY_ACTION_LABELS: dict[str, str] = {
     "app.browser.open": "Open Browser",
     "app.terminal.open": "Open Terminal",
@@ -350,7 +350,7 @@ def registry_bindings(registry) -> list[dict]:
                     "key": norm,
                     "domain": classify_domain(norm),
                     "action": action.id,
-                    "source": "OmiVoid",
+                    "source": "Ominty",
                     "shadowed": False,
                 }
             )
@@ -362,7 +362,7 @@ def _default_sources() -> list[tuple[str, Path]]:
     return [
         ("Niri", config / "niri" / "config.kdl"),
         ("DMS", config / "niri" / "dms" / "binds.kdl"),
-        ("OmiVoid", config / "omivoid" / "generated" / "niri" / "bindings.kdl"),
+        ("Ominty", config / "ominty" / "generated" / "niri" / "bindings.kdl"),
     ]
 
 

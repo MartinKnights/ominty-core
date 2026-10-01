@@ -1,8 +1,8 @@
-# Omivoid action registry — system service restarts
+# Ominty action registry — system service restarts
 # Schema version 1 (docs/03-action-registry-spec.md)
 #
 # Low-frequency service restarts, surfaced as DMS power-menu buttons
-# (settings.json `customPowerButtons` → `omivoid action run <id>`).
+# (settings.json `customPowerButtons` → `ominty action run <id>`).
 # They carry no keys so they do not duplicate compositor bindings
 # (AGENTS.md §14); they exist for the power menu, palette and CLI.
 

@@ -1,14 +1,14 @@
-# Omivoid LMDE — AI Integration Specification
+# Ominty LMDE — AI Integration Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
-**Primary concepts:** Pi, Herdr, Omivoid Actions
+**Primary concepts:** Pi, Herdr, Ominty Actions
 
 ---
 
 # 1. Purpose
 
-This document defines how AI integrates into Omivoid.
+This document defines how AI integrates into Ominty.
 
 AI is a first-class interaction surface.
 
@@ -16,7 +16,7 @@ It is not intended to be merely another desktop application.
 
 The central principle is:
 
-> **AI should interact with the Omivoid capability model wherever practical rather than directly manipulating implementation-specific system commands.**
+> **AI should interact with the Ominty capability model wherever practical rather than directly manipulating implementation-specific system commands.**
 
 ---
 
@@ -40,7 +40,7 @@ User
         └── Future agents
         │
         ▼
- Omivoid Action Registry
+ Ominty Action Registry
         │
         ▼
  Controlled Capabilities
@@ -49,13 +49,13 @@ User
 AI is both:
 
 * something the user invokes;
-* an authorised consumer of Omivoid actions.
+* an authorised consumer of Ominty actions.
 
 ---
 
 # 3. Laptop Role
 
-The Omivoid laptop is primarily a thinking and creation environment.
+The Ominty laptop is primarily a thinking and creation environment.
 
 Primary workloads include:
 
@@ -78,7 +78,7 @@ It is not expected to host every heavy AI workload locally.
 The wider architecture may eventually operate as:
 
 ```text
-Omivoid Laptop
+Ominty Laptop
       │
       ├── Pi
       │
@@ -111,11 +111,11 @@ Potential responsibilities include:
 * research support;
 * code assistance;
 * local project context;
-* invoking authorised Omivoid actions.
+* invoking authorised Ominty actions.
 
 Pi should remain replaceable.
 
-Omivoid should integrate with Pi through an adapter or defined interface rather than embedding Pi-specific assumptions throughout the desktop.
+Ominty should integrate with Pi through an adapter or defined interface rather than embedding Pi-specific assumptions throughout the desktop.
 
 ---
 
@@ -375,7 +375,7 @@ Example:
 ai.selection.explain
 ```
 
-should only be offered when Omivoid can actually acquire relevant selected text.
+should only be offered when Ominty can actually acquire relevant selected text.
 
 ---
 
@@ -406,7 +406,7 @@ User selects text
        ↓
 Super+A,E
        ↓
-Omivoid obtains selection
+Ominty obtains selection
        ↓
 context packaged
        ↓
@@ -470,7 +470,7 @@ Full project-context management is outside the minimum Phase 1 implementation.
 
 # 20. AI Provider Abstraction
 
-Omivoid should not bind the entire AI subsystem to Pi.
+Ominty should not bind the entire AI subsystem to Pi.
 
 Conceptually:
 
@@ -523,7 +523,7 @@ AI-facing actions should be callable through the same runtime used by CLI where 
 Example:
 
 ```text
-omivoid action run theme.wallpaper.select
+ominty action run theme.wallpaper.select
 ```
 
 and an AI tool call to:
@@ -616,7 +616,7 @@ Where practical, core AI interaction should support local tooling.
 
 The desktop should not require permanent cloud connectivity merely to expose the AI interaction layer.
 
-However, Omivoid should remain capable of invoking remote providers where configured.
+However, Ominty should remain capable of invoking remote providers where configured.
 
 ---
 
@@ -672,7 +672,7 @@ The user should not need to know machine-specific orchestration commands.
 
 # 31. Tailscale
 
-Remote Omivoid/IBIS communication may use the existing Tailscale network.
+Remote Ominty/IBIS communication may use the existing Tailscale network.
 
 Tailscale is transport infrastructure.
 
@@ -748,7 +748,7 @@ Priority order:
 5. implement `ai.herdr.open` if Herdr is available;
 6. test selected-text acquisition;
 7. implement one context action if reliable;
-8. expose at least one non-AI Omivoid action safely to an AI provider as proof of concept.
+8. expose at least one non-AI Ominty action safely to an AI provider as proof of concept.
 
 ---
 
@@ -767,12 +767,12 @@ Action discovery
        ↓
 app.browser.open
        ↓
-Omivoid action runner
+Ominty action runner
        ↓
 configured browser
 ```
 
-This proves that AI is participating in the Omivoid action architecture rather than merely executing arbitrary shell commands.
+This proves that AI is participating in the Ominty action architecture rather than merely executing arbitrary shell commands.
 
 ---
 
@@ -786,10 +786,10 @@ AI integration is successful when:
 * AI actions exist in the registry;
 * recursion is controlled;
 * context actions fail safely when context is unavailable;
-* at least one controlled Omivoid capability can be exposed to AI;
+* at least one controlled Ominty capability can be exposed to AI;
 * heavy remote infrastructure is not required for normal laptop operation;
 * future distributed execution can be added without redesigning the interaction model.
 
 The Phase 1 goal is not maximum autonomy.
 
-It is to establish AI as a **controlled, native participant in the Omivoid desktop architecture**.
+It is to establish AI as a **controlled, native participant in the Ominty desktop architecture**.

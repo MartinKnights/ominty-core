@@ -1,15 +1,15 @@
-Having looked at the **current DMS plugin registry**, I think the DMS decision is even more useful for Omivoid than we originally anticipated. DMS already supplies a substantial desktop platform—launcher, clipboard, notifications, system controls, theming, monitoring, etc.—and its plugin model supports widgets, daemons, launcher providers, desktop widgets and composites. ([GitHub][1])
+Having looked at the **current DMS plugin registry**, I think the DMS decision is even more useful for Ominty than we originally anticipated. DMS already supplies a substantial desktop platform—launcher, clipboard, notifications, system controls, theming, monitoring, etc.—and its plugin model supports widgets, daemons, launcher providers, desktop widgets and composites. ([GitHub][1])
 
 That means I would **not install lots of plugins simply because they are available**. I would choose plugins that strengthen the three things your laptop is becoming particularly good at: **project/research work, infrastructure access, and AI-assisted workflows**.
 
-## My shortlist for Omivoid
+## My shortlist for Ominty
 
 | Priority | Plugin                 | Why it fits                                                                   |
 | -------- | ---------------------- | ----------------------------------------------------------------------------- |
 | ★★★★★    | **Dank Launcher Keys** | Almost exactly our `Super+K` requirement                                      |
-| ★★★★★    | **Dank Hooks**         | Excellent bridge between DMS and the Omivoid Action Registry                  |
+| ★★★★★    | **Dank Hooks**         | Excellent bridge between DMS and the Ominty Action Registry                  |
 | ★★★★★    | **Tailscale Manager**  | Directly relevant to your distributed IBIS environment                        |
-| ★★★★★    | **Command Runner**     | Very useful foundation for Omivoid actions                                    |
+| ★★★★★    | **Command Runner**     | Very useful foundation for Ominty actions                                    |
 | ★★★★☆    | **Taskwarrior**        | Excellent local-first project/task workflow                                   |
 | ★★★★☆    | **Phone Connect**      | Useful laptop ↔ Android integration                                           |
 | ★★★★☆    | **AI Assistant**       | Useful prototype/reference for `Super+A`                                      |
@@ -25,16 +25,16 @@ This is the first one I would install.
 
 It's a **first-party DMS plugin** specifically designed to *search and browse keyboard shortcuts from your compositor and applications*. It's compositor- and distro-independent. ([GitHub][2])
 
-That maps almost perfectly onto one of our core Omivoid principles:
+That maps almost perfectly onto one of our core Ominty principles:
 
 > Keyboard-first, but discoverable.
 
-Rather than immediately writing our own Interaction Explorer, I would see whether Launcher Keys can consume or be extended to consume our **Omivoid Action Registry**.
+Rather than immediately writing our own Interaction Explorer, I would see whether Launcher Keys can consume or be extended to consume our **Ominty Action Registry**.
 
 Potential architecture:
 
 ```text
-Omivoid Action Registry
+Ominty Action Registry
         │
         ├── generates Niri bindings
         │
@@ -47,13 +47,13 @@ Omivoid Action Registry
                  Super+K
 ```
 
-If that works, **delete the custom `Super+K` UI from our implementation workload**. Omivoid should supply the authoritative data; DMS supplies the polished interface.
+If that works, **delete the custom `Super+K` UI from our implementation workload**. Ominty should supply the authoritative data; DMS supplies the polished interface.
 
 That's exactly the sort of simplification we wanted from DMS.
 
 ---
 
-### 2. Dank Hooks — potentially one of the most important plugins for Omivoid
+### 2. Dank Hooks — potentially one of the most important plugins for Ominty
 
 This one looks innocuous but is architecturally very interesting.
 
@@ -61,7 +61,7 @@ It's another first-party plugin and its purpose is simply:
 
 > Trigger scripts based on various system events. ([GitHub][3])
 
-That gives us a lightweight event mechanism **without building `omivoidd`**.
+That gives us a lightweight event mechanism **without building `omintyd`**.
 
 For example:
 
@@ -77,10 +77,10 @@ DMS event
       Dank Hooks
           │
           ▼
-omivoid action run ...
+ominty action run ...
 ```
 
-This could solve a number of things we had deliberately deferred to a future Omivoid daemon.
+This could solve a number of things we had deliberately deferred to a future Ominty daemon.
 
 For Phase 1 I would investigate:
 
@@ -89,16 +89,16 @@ Wallpaper changed
     → theme.palette.regenerate
 
 Display change
-    → Omivoid display action
+    → Ominty display action
 
 Session event
-    → Omivoid hook
+    → Ominty hook
 
 DMS event
-    → Omivoid Action Registry
+    → Ominty Action Registry
 ```
 
-**This may allow us to postpone an Omivoid daemon indefinitely.**
+**This may allow us to postpone an Ominty daemon indefinitely.**
 
 ---
 
@@ -117,12 +117,12 @@ network.tailscale.disconnect
 network.tailscale.open
 ```
 
-Then DMS becomes the graphical surface while the Omivoid Action Registry remains authoritative.
+Then DMS becomes the graphical surface while the Ominty Action Registry remains authoritative.
 
 Longer term this becomes especially useful with Herdr:
 
 ```text
-                    OMIVOID LAPTOP
+                    OMINTY LAPTOP
                          │
                       Tailscale
                          │
@@ -144,20 +144,20 @@ The **Command Runner** adds shell-command execution directly to the DMS launcher
 
 For you, that could be extremely useful.
 
-But I wouldn't make arbitrary shell commands the primary Omivoid interface.
+But I wouldn't make arbitrary shell commands the primary Ominty interface.
 
 Instead:
 
 ```text
 DMS Launcher
 
-> omivoid project open
-> omivoid ai research
-> omivoid action run theme.wallpaper.select
-> omivoid action run app.editor.open
+> ominty project open
+> ominty ai research
+> ominty action run theme.wallpaper.select
+> ominty action run app.editor.open
 ```
 
-That effectively makes the DMS launcher a front end to the Omivoid CLI.
+That effectively makes the DMS launcher a front end to the Ominty CLI.
 
 There's a nice distinction here:
 
@@ -166,7 +166,7 @@ Command Runner
      │
      ├── arbitrary shell command      ← expert escape hatch
      │
-     └── omivoid ...                  ← preferred workflow
+     └── ominty ...                  ← preferred workflow
 ```
 
 So I would install it, but retain our Action Registry architecture.
@@ -186,7 +186,7 @@ That means it can sit underneath multiple interfaces:
                          │
           ┌──────────────┼──────────────┐
           ▼              ▼              ▼
-         DMS            CLI          Omivoid
+         DMS            CLI          Ominty
                                       │
                                       ▼
                                      AI
@@ -194,7 +194,7 @@ That means it can sit underneath multiple interfaces:
 
 You could eventually say:
 
-> "Add a task to the Omivoid project to investigate DMS selection capture."
+> "Add a task to the Ominty project to investigate DMS selection capture."
 
 and Pi could invoke something such as:
 
@@ -204,7 +204,7 @@ project.task.create
 
 with Taskwarrior as the adapter.
 
-That's much more aligned with Omivoid than adopting a large proprietary task-management application.
+That's much more aligned with Ominty than adopting a large proprietary task-management application.
 
 ---
 
@@ -223,11 +223,11 @@ device.phone.find
 device.phone.share
 ```
 
-It fits the philosophy of making Omivoid a **workflow surface**, rather than treating each integration as a separate application.
+It fits the philosophy of making Ominty a **workflow surface**, rather than treating each integration as a separate application.
 
 ---
 
-### 7. AI Assistant — install as a reference, not as the Omivoid AI architecture
+### 7. AI Assistant — install as a reference, not as the Ominty AI architecture
 
 There's already an **AI Assistant** DMS plugin with multiple provider support, streaming responses, Markdown rendering and persistent chat history. ([GitHub][8])
 
@@ -241,7 +241,7 @@ Instead, evaluate it as a possible DMS presentation layer:
                  Super+A
                     │
                     ▼
-             Omivoid AI layer
+             Ominty AI layer
               /           \
              /             \
            Pi              Herdr
@@ -295,11 +295,11 @@ I would therefore put Wallabag in the **Phase 2 productivity group**, even if yo
 
 ## Two plugins I like but would **not install yet**
 
-**SSH Monitor** is conceptually excellent for your infrastructure work: it monitors active SSH, SFTP, FTP and Yazi VFS connections. Unfortunately, the registry currently declares it specifically for **Niri but Arch only**, with Fish, procps-ng and net-tools dependencies. ([GitHub][10]) So I would examine its implementation rather than immediately putting it on `omivoid-lmde`. It could be worth making an LMDE/Void-compatible version later.
+**SSH Monitor** is conceptually excellent for your infrastructure work: it monitors active SSH, SFTP, FTP and Yazi VFS connections. Unfortunately, the registry currently declares it specifically for **Niri but Arch only**, with Fish, procps-ng and net-tools dependencies. ([GitHub][10]) So I would examine its implementation rather than immediately putting it on `ominty-core`. It could be worth making an LMDE/Void-compatible version later.
 
 **PortWatch** is even more relevant to your web-development work: it shows listening ports/development servers in DankBar and lets you stop them. Unfortunately, its current registry entry explicitly depends on `hyprctl` and declares Hyprland support, so it isn't an appropriate Niri install as-is. ([GitHub][11])
 
-But I really like the concept for Omivoid:
+But I really like the concept for Ominty:
 
 ```text
 DEV
@@ -310,7 +310,7 @@ MySQL     :3306     ●
 Redis     :6379     ●
 ```
 
-For your Trongate/web work, an **Omivoid/Niri-compatible Dev Services plugin** could eventually be considerably more useful than the existing PortWatch.
+For your Trongate/web work, an **Ominty/Niri-compatible Dev Services plugin** could eventually be considerably more useful than the existing PortWatch.
 
 ---
 
@@ -323,7 +323,7 @@ So I would change our development philosophy slightly:
 ```text
 OLD QUESTION
 
-"What Omivoid component should we build?"
+"What Ominty component should we build?"
 
               ↓
 
@@ -342,32 +342,32 @@ NEW QUESTION
                YES            NO
                 │              │
                 ▼              ▼
-          use/extend       build Omivoid
+          use/extend       build Ominty
             plugin          component
 ```
 
-And DMS's plugin architecture makes this much more practical than I initially expected: plugins can be **widgets, daemons, launcher providers, desktop components or composites**, so an Omivoid-specific capability doesn't necessarily require modifying DMS itself. ([GitHub][13])
+And DMS's plugin architecture makes this much more practical than I initially expected: plugins can be **widgets, daemons, launcher providers, desktop components or composites**, so an Ominty-specific capability doesn't necessarily require modifying DMS itself. ([GitHub][13])
 
-### The first Omivoid plugin I would eventually build
+### The first Ominty plugin I would eventually build
 
-Interestingly, I now think we should consider an **`Omivoid Actions` DMS plugin** rather than a separate Omivoid shell UI.
+Interestingly, I now think we should consider an **`Ominty Actions` DMS plugin** rather than a separate Ominty shell UI.
 
 It could be a composite plugin:
 
 ```text
-Omivoid Actions
+Ominty Actions
 │
 ├── Launcher provider
 │      └── searches Action Registry
 │
 ├── Widget
-│      └── optional Omivoid status/context
+│      └── optional Ominty status/context
 │
 ├── Daemon
 │      └── listens for useful DMS events
 │
 └── Control Centre
-       └── Omivoid / AI / project controls
+       └── Ominty / AI / project controls
 ```
 
 Then:
@@ -375,7 +375,7 @@ Then:
 ```text
                    DMS
                     │
-             Omivoid Plugin
+             Ominty Plugin
                     │
           ┌─────────┼─────────┐
           ▼         ▼         ▼
@@ -383,7 +383,7 @@ Then:
           │         │         │
           └─────────┼─────────┘
                     ▼
-            Omivoid Action Registry
+            Ominty Action Registry
                     │
        ┌────────────┼────────────┐
        ▼            ▼            ▼
@@ -394,9 +394,9 @@ Then:
                       Desktop / IBIS Server
 ```
 
-**That is probably cleaner than the UI architecture in our existing Phase 1 documents.** DMS becomes the desktop presentation framework; Omivoid becomes the **interaction, action, AI and workflow layer built into it**.
+**That is probably cleaner than the UI architecture in our existing Phase 1 documents.** DMS becomes the desktop presentation framework; Ominty becomes the **interaction, action, AI and workflow layer built into it**.
 
-So before your agent starts Stage 0 implementation, I would make one small addition to the specification pack: **`ADR-006-dms-plugin-first-integration.md`**. It would establish the rule *DMS core → existing plugin → extend plugin → Omivoid plugin → standalone component*, in that order. That could prevent the agent from rebuilding capabilities that the rapidly growing DMS ecosystem already provides.
+So before your agent starts Stage 0 implementation, I would make one small addition to the specification pack: **`ADR-006-dms-plugin-first-integration.md`**. It would establish the rule *DMS core → existing plugin → extend plugin → Ominty plugin → standalone component*, in that order. That could prevent the agent from rebuilding capabilities that the rapidly growing DMS ecosystem already provides.
 
 [1]: https://github.com/AvengeMedia/DankMaterialShell?utm_source=chatgpt.com "GitHub - AvengeMedia/DankMaterialShell: Desktop shell for wayland compositors built with Quickshell & GO, optimized for niri, hyprland, sway, MangoWC, labwc, and MiracleWM. · GitHub"
 [2]: https://github.com/AvengeMedia/dms-plugin-registry/blob/master/plugins/dank-launcherkeys.json "dms-plugin-registry/plugins/dank-launcherkeys.json at master · AvengeMedia/dms-plugin-registry · GitHub"

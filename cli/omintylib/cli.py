@@ -1,12 +1,12 @@
-"""Omivoid CLI.
+"""Ominty CLI.
 
 Implements the registry inspection commands from docs/03 §30:
 
-    omivoid action list
-    omivoid action show <id>
-    omivoid action search <query>
-    omivoid action run <id>
-    omivoid registry validate
+    ominty action list
+    ominty action show <id>
+    ominty action search <query>
+    ominty action run <id>
+    ominty registry validate
 """
 
 from __future__ import annotations
@@ -193,7 +193,7 @@ def cmd_registry_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_registry_build(args: argparse.Namespace) -> int:
-    """Generate the Omivoid-owned Niri bindings fragment (docs/10 §14)."""
+    """Generate the Ominty-owned Niri bindings fragment (docs/10 §14)."""
     registry = _load()
     issues = validate_registry(registry)
     errors = [i for i in issues if i.level == "ERROR"]
@@ -449,8 +449,8 @@ def cmd_keybinds(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="omivoid",
-        description="Omivoid desktop CLI — action registry and execution.",
+        prog="ominty",
+        description="Ominty desktop CLI — action registry and execution.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

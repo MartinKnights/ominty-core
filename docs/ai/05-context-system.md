@@ -1,6 +1,6 @@
-# Omivoid AI Context System Specification
+# Ominty AI Context System Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 05
 **Status:** Phase 1 Specification
@@ -9,7 +9,7 @@
 
 # 1. Purpose
 
-This document defines how Omivoid identifies, collects, packages and supplies contextual information to AI providers.
+This document defines how Ominty identifies, collects, packages and supplies contextual information to AI providers.
 
 Context is one of the key differences between:
 
@@ -41,7 +41,7 @@ Context Collectors
 Context Normalisation
        │
        ▼
-Omivoid Context Object
+Ominty Context Object
        │
        ├── policy
        ├── size controls
@@ -58,7 +58,7 @@ Omivoid Context Object
 
 # 3. Context Is Not Prompt Text
 
-Omivoid should treat context as structured information.
+Ominty should treat context as structured information.
 
 It should not merely concatenate arbitrary desktop data into a giant provider-specific prompt.
 
@@ -184,7 +184,7 @@ Example:
 Ask AI
 
 Context:
-  Project: omivoid-lmde
+  Project: ominty-core
   File: docs/ai/05-context-system.md
 ```
 
@@ -627,7 +627,7 @@ Conceptual combined request:
     {
       "type": "project",
       "metadata": {
-        "name": "omivoid-lmde"
+        "name": "ominty-core"
       }
     }
   ]
@@ -640,7 +640,7 @@ Conceptual combined request:
 
 Providers have finite context capacity and cost.
 
-Omivoid should eventually support a context budget.
+Ominty should eventually support a context budget.
 
 Conceptually:
 
@@ -672,19 +672,19 @@ minimum sufficient context
 rather than:
 
 ```text
-everything Omivoid can collect
+everything Ominty can collect
 ```
 
 ---
 
 # 38. Provider Conversion
 
-Provider adapters are responsible for converting Omivoid context into provider-specific form.
+Provider adapters are responsible for converting Ominty context into provider-specific form.
 
 Pi adapter example:
 
 ```text
-Omivoid context
+Ominty context
     ↓
 Pi-compatible files/prompts/tools
 ```
@@ -695,7 +695,7 @@ Other providers may use different mechanisms.
 
 # 39. Context Locality
 
-Omivoid should distinguish context collection from model processing location.
+Ominty should distinguish context collection from model processing location.
 
 A context may be collected locally but sent to a remote model.
 
@@ -765,7 +765,7 @@ A graphical context chip model may work well in DMS.
 Example:
 
 ```text
-[Project: Omivoid] [File: ai.py] [×]
+[Project: Ominty] [File: ai.py] [×]
 ```
 
 ---
@@ -784,7 +784,7 @@ Do not persist arbitrary selected text indefinitely.
 
 Pi may maintain conversational context internally.
 
-That is separate from Omivoid environment context.
+That is separate from Ominty environment context.
 
 The two should not be conflated.
 
@@ -881,7 +881,7 @@ The third may be deferred if reliable acquisition cannot be established.
 Potential command:
 
 ```text
-omivoid ai ask --file docs/00-project-overview.md \
+ominty ai ask --file docs/00-project-overview.md \
   "Summarise the architectural goals."
 ```
 
@@ -1073,4 +1073,4 @@ The user should be able to answer:
 
 > **What is the AI looking at right now?**
 
-Omivoid should have a clear and accurate answer.
+Ominty should have a clear and accurate answer.

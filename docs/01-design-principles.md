@@ -1,8 +1,8 @@
-# Omivoid LMDE — Design Principles
+# Ominty LMDE — Design Principles
 
 ## 1. Purpose
 
-This document defines the architectural and UX principles that govern Omivoid.
+This document defines the architectural and UX principles that govern Ominty.
 
 These principles take precedence over implementation convenience.
 
@@ -12,7 +12,7 @@ When choosing between two implementations, prefer the solution that better prese
 
 # 2. Keyboard First
 
-Omivoid is a keyboard-first desktop.
+Ominty is a keyboard-first desktop.
 
 A frequent operation should normally be possible without requiring pointer interaction.
 
@@ -50,7 +50,7 @@ Keyboard operation should be the fastest path, not the only path.
 
 Keyboard-driven systems often become difficult to use because their functionality exists only in the user's memory.
 
-Omivoid must avoid this.
+Ominty must avoid this.
 
 A shortcut that cannot reasonably be discovered is incomplete.
 
@@ -106,7 +106,7 @@ Individual exceptions are permitted when ergonomically justified, but arbitrary 
 
 # 5. Actions Before Bindings
 
-An operation is first defined as an Omivoid action.
+An operation is first defined as an Ominty action.
 
 Only then is a keyboard binding assigned.
 
@@ -199,11 +199,11 @@ when all represent the same action.
 
 # 8. Preserve Native Strengths
 
-Omivoid uses Niri because Niri provides useful interaction characteristics of its own.
+Ominty uses Niri because Niri provides useful interaction characteristics of its own.
 
 Do not force Niri to reproduce another compositor's internal behaviour.
 
-In particular, Omivoid should embrace Niri's scrolling layout rather than attempt to make it behave exactly like Hyprland.
+In particular, Ominty should embrace Niri's scrolling layout rather than attempt to make it behave exactly like Hyprland.
 
 The design goal is:
 
@@ -213,7 +213,7 @@ The design goal is:
 
 # 9. Integrate Before Reimplementing
 
-Before writing an Omivoid component, determine whether an existing component already provides the required functionality adequately.
+Before writing an Ominty component, determine whether an existing component already provides the required functionality adequately.
 
 This is especially important for DankMaterialShell.
 
@@ -228,18 +228,18 @@ If DMS provides a high-quality implementation of:
 * wallpaper selector;
 * theme integration;
 
-Omivoid should normally integrate with it.
+Ominty should normally integrate with it.
 
 A custom implementation requires a concrete reason.
 
 ---
 
-# 10. DMS Is Not Omivoid
+# 10. DMS Is Not Ominty
 
 DMS may become an important shell component, but the architecture must distinguish:
 
 ```text
-Omivoid
+Ominty
     │
     └── uses DMS
 ```
@@ -247,20 +247,20 @@ Omivoid
 from:
 
 ```text
-Omivoid = DMS configuration
+Ominty = DMS configuration
 ```
 
 The first is intended.
 
 The second is not.
 
-Canonical actions, interaction conventions and platform abstraction belong to Omivoid.
+Canonical actions, interaction conventions and platform abstraction belong to Ominty.
 
 ---
 
 # 11. Portable Above the Adapter Boundary
 
-Core Omivoid behaviour should not need to know whether it is running on LMDE or Void.
+Core Ominty behaviour should not need to know whether it is running on LMDE or Void.
 
 Prefer:
 
@@ -343,7 +343,7 @@ Changing the preferred browser should not require changing:
 
 AI must not be treated merely as another application icon.
 
-Omivoid should provide a coherent AI namespace.
+Ominty should provide a coherent AI namespace.
 
 The initial convention is:
 
@@ -417,7 +417,7 @@ An AI agent should not automatically gain authority merely because an action exi
 
 # 16. Context Should Improve Interaction
 
-Omivoid should become context-aware where this provides genuine value.
+Ominty should become context-aware where this provides genuine value.
 
 For example, when text is selected, relevant actions might include:
 
@@ -469,7 +469,7 @@ Wallpaper
     ↓
 Palette generation
     ↓
-Canonical Omivoid palette
+Canonical Ominty palette
     ↓
 Application adapters
 ```
@@ -522,7 +522,7 @@ Generated files should be clearly identifiable as generated.
 
 # 21. Native Operations Should Remain Native Where Beneficial
 
-Not every action needs to pass through an Omivoid process.
+Not every action needs to pass through an Ominty process.
 
 For latency-sensitive Niri actions:
 
@@ -543,7 +543,7 @@ Avoid:
 ```text
 key
 → spawn process
-→ Omivoid
+→ Ominty
 → Niri IPC
 ```
 
@@ -611,7 +611,7 @@ Developer changes architecture silently
 
 # 24. Failure Should Be Explicit
 
-Omivoid actions should fail predictably.
+Ominty actions should fail predictably.
 
 Prefer:
 
@@ -649,7 +649,7 @@ The architecture should favour plain-text configuration and human-readable diagn
 
 # 26. Local First
 
-Omivoid should remain useful without a permanent external cloud dependency.
+Ominty should remain useful without a permanent external cloud dependency.
 
 Local operation should be preferred where appropriate for:
 
@@ -666,7 +666,7 @@ Remote capabilities can extend the system but should not unnecessarily become pr
 
 # 27. Build for the Actual Machine Role
 
-The Omivoid laptop is primarily intended for:
+The Ominty laptop is primarily intended for:
 
 * planning;
 * research;
@@ -685,7 +685,7 @@ Desktop design should optimise for this role.
 
 # 28. Composable Rather Than Monolithic
 
-Omivoid should consist of replaceable components with clear contracts.
+Ominty should consist of replaceable components with clear contracts.
 
 For example:
 
@@ -705,7 +705,7 @@ Replacing a component should not require redesigning every layer above it.
 
 # 29. Escape Must Mean Escape
 
-For Omivoid-created transient interfaces:
+For Ominty-created transient interfaces:
 
 ```text
 Esc
@@ -732,7 +732,7 @@ Consistency is more important than novelty.
 
 # 30. Common Navigation Semantics
 
-Omivoid interfaces should generally use:
+Ominty interfaces should generally use:
 
 ```text
 Enter       Select / execute
@@ -748,7 +748,7 @@ Individual components may have additional controls, but should avoid contradicti
 
 # 31. Public Project Quality
 
-`omivoid-lmde` may become a reusable public project.
+`ominty-core` may become a reusable public project.
 
 Implementation should therefore avoid assumptions that only make sense on the original development machine.
 
@@ -775,7 +775,7 @@ Avoid:
 When evaluating a new feature, ask:
 
 1. What user intent does this represent?
-2. Is there already an Omivoid action for it?
+2. Is there already an Ominty action for it?
 3. Which component should actually own execution?
 4. Can an existing component provide it?
 5. Is it discoverable?
@@ -783,6 +783,6 @@ When evaluating a new feature, ask:
 7. Does it unnecessarily depend on LMDE?
 8. Should AI be allowed to invoke it?
 9. Does it preserve the existing working system?
-10. Does it make Omivoid simpler or merely larger?
+10. Does it make Ominty simpler or merely larger?
 
 If those questions cannot be answered clearly, the feature probably needs more design before implementation.

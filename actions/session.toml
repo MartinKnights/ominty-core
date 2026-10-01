@@ -1,4 +1,4 @@
-# Omivoid action registry — session
+# Ominty action registry — session
 # Schema version 1 (docs/03-action-registry-spec.md)
 # Session actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
 

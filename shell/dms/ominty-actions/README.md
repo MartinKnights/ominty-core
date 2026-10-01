@@ -1,6 +1,6 @@
-# Omivoid Actions — DMS launcher plugin
+# Ominty Actions — DMS launcher plugin
 
-Bridges the Omivoid Action Registry into the DMS launcher / spotlight.
+Bridges the Ominty Action Registry into the DMS launcher / spotlight.
 
 **Status:** Phase 1 prototype (ADR-006)
 **Plugin API:** DMS >= 1.2.0, `type: launcher`
@@ -11,29 +11,29 @@ interaction explorer
 
 ## Purpose
 
-Expose Omivoid canonical actions as searchable, executable items inside the
-DMS launcher. This is the first graphical bridge between the Omivoid
+Expose Ominty canonical actions as searchable, executable items inside the
+DMS launcher. This is the first graphical bridge between the Ominty
 architecture and the DMS presentation layer (ADR-006 §10).
 
 ```text
-Omivoid Action Registry          (authoritative)
-        │  omivoid action list --json
+Ominty Action Registry          (authoritative)
+        │  ominty action list --json
         ▼
-OmivoidActions.qml               (presentation)
+OmintyActions.qml               (presentation)
         │  launcher items (name · binding · description)
         ▼
 DMS launcher / spotlight
         │  executeItem()
         ▼
-omivoid action run <id>          (execution)
+ominty action run <id>          (execution)
 ```
 
-## Why Omivoid uses it
+## Why Ominty uses it
 
 ADR-006 establishes a **DMS plugin-first** strategy: before building any
-desktop-facing UI, Omivoid must use DMS core, an existing plugin, an
-extension, or a dedicated Omivoid plugin. The Action Registry needs a
-graphical search/invocation surface; an Omivoid DMS launcher plugin is the
+desktop-facing UI, Ominty must use DMS core, an existing plugin, an
+extension, or a dedicated Ominty plugin. The Action Registry needs a
+graphical search/invocation surface; an Ominty DMS launcher plugin is the
 preferred implementation (ADR-006 §11–13).
 
 The registry remains authoritative. The plugin only presents and invokes
@@ -42,7 +42,7 @@ actions; it never redefines action semantics (ADR-006 §5–6).
 ## Dependencies
 
 - DMS (DankMaterialShell) with launcher plugin support.
-- The Omivoid CLI (`cli/omivoid`), invoked with `action list` and
+- The Ominty CLI (`cli/ominty`), invoked with `action list` and
   `action run`.
 
 No third-party plugin dependencies.
@@ -51,7 +51,7 @@ No third-party plugin dependencies.
 
 Settings are stored by DMS (`PluginSettings`) and read by the launcher
 component via `pluginService.loadPluginData`. On first run the plugin
-defaults to **always-active** so Omivoid actions merge into the universal
+defaults to **always-active** so Ominty actions merge into the universal
 palette (ADR-006 §13); `Super+K` instead opens the interaction explorer via
 the `!!` sentinel (ADR-006 §12).
 
@@ -59,7 +59,7 @@ the `!!` sentinel (ADR-006 §12).
 | --- | ------- | ------- |
 | `noTrigger` | `true` | Actions appear alongside normal search results (palette merge) |
 | `trigger` | `""` | Optional prefix that activates the provider; empty = always-active |
-| `cliPath` | `$OMIVOID_CLI` or `omivoid` (PATH) | Omivoid CLI executable |
+| `cliPath` | `$OMINTY_CLI` or `ominty` (PATH) | Ominty CLI executable |
 | `filterMode` | `all` | `all` / `discoverable` / `palette` |
 
 ### Query semantics
@@ -77,7 +77,7 @@ single-character queries in its plugin phase.
 
 ### Data contract
 
-`getItems()` filters `omivoid action list --json` on name, description,
+`getItems()` filters `ominty action list --json` on name, description,
 category, id, keywords and keybindings. Each item shows:
 
 ```text
@@ -85,7 +85,7 @@ category, id, keywords and keybindings. Each item shows:
 <binding>  ·  <description>
 ```
 
-`executeItem()` runs `omivoid action run <id>` via `Quickshell.execDetached`.
+`executeItem()` runs `ominty action run <id>` via `Quickshell.execDetached`.
 
 ## Canonical actions exposed
 
@@ -102,14 +102,14 @@ Action availability is always determined by the registry, not the plugin.
 
 - Tested on LMDE (Niri + DMS).
 - The launcher plugin API is DMS-specific; this component is not portable
-  to other shells. The Omivoid CLI it calls is portable.
-- `Quickshell.execDetached` is used for execution; `omivoid action run`
+  to other shells. The Ominty CLI it calls is portable.
+- `Quickshell.execDetached` is used for execution; `ominty action run`
   handles adapter resolution and platform behaviour.
 
 ## Known issues
 
 - The default `cliPath` points at the in-repository entry point. Once
-  Omivoid installs an `omivoid` binary, update the setting.
+  Ominty installs an `ominty` binary, update the setting.
 - Bindings shown are the canonical registry bindings (e.g. `Super+Enter`),
   which may differ cosmetically from the generated Niri KEYS
   (`Mod+Return`).
@@ -121,12 +121,12 @@ Action availability is always determined by the registry, not the plugin.
 The plugin is a symlink into the repo during development:
 
 ```text
-~/.config/DankMaterialShell/plugins/omivoidActions
-    → <repo>/shell/dms/omivoid-actions
+~/.config/DankMaterialShell/plugins/omintyActions
+    → <repo>/shell/dms/ominty-actions
 ```
 
-To disable: `dms ipc call plugins disable omivoidActions`.
-To remove: delete the symlink. No Omivoid core configuration is affected.
+To disable: `dms ipc call plugins disable omintyActions`.
+To remove: delete the symlink. No Ominty core configuration is affected.
 
 ## Verification (Phase 1)
 
@@ -136,7 +136,7 @@ To remove: delete the symlink. No Omivoid core configuration is affected.
 | Plugin discovered (`dms ipc call plugins list`) | pass |
 | Plugin loads (`dms ipc call plugins status`) | pass |
 | Registry read (`Loaded 21 actions from registry`) | pass |
-| Action execution (`omivoid action run <id>`) | pass |
+| Action execution (`ominty action run <id>`) | pass |
 | Always-active mode (`Activation mode: always-active`) | pass |
 | `Super+K` explorer (`openQuery "!!"` → 21 actions) | pass |
 | `Super+Space` merge (`getItems("browser")` → 1) | pass |

@@ -1,6 +1,6 @@
 """command adapter — run a raw command.
 
-Used by user-defined actions (docs/03 §27). Core Omivoid actions
+Used by user-defined actions (docs/03 §27). Core Ominty actions
 should prefer purpose-built adapters.
 """
 

@@ -1,4 +1,4 @@
-# Omivoid action registry — display
+# Ominty action registry — display
 # Schema version 1 (docs/03-action-registry-spec.md)
 # Brightness actions use DMS IPC (docs/07 §29, dms-evaluation.md §5).
 # Brightness keys (XF86MonBrightness*) are claimed by DMS and bound in its binds.kdl.

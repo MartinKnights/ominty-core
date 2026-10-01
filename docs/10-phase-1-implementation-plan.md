@@ -1,6 +1,6 @@
-# Omivoid LMDE — Phase 1 Implementation Plan
+# Ominty LMDE — Phase 1 Implementation Plan
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 **Platform:** LMDE
 **Existing baseline:** Niri and Quickshell already installed
@@ -11,7 +11,7 @@
 
 This document defines the implementation sequence for Phase 1.
 
-The objective is to move from architecture to a working Omivoid LMDE reference implementation without introducing unnecessary complexity.
+The objective is to move from architecture to a working Ominty LMDE reference implementation without introducing unnecessary complexity.
 
 The implementation strategy is incremental:
 
@@ -35,7 +35,7 @@ The project must remain usable throughout development.
 
 # 2. Phase 1 Objective
 
-Phase 1 must prove that the Omivoid architecture works in practice.
+Phase 1 must prove that the Ominty architecture works in practice.
 
 It must demonstrate:
 
@@ -119,7 +119,7 @@ Create only the directories required for Phase 1.
 Recommended:
 
 ```text
-omivoid-lmde/
+ominty-core/
 ├── actions/
 ├── adapters/
 │   ├── common/
@@ -158,7 +158,7 @@ It must:
 Initial target:
 
 ```text
-omivoid action list
+ominty action list
 ```
 
 No execution is required at this stage.
@@ -170,7 +170,7 @@ No execution is required at this stage.
 Implement:
 
 ```text
-omivoid registry validate
+ominty registry validate
 ```
 
 Validation must initially detect:
@@ -261,7 +261,7 @@ Do not assume example application names from documentation are installed.
 Implement:
 
 ```text
-omivoid action run <action-id>
+ominty action run <action-id>
 ```
 
 Initial requirements:
@@ -309,7 +309,7 @@ intent
 Before generating Niri configuration:
 
 * parse or inspect current bindings;
-* compare against proposed Omivoid bindings;
+* compare against proposed Ominty bindings;
 * produce a conflict report.
 
 Save the result under:
@@ -350,20 +350,20 @@ workspace.previous
 
 Where practical, generate native Niri configuration.
 
-Do not route frequent navigation through the Omivoid runner.
+Do not route frequent navigation through the Ominty runner.
 
 ---
 
 # 14. Stage 10 — Generated Niri Fragment
 
-Generate an Omivoid-owned Niri configuration fragment.
+Generate an Ominty-owned Niri configuration fragment.
 
 Requirements:
 
 * generated file clearly marked;
 * source action IDs documented;
 * existing user config preserved;
-* only Omivoid-managed bindings included;
+* only Ominty-managed bindings included;
 * invalid output must not replace working config.
 
 If the installed Niri version supports clean includes, prefer an include-based structure.
@@ -433,7 +433,7 @@ For each shell capability classify:
 ```text
 USE DMS
 EXTEND DMS
-OMIVOID COMPONENT
+OMINTY COMPONENT
 DEFER
 ```
 
@@ -461,7 +461,7 @@ Likely candidates:
 * wallpaper;
 * power controls.
 
-Map relevant Omivoid actions to stable DMS interfaces where possible.
+Map relevant Ominty actions to stable DMS interfaces where possible.
 
 ---
 
@@ -485,7 +485,7 @@ Recommended first external application:
 terminal
 ```
 
-because it is central to the Omivoid workflow.
+because it is central to the Ominty workflow.
 
 Do not attempt full application coverage yet.
 
@@ -564,13 +564,13 @@ through the selected Pi integration.
 
 The goal is not deep orchestration.
 
-The goal is a clean Omivoid-to-AI provider boundary.
+The goal is a clean Ominty-to-AI provider boundary.
 
 ---
 
 # 24. Stage 20 — AI Capability Proof
 
-Expose one non-AI Omivoid action to the AI layer.
+Expose one non-AI Ominty action to the AI layer.
 
 Recommended proof:
 
@@ -587,7 +587,7 @@ AI
     ↓
 registered action selection
     ↓
-Omivoid action runner
+Ominty action runner
     ↓
 configured browser
 ```
@@ -695,7 +695,7 @@ Before declaring Phase 1 complete:
 
 Do not implement during Phase 1 unless required to unblock core work:
 
-* Omivoid daemon;
+* Ominty daemon;
 * event bus;
 * remote action routing;
 * full Herdr orchestration;

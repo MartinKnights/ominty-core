@@ -4,7 +4,7 @@
 **Stage:** AI-10, AI-11, AI-12 (docs/ai/10-ai-phase-1-implementation-plan.md §16–18)
 **Status:** Complete
 
-This document records the Phase B implementation of the Omivoid AI layer:
+This document records the Phase B implementation of the Ominty AI layer:
 exposing AI-accessible capabilities, bridging them into Pi's tool mechanism,
 and proving the first AI-to-action path. It is part of the implementation
 record (AGENTS.md §28).
@@ -16,7 +16,7 @@ record (AGENTS.md §28).
 | Stage | Deliverable | Status |
 |---|---|---|
 | AI-10 | Capability catalogue derived from the Action Registry | Complete |
-| AI-11 | Pi tool bridge (`adapters/pi/omivoid-tools.ts`) | Complete |
+| AI-11 | Pi tool bridge (`adapters/pi/ominty-tools.ts`) | Complete |
 | AI-12 | First AI-to-action proof ("Open my browser") | Complete |
 
 The architecture proof required by docs/ai/10 §18 now holds end-to-end:
@@ -28,9 +28,9 @@ Pi (qwen2.5:3b)
     ↓
 app.browser.open
     ↓
-Omivoid capability catalogue (policy boundary)
+Ominty capability catalogue (policy boundary)
     ↓
-Action runner (omivoid action run)
+Action runner (ominty action run)
     ↓
 app.launch adapter, role = browser
     ↓
@@ -38,7 +38,7 @@ librewolf
 ```
 
 Pi never learns the configured browser executable — it requests the canonical
-capability and Omivoid resolves the role.
+capability and Ominty resolves the role.
 
 ---
 
@@ -46,7 +46,7 @@ capability and Omivoid resolves the role.
 
 ### 2.1 Implementation
 
-`cli/omivoidlib/ai/capabilities/__init__.py` derives the AI-accessible
+`cli/omintylib/ai/capabilities/__init__.py` derives the AI-accessible
 capability set from the Action Registry (the registry remains the source of
 truth — docs/ai/02 §18, AGENTS.md §7–8).
 
@@ -70,8 +70,8 @@ Each entry carries policy metadata for later stages:
 ### 2.2 CLI
 
 ```bash
-omivoid ai capabilities          # human-readable
-omivoid ai capabilities --json   # machine-readable (docs/ai/04 §26)
+ominty ai capabilities          # human-readable
+ominty ai capabilities --json   # machine-readable (docs/ai/04 §26)
 ```
 
 Result on the current registry: **13 capabilities**. The recommended first set
@@ -105,16 +105,16 @@ exclusion, id sorting, empty registry, policy metadata, and the public
 
 ### 3.1 Implementation
 
-`adapters/pi/omivoid-tools.ts` is a Pi extension that exposes the capability
+`adapters/pi/ominty-tools.ts` is a Pi extension that exposes the capability
 catalogue as Pi tools. Tool definitions are generated at session start from
-`omivoid ai capabilities --json` — no hand-written catalogue (docs/ai/02 §18).
+`ominty ai capabilities --json` — no hand-written catalogue (docs/ai/02 §18).
 
 | Concern | Approach |
 |---|---|
 | Tool naming | Pi restricts names to `[a-z0-9_]`; `app.browser.open` → `app_browser_open`. Canonical ID preserved and passed to the runner. |
-| Execution | `omivoid action run <id> --json` — Pi never runs implementation commands directly (docs/ai/02 §19). |
+| Execution | `ominty action run <id> --json` — Pi never runs implementation commands directly (docs/ai/02 §19). |
 | Policy boundary | Only capabilities in the catalogue are registered; the catalogue is the policy filter (AGENTS.md §17). |
-| CLI resolution | `$OMIVOID_CLI` if set, otherwise `omivoid` from `PATH` (no hard-coded paths — AGENTS.md §33). |
+| CLI resolution | `$OMINTY_CLI` if set, otherwise `ominty` from `PATH` (no hard-coded paths — AGENTS.md §33). |
 | Errors | Missing CLI / non-zero exit / failed action are surfaced to Pi (`throw` → `isError`). |
 
 ### 3.2 Installation
@@ -123,8 +123,8 @@ The extension is distributed from the repository and symlinked into Pi's
 auto-discovery directory:
 
 ```text
-adapters/pi/omivoid-tools.ts
-    → ~/.pi/agent/extensions/omivoid-tools.ts   (symlink)
+adapters/pi/ominty-tools.ts
+    → ~/.pi/agent/extensions/ominty-tools.ts   (symlink)
 ```
 
 A symlink keeps a single source of truth — repository edits take effect on the
@@ -132,10 +132,10 @@ next Pi session without copying (`/reload` re-reads extensions).
 
 ### 3.3 Configuration
 
-Point Pi at the Omivoid CLI (the CLI is not installed on `PATH`):
+Point Pi at the Ominty CLI (the CLI is not installed on `PATH`):
 
 ```bash
-export OMIVOID_CLI=/path/to/omivoid-lmde/cli/omivoid
+export OMINTY_CLI=/path/to/ominty-core/cli/ominty
 ```
 
 ---
@@ -145,7 +145,7 @@ export OMIVOID_CLI=/path/to/omivoid-lmde/cli/omivoid
 ### 4.1 Procedure
 
 ```bash
-OMIVOID_CLI=~/Projects/OmiVoid/omivoid-lmde/cli/omivoid \
+OMINTY_CLI=~/Projects/Ominty/ominty-core/cli/ominty \
   pi --print --mode json --no-session "Open my browser"
 ```
 
@@ -154,11 +154,11 @@ Provider: Ollama `qwen2.5:3b` (local, CPU-only). Pi's default provider/model
 
 ### 4.2 Evidence
 
-Pi emitted a tool call, Omivoid executed it, and the model confirmed:
+Pi emitted a tool call, Ominty executed it, and the model confirmed:
 
 ```text
 assistant → toolCall name="app_browser_open" arguments={}
-tool_result → "Omivoid action app.browser.open executed successfully."
+tool_result → "Ominty action app.browser.open executed successfully."
               details.state = {"role": "browser", "app": "librewolf"}
 assistant → "Your default web browser has been opened."
 ```
@@ -180,11 +180,11 @@ within the 4096-token context; the turn completed in ~26 s on CPU.
 
 | File | Change |
 |---|---|
-| `cli/omivoidlib/ai/capabilities/__init__.py` | Capability catalogue (was Phase A stub) |
-| `cli/omivoidlib/ai/__init__.py` | Public `capabilities()` |
-| `cli/omivoidlib/cli.py` | `ai capabilities` subcommand |
+| `cli/omintylib/ai/capabilities/__init__.py` | Capability catalogue (was Phase A stub) |
+| `cli/omintylib/ai/__init__.py` | Public `capabilities()` |
+| `cli/omintylib/cli.py` | `ai capabilities` subcommand |
 | `tests/test_ai.py` | 6 capability tests |
-| `adapters/pi/omivoid-tools.ts` | Pi tool bridge (new) |
+| `adapters/pi/ominty-tools.ts` | Pi tool bridge (new) |
 | `docs/implementation/ai-phase-b.md` | This record (new) |
 
 ---
@@ -198,5 +198,5 @@ within the 4096-token context; the turn completed in ~26 s on CPU.
 * **Result detail** — structured success/failure return to Pi is AI-13.
 * **Recursive protection** — `ai.*` exclusion is implemented; broader recursion
   protection is AI-16.
-* **CLI discovery** — `omivoid` is not installed on `PATH`; `OMIVOID_CLI` must
+* **CLI discovery** — `ominty` is not installed on `PATH`; `OMINTY_CLI` must
   be set for the bridge.

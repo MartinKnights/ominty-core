@@ -26,9 +26,9 @@ interactive AI; Herdr is the workspace/agent orchestration layer.
 | Transport | SSH over Tailscale | Yes |
 | Results | `herdr agent read` / session snapshot | Yes |
 | Lifecycle | `herdr agent wait` states | Yes |
-| Omivoid adapter | Not implemented | N/A (deferred) |
+| Ominty adapter | Not implemented | N/A (deferred) |
 
-**Verdict:** the orchestration surface Omivoid needs exists. The delegation
+**Verdict:** the orchestration surface Ominty needs exists. The delegation
 adapter (`ai/delegation/herdr/`, docs/ai/07 §23) is feasible but remains
 deferred until local Pi integration is stable (docs/ai/07 §30, §34).
 
@@ -92,7 +92,7 @@ session
 This differs from the conceptual `created → queued → assigned → running →
 …` task lifecycle in docs/ai/07 §16. Herdr models **workspaces of running
 agents**, not a queue of discrete jobs. The delegation adapter must map an
-Omivoid *delegation request* onto a Herdr session/workspace/agent rather
+Ominty *delegation request* onto a Herdr session/workspace/agent rather
 than assuming a job queue.
 
 Agent control verbs (the practical task surface):
@@ -124,7 +124,7 @@ and docs/ai/08 §9 (stable logical worker identity) at the Herdr layer.
 
 Capability advertisement (docs/ai/07 §10) is **not** observed in 0.9.0 —
 machines are saved, not described by capability. Capability-based routing
-(docs/ai/08 §25) would need an Omivoid-side mapping layer.
+(docs/ai/08 §25) would need an Ominty-side mapping layer.
 
 ---
 
@@ -157,7 +157,7 @@ $ tailscale status
 Tailscale (v1.102.3) is installed and `tailscaled` is running. Herdr's
 remote transport is SSH, which can ride the tailnet. Per docs/ai/07 §12 and
 docs/ai/08 §22, Tailscale is transport only — it must not become a task
-queue, project registry, or scheduler, and Omivoid must not hard-code
+queue, project registry, or scheduler, and Ominty must not hard-code
 `100.x` addresses (docs/ai/10 §40).
 
 ---
@@ -167,7 +167,7 @@ queue, project registry, or scheduler, and Omivoid must not hard-code
 Results are retrievable as agent terminal output (`herdr agent read`) and
 as a structured live snapshot (`herdr api snapshot`). Herdr has no
 structured result contract equivalent to docs/ai/08 §17 (`status`,
-`summary`, `artifacts`, `changes`); an Omivoid adapter would need to wrap
+`summary`, `artifacts`, `changes`); an Ominty adapter would need to wrap
 raw agent output into that shape.
 
 Notifications: `herdr notification show` — usable for completion signals
@@ -180,9 +180,9 @@ Notifications: `herdr notification show` — usable for completion signals
 `herdr agent wait` lets a caller block until an agent reaches one of a set
 of states. This is the lifecycle primitive. It is **pull/wait based**, not
 the event/queue model of docs/ai/07 §16. docs/ai/07 §16 explicitly warns:
-"Do not implement a parallel Omivoid task engine if Herdr already provides
+"Do not implement a parallel Ominty task engine if Herdr already provides
 suitable lifecycle management." Herdr does provide lifecycle for *sessions
-of agents*; Omivoid should not duplicate it.
+of agents*; Ominty should not duplicate it.
 
 ---
 
@@ -190,13 +190,13 @@ of agents*; Omivoid should not duplicate it.
 
 | docs/ai/07 requirement | Observed Herdr 0.9.0 | Gap |
 |---|---|---|
-| §2 Pi → Herdr → workers | `--remote`, `machine` | Omivoid adapter missing (deferred) |
+| §2 Pi → Herdr → workers | `--remote`, `machine` | Ominty adapter missing (deferred) |
 | §7 `ai.delegate` action | — | Action not in registry |
 | §9 intent over destination | machine names, not IPs | Capability routing not present |
 | §16 task lifecycle | `agent wait` states | Different model; adapter must map |
 | §17 result return | `agent read`, `api snapshot` | No structured result contract |
 | §23 adapter location | `ai/delegation/herdr/` | Not created (deferred) |
-| §24 availability probe | `herdr status` | Not wired into Omivoid |
+| §24 availability probe | `herdr status` | Not wired into Ominty |
 | §25 failure isolation | — | To verify when implemented |
 
 ---
@@ -206,7 +206,7 @@ of agents*; Omivoid should not duplicate it.
 1. **Keep delegation deferred** (docs/ai/07 §30): local Pi + local context
    + local capabilities must be stable first. This stage only establishes
    the boundary, adapter location, and semantics.
-2. **Adapter location confirmed:** `cli/omivoidlib/ai/delegation/herdr/`,
+2. **Adapter location confirmed:** `cli/omintylib/ai/delegation/herdr/`,
    exposing availability, a delegation-request → Herdr mapping, and a
    structured result wrapper.
 3. **Availability probe:** `herdr status` (server running) is the natural

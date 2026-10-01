@@ -1,14 +1,14 @@
 # ADR-004 — Separation of Intent and Implementation
 
 **Status:** Accepted
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 
 ---
 
 # 1. Context
 
-Omivoid is intended to operate first on LMDE and later on Void Linux.
+Ominty is intended to operate first on LMDE and later on Void Linux.
 
 The desktop also depends on replaceable components such as:
 
@@ -32,7 +32,7 @@ If canonical desktop actions directly contain implementation commands, changes t
 
 # 2. Decision
 
-> **Omivoid separates user intent from implementation through adapters.**
+> **Ominty separates user intent from implementation through adapters.**
 
 The Action Registry defines what should happen.
 
@@ -443,4 +443,4 @@ The defining rule is:
 
 > **Stable intent above; replaceable implementation below.**
 
-This is the primary mechanism by which Omivoid remains portable and maintainable.
+This is the primary mechanism by which Ominty remains portable and maintainable.

@@ -1,4 +1,4 @@
-"""Omivoid action registry: loading, merging, and validation.
+"""Ominty action registry: loading, merging, and validation.
 
 Implements docs/03-action-registry-spec.md (schema version 1).
 
@@ -50,7 +50,7 @@ VALID_PLATFORMS = {"common", "debian", "void"}
 # Conventional key owners (docs/03 §11): the surface that owns an action's
 # keybinding(s). DMS/Niri-claimed bindings are handled there rather than being
 # emitted by the generator. `plugin:<id>` is used for DMS plugin owners.
-CONVENTIONAL_KEY_OWNERS = {"omivoid", "niri", "dms", "gks", "user"}
+CONVENTIONAL_KEY_OWNERS = {"ominty", "niri", "dms", "gks", "user"}
 
 # Known Phase 1 adapters (docs/03 §21–22). Unknown adapter names warn
 # during validation; known-but-unimplemented adapters report unavailable
@@ -117,7 +117,7 @@ class Action:
     adapter: str | None = None
     arguments: dict[str, Any] = field(default_factory=dict)
     command: list[str] | None = None
-    key_owner: str = "omivoid"
+    key_owner: str = "ominty"
     cli: list[str] = field(default_factory=list)
     contexts: list[str] = field(default_factory=lambda: ["global"])
     platforms: list[str] = field(default_factory=lambda: ["common"])
@@ -189,12 +189,12 @@ def xdg_config_home() -> Path:
 
 
 def user_config_dir() -> Path:
-    """Return the user Omivoid config directory (~/.config/omivoid)."""
-    return xdg_config_home() / "omivoid"
+    """Return the user Ominty config directory (~/.config/ominty)."""
+    return xdg_config_home() / "ominty"
 
 
 def repo_root() -> Path:
-    """Return the omivoid-lmde repository root (parent of cli/)."""
+    """Return the ominty-core repository root (parent of cli/)."""
     return Path(__file__).resolve().parents[2]
 
 
@@ -239,7 +239,7 @@ def _parse_action(id_: str, data: dict[str, Any], source: str) -> Action:
         command=(
             [str(c) for c in data["command"]] if data.get("command") is not None else None
         ),
-        key_owner=str(data.get("key_owner", "omivoid")),
+        key_owner=str(data.get("key_owner", "ominty")),
         cli=[str(c) for c in data.get("cli", [])],
         contexts=[str(c) for c in data.get("contexts", ["global"])],
         platforms=[str(p) for p in data.get("platforms", ["common"])],
@@ -562,7 +562,7 @@ def validate_registry(registry: Registry) -> list[Issue]:
             )
 
         # Implementation shape (docs/03 §21). The top-level `command` list is
-        # exclusively the `command` adapter's argv (what Omivoid executes).
+        # exclusively the `command` adapter's argv (what Ominty executes).
         # Everything else passes adapter-specific parameters via `arguments`;
         # `arguments.command` is only defined where an adapter declares it
         # (currently only `shell.explorer`, ADR-006 §12).

@@ -1,4 +1,4 @@
-"""Omivoid registry library.
+"""Ominty registry library.
 
 The Action Registry defines what an action means.
 Adapters define how that action is performed.

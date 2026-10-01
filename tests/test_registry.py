@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from omivoidlib.registry import (
+from omintylib.registry import (
     Registry,
     has_errors,
     load_registry,
@@ -62,7 +62,7 @@ def test_valid_toml_loads(tmp_path):
     assert a.confirmation == "never"  # default
     assert a.contexts == ["global"]  # default
     assert a.platforms == ["common"]  # default
-    assert a.key_owner == "omivoid"  # default
+    assert a.key_owner == "ominty"  # default
 
 
 def test_malformed_toml_raises(tmp_path):
@@ -224,7 +224,7 @@ def test_key_owner_parsed_and_serialised(tmp_path):
 def test_plugin_key_owner_allowed(tmp_path):
     registry = load(
         tmp_path,
-        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nkey_owner = "plugin:omivoidActions"\n'),
+        ("a.toml", 'registry_version = 1\n[action."app.a.open"]\nname = "A"\ndescription = "d"\ncategory = "c"\nrisk = "routine"\nkey_owner = "plugin:omintyActions"\n'),
     )
     issues = validate_registry(registry)
     assert not any(i.code == "UNKNOWN_KEY_OWNER" for i in issues)

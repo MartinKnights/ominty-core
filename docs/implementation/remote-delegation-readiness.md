@@ -4,7 +4,7 @@
 **Stage:** AI-34 (docs/ai/10 §40)
 **Status:** Review complete — implementation deferred (docs/ai/08 §34)
 
-How the current Omivoid infrastructure could support later remote
+How the current Ominty infrastructure could support later remote
 delegation. No delegation is implemented in this stage; this document
 records the surface, the project-identity concern, and the security
 boundary. It complements `herdr-readiness-review.md` (AI-33).
@@ -71,8 +71,8 @@ paths on different machines.
 
 Current state (Phase F, and therefore most tractable now):
 
-* `discover_project()` already yields a logical **name** (`omivoid-lmde`)
-  in addition to the local **root** (`~/Projects/OmiVoid/omivoid-lmde`).
+* `discover_project()` already yields a logical **name** (`ominty-core`)
+  in addition to the local **root** (`~/Projects/Ominty/ominty-core`).
 * `ContextObject.metadata` carries `name`, `root`, `method`, `type`, `git`.
 
 That `name` is the seed of a portable project identity. The local `root`
@@ -172,5 +172,5 @@ $ tailscale status           → sb1 online, t7910 online, 2 offline
 $ tailscale status --json    → tailnet "MartinKnights@"
 $ which agno                 → not found on this machine
 $ herdr machine list         → No saved SSH machines (none prepared yet)
-$ omivoid project current    → omivoid-lmde (name) @ ~/Projects/... (root)
+$ ominty project current    → ominty-core (name) @ ~/Projects/... (root)
 ```

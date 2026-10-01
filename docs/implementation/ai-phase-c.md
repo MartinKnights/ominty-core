@@ -4,7 +4,7 @@
 **Stage:** AI-13, AI-14, AI-15, AI-16 (docs/ai/10-ai-phase-1-implementation-plan.md §19–22)
 **Status:** Complete
 
-This document records the Phase C implementation of the Omivoid AI layer:
+This document records the Phase C implementation of the Ominty AI layer:
 enforcing AI action policy, returning structured results to the provider,
 proving the confirmation boundary, and blocking recursive AI invocation.
 It is part of the implementation record (AGENTS.md §28).
@@ -22,7 +22,7 @@ It is part of the implementation record (AGENTS.md §28).
 
 Guiding principle (docs/ai/09 §50):
 
-> **AI can propose and request. Omivoid remains the authority that decides what the desktop actually does.**
+> **AI can propose and request. Ominty remains the authority that decides what the desktop actually does.**
 
 ---
 
@@ -36,17 +36,17 @@ AI request
     ↓
 ai.policy.evaluate(action)        (docs/ai/09)
     ↓ allow / confirm
-runner.run_action(action_id)      (cli/omivoidlib/runner.py)
+runner.run_action(action_id)      (cli/omintylib/runner.py)
     ↓
 adapter → system
 ```
 
 | Module | Responsibility |
 |---|---|
-| `cli/omivoidlib/ai/policy/__init__.py` | `evaluate(action)` → allow / deny / confirm |
-| `cli/omivoidlib/ai/actions.py` | `run_action_as_ai(action_id, confirmed)` — policy gate + runner |
-| `cli/omivoidlib/cli.py` | `action run <id> --ai [--confirmed]` |
-| `adapters/pi/omivoid-tools.ts` | Confirmation UI + structured results |
+| `cli/omintylib/ai/policy/__init__.py` | `evaluate(action)` → allow / deny / confirm |
+| `cli/omintylib/ai/actions.py` | `run_action_as_ai(action_id, confirmed)` — policy gate + runner |
+| `cli/omintylib/cli.py` | `action run <id> --ai [--confirmed]` |
+| `adapters/pi/ominty-tools.ts` | Confirmation UI + structured results |
 
 ---
 
@@ -110,7 +110,7 @@ User: "Cycle to the next wallpaper"
     ↓
 Pi → app_theme_wallpaper_next (tool)
     ↓
-omivoid action run theme.wallpaper.next --ai
+ominty action run theme.wallpaper.next --ai
     ↓ CONFIRMATION_REQUIRED
 Pi bridge → user confirmation prompt
     ↓ denied
@@ -123,10 +123,10 @@ confirmation UI fails safe to **deny** (docs/ai/09 §37).
 ### 5.2 Approve path (CLI)
 
 ```text
-omivoid action run theme.wallpaper.next --ai
+ominty action run theme.wallpaper.next --ai
     → CONFIRMATION_REQUIRED, confirmation_required: true
 
-omivoid action run theme.wallpaper.next --ai --confirmed
+ominty action run theme.wallpaper.next --ai --confirmed
     → SUCCESS: Cycling to next wallpaper
 ```
 
@@ -140,7 +140,7 @@ the user approves (docs/ai/09 §10 — the provider cannot approve its own actio
 
 Two independent layers:
 
-1. **Catalogue** — `ai.*` actions are excluded from `omivoid ai capabilities`
+1. **Catalogue** — `ai.*` actions are excluded from `ominty ai capabilities`
    (Phase B, AGENTS.md §18).
 2. **Policy** — `evaluate()` denies any `ai.`-prefixed action with
    `reason = ai_recursion`, even if it were marked `ai_accessible`.
@@ -148,7 +148,7 @@ Two independent layers:
 `ai.ask` and `ai.pi.open` remain `ai_accessible = false`.
 
 ```text
-$ omivoid action run ai.ask --ai --json
+$ ominty action run ai.ask --ai --json
 {"success": false, "error": {"code": "PERMISSION_DENIED",
                              "reason": "ai_recursion"}}
 ```
@@ -182,10 +182,10 @@ Tests: **121 passing** (was 107).
 
 | File | Change |
 |---|---|
-| `cli/omivoidlib/ai/policy/__init__.py` | Policy evaluator (was Phase A stub) |
-| `cli/omivoidlib/ai/actions.py` | AI-aware executor (new) |
-| `cli/omivoidlib/cli.py` | `action run --ai [--confirmed]` |
-| `adapters/pi/omivoid-tools.ts` | `--ai`, confirmation flow, structured results |
+| `cli/omintylib/ai/policy/__init__.py` | Policy evaluator (was Phase A stub) |
+| `cli/omintylib/ai/actions.py` | AI-aware executor (new) |
+| `cli/omintylib/cli.py` | `action run --ai [--confirmed]` |
+| `adapters/pi/ominty-tools.ts` | `--ai`, confirmation flow, structured results |
 | `actions/theme.toml` | `theme.wallpaper.next` → `confirmation = "ai-only"` |
 | `tests/test_ai.py` | +14 policy/execution tests |
 | `docs/implementation/ai-phase-c.md` | This record (new) |

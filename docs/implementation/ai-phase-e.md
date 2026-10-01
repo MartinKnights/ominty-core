@@ -30,7 +30,7 @@ named `ai.clipboard.*` and read the clipboard. Selection is never faked
 
 ## 2. Context envelope (AI-22)
 
-`cli/omivoidlib/ai/context/__init__.py` defines the context system:
+`cli/omintylib/ai/context/__init__.py` defines the context system:
 
 ```python
 @dataclass
@@ -76,12 +76,12 @@ based (docs/ai/05 §38).
 
 ## 3. CLI `--clipboard` (AI-22)
 
-`omivoid ai ask "<prompt>" --clipboard` collects the clipboard and attaches
+`ominty ai ask "<prompt>" --clipboard` collects the clipboard and attaches
 it as context. On collection failure it prints the structured error to
 stderr and exits 1:
 
 ```text
-$ omivoid ai ask "say ok" --clipboard
+$ ominty ai ask "say ok" --clipboard
 CONTEXT_UNAVAILABLE: wl-paste not found — install wl-clipboard to read the clipboard
 ```
 
@@ -110,7 +110,7 @@ realised by the DMS AI menu. Both are `ai_accessible = false` (AGENTS.md §18).
 
 Adapters (`adapters/common/ai_clipboard_explain.py`,
 `ai_clipboard_summarise.py`) delegate to the shared
-`omivoidlib.ai.clipboard_actions.run_with_clipboard(instruction)`, which
+`omintylib.ai.clipboard_actions.run_with_clipboard(instruction)`, which
 composes the collector with the provider layer:
 
 ```text
@@ -123,7 +123,7 @@ ask(instruction, context=[clipboard])   (provider layer)
 response
 ```
 
-The shared helper lives in the `omivoidlib` ai layer (not the adapters
+The shared helper lives in the `omintylib` ai layer (not the adapters
 directory) because `adapters/` is not a Python package and adapters are
 loaded standalone via `importlib` — a relative import between adapter files
 would not resolve.
@@ -132,7 +132,7 @@ would not resolve.
 
 ## 5. AI menu context indicator + notification delivery (AI-21)
 
-`shell/dms/omivoid-actions/OmivoidActions.qml`:
+`shell/dms/ominty-actions/OmintyActions.qml`:
 
 * **Context indicator** — AI actions declaring `contexts = ["clipboard"]`
   show a `[Clipboard]` chip in their menu comment, so the user can see what
@@ -153,7 +153,7 @@ would not resolve.
 |---|---|
 | `registry.py` — `clipboard` added to `VALID_CONTEXTS` | new context type |
 | `registry.py` — `ai.clipboard.explain`/`summarise` added to `KNOWN_ADAPTERS` | validator warning → clean |
-| `adapters/common/ai_clipboard.py` removed | shared helper moved into `omivoidlib.ai.clipboard_actions` (import resolution) |
+| `adapters/common/ai_clipboard.py` removed | shared helper moved into `omintylib.ai.clipboard_actions` (import resolution) |
 
 ---
 
@@ -162,11 +162,11 @@ would not resolve.
 Registry:
 
 ```text
-$ omivoid registry validate
+$ ominty registry validate
 26 action(s), 0 error(s), 0 warning(s), 0 info
 Validation passed.
 
-$ omivoid action list --json | (AI category)
+$ ominty action list --json | (AI category)
 ai.ask            | ['Super+A,A'] | ['global']    | False
 ai.clipboard.explain   | ['Super+A,E'] | ['clipboard'] | False
 ai.clipboard.summarise | ['Super+A,S'] | ['clipboard'] | False
@@ -180,8 +180,8 @@ valid); Niri config reloaded live.
 Graceful degradation (wl-clipboard not yet installed):
 
 ```text
-$ omivoid ai ask "say ok" --clipboard        → CONTEXT_UNAVAILABLE, exit 1
-$ omivoid action run ai.clipboard.explain    → CONTEXT_UNAVAILABLE, exit 1
+$ ominty ai ask "say ok" --clipboard        → CONTEXT_UNAVAILABLE, exit 1
+$ ominty action run ai.clipboard.explain    → CONTEXT_UNAVAILABLE, exit 1
 ```
 
 Tests: **137 passing** (was 124). New coverage: context envelope,
@@ -197,16 +197,16 @@ unavailable, `build_prompt`, `ask(context=...)`, both clipboard adapters
 | File | Change |
 |---|---|
 | `docs/implementation/ai-context-evaluation.md` | AI-23/24 investigation + CLIPBOARD FALLBACK decision (new) |
-| `cli/omivoidlib/ai/context/__init__.py` | `ContextObject`, collectors, `build_prompt` (rewritten) |
-| `cli/omivoidlib/ai/__init__.py` | `ask(..., context=...)` |
-| `cli/omivoidlib/ai/clipboard_actions.py` | shared `run_with_clipboard` (new) |
+| `cli/omintylib/ai/context/__init__.py` | `ContextObject`, collectors, `build_prompt` (rewritten) |
+| `cli/omintylib/ai/__init__.py` | `ask(..., context=...)` |
+| `cli/omintylib/ai/clipboard_actions.py` | shared `run_with_clipboard` (new) |
 | `adapters/common/ai_clipboard_explain.py` | explain adapter (new) |
 | `adapters/common/ai_clipboard_summarise.py` | summarise adapter (new) |
-| `cli/omivoidlib/adapters.py` | adapter registration |
+| `cli/omintylib/adapters.py` | adapter registration |
 | `actions/ai.toml` | `ai.clipboard.explain`/`summarise` |
-| `cli/omivoidlib/cli.py` | `ai ask --clipboard` |
-| `cli/omivoidlib/registry.py` | `clipboard` context, new adapters known |
-| `shell/dms/omivoid-actions/OmivoidActions.qml` | context chip, notify-send delivery |
+| `cli/omintylib/cli.py` | `ai ask --clipboard` |
+| `cli/omintylib/registry.py` | `clipboard` context, new adapters known |
+| `shell/dms/ominty-actions/OmintyActions.qml` | context chip, notify-send delivery |
 | `tests/test_ai.py` | Phase E tests |
 
 ---
@@ -223,5 +223,5 @@ unavailable, `build_prompt`, `ask(context=...)`, both clipboard adapters
 * **wl-clipboard must be installed** for the feature to function:
   `sudo apt install wl-clipboard`. Until then the actions degrade honestly
   to `CONTEXT_UNAVAILABLE`.
-* **`OMIVOID_CLI`/paths** — the plugin still uses an absolute `cliPath`
-  default; installing `omivoid` on `PATH` remains outstanding.
+* **`OMINTY_CLI`/paths** — the plugin still uses an absolute `cliPath`
+  default; installing `ominty` on `PATH` remains outstanding.

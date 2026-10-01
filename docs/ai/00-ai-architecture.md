@@ -1,6 +1,6 @@
-Omivoid AI Architecture
+Ominty AI Architecture
 
-Project: "omivoid-lmde"
+Project: "ominty-core"
 Subsystem: AI
 Document: 00
 Status: Phase 1 Specification
@@ -9,21 +9,21 @@ Status: Phase 1 Specification
 
 1. Purpose
 
-This document defines the overall AI architecture for Omivoid.
+This document defines the overall AI architecture for Ominty.
 
 AI is not treated as a separate chatbot application added to the desktop.
 
-It is a first-class Omivoid interaction surface capable of understanding context, assisting the user and invoking controlled Omivoid capabilities.
+It is a first-class Ominty interaction surface capable of understanding context, assisting the user and invoking controlled Ominty capabilities.
 
 The architectural objective is:
 
-«AI should participate in Omivoid through the same stable action and context architecture used by the rest of the desktop.»
+«AI should participate in Ominty through the same stable action and context architecture used by the rest of the desktop.»
 
 ---
 
 2. Design Objectives
 
-The Omivoid AI subsystem should be:
+The Ominty AI subsystem should be:
 
 - local-first;
 - lightweight on laptops;
@@ -43,7 +43,7 @@ It should not require the laptop to become the primary heavy-compute system.
 
 3. Laptop Role
 
-The Omivoid laptop is primarily intended for:
+The Ominty laptop is primarily intended for:
 
 - planning;
 - research;
@@ -81,7 +81,7 @@ rather than maximum local model capacity.
           └────────────┼────────────┘
                        │
                        ▼
-               Omivoid AI Layer
+               Ominty AI Layer
                        │
              ┌─────────┴─────────┐
              ▼                   ▼
@@ -102,7 +102,7 @@ rather than maximum local model capacity.
 
 Future expansion:
 
-                 Omivoid AI Layer
+                 Ominty AI Layer
                         │
              ┌──────────┴──────────┐
              ▼                     ▼
@@ -144,7 +144,7 @@ Initial interfaces include:
 
 Super+A
 DMS launcher
-Omivoid CLI
+Ominty CLI
 contextual actions
 
 Future interfaces may include:
@@ -161,7 +161,7 @@ The interaction layer must not depend directly on a specific AI provider.
 
 7. Provider Layer
 
-The provider layer connects Omivoid to an AI implementation.
+The provider layer connects Ominty to an AI implementation.
 
 Initial provider:
 
@@ -175,7 +175,7 @@ Herdr
 specialist agent
 IBIS-hosted service
 
-Omivoid actions should therefore express intent such as:
+Ominty actions should therefore express intent such as:
 
 ai.ask
 
@@ -211,13 +211,13 @@ and:
 
 assumed context
 
-Omivoid MUST NOT silently provide guessed context.
+Ominty MUST NOT silently provide guessed context.
 
 ---
 
 9. Capability Layer
 
-The capability layer exposes controlled Omivoid actions to AI.
+The capability layer exposes controlled Ominty actions to AI.
 
 Example:
 
@@ -285,7 +285,7 @@ Pi should not itself become the distributed orchestration framework.
 
 12. Pi's Architectural Role
 
-Pi is the preferred Phase 1 AI provider for the Omivoid laptop.
+Pi is the preferred Phase 1 AI provider for the Ominty laptop.
 
 Its role is:
 
@@ -296,14 +296,14 @@ Pi may:
 - conduct conversations;
 - use project context;
 - call tools;
-- invoke Omivoid actions;
+- invoke Ominty actions;
 - work with files;
 - assist coding;
 - assist research;
 - assist writing;
 - eventually request delegation.
 
-Pi does not own Omivoid's action architecture.
+Pi does not own Ominty's action architecture.
 
 ---
 
@@ -347,11 +347,11 @@ It may host:
 - service agents;
 - larger coordinated agent systems.
 
-Omivoid should not couple directly to Agno-specific implementation unless necessary.
+Ominty should not couple directly to Agno-specific implementation unless necessary.
 
 Expected future path:
 
-Omivoid
+Ominty
    ↓
 Herdr
    ↓
@@ -379,7 +379,7 @@ It does not mean every model must run locally.
 
 16. Model Independence
 
-The Omivoid AI architecture must not assume a particular model.
+The Ominty AI architecture must not assume a particular model.
 
 A provider may use:
 
@@ -389,7 +389,7 @@ A provider may use:
 - reasoning model;
 - specialist model.
 
-Model selection belongs below the Omivoid interaction contract.
+Model selection belongs below the Ominty interaction contract.
 
 ---
 
@@ -470,7 +470,7 @@ Possible implementations include:
 - AI panel;
 - contextual menu;
 - chord overlay;
-- Omivoid DMS plugin.
+- Ominty DMS plugin.
 
 DMS does not own AI policy or provider selection.
 
@@ -483,7 +483,7 @@ Example:
 Super+A,A
     │
     ▼
-Omivoid ai.ask
+Ominty ai.ask
     │
     ▼
 AI provider resolver
@@ -663,7 +663,7 @@ The Action Registry is not intended to replace every possible shell operation.
 The distinction is:
 
 known desktop capability
-    → Omivoid action
+    → Ominty action
 
 open-ended technical work
     → agent tools / shell where appropriate
@@ -699,7 +699,7 @@ This makes tool use more reliable.
 
 AI conversation/session state belongs primarily to the provider.
 
-Omivoid should not duplicate Pi's session management unless Omivoid-specific cross-provider session behaviour later requires it.
+Ominty should not duplicate Pi's session management unless Ominty-specific cross-provider session behaviour later requires it.
 
 ---
 
@@ -712,10 +712,10 @@ Example:
 Pi configuration
     → Pi
 
-Omivoid provider selection
-    → Omivoid
+Ominty provider selection
+    → Ominty
 
-Avoid copying entire Pi configuration into Omivoid.
+Avoid copying entire Pi configuration into Ominty.
 
 ---
 
@@ -773,7 +773,7 @@ Phase 1 AI should prove:
 3. "ai.ask";
 4. "Super+A";
 5. capability discovery;
-6. AI → Omivoid action execution;
+6. AI → Ominty action execution;
 7. basic context experiment;
 8. policy enforcement.
 
@@ -785,7 +785,7 @@ Do not initially build:
 
 - distributed agent network;
 - autonomous background agent;
-- long-running Omivoid AI daemon;
+- long-running Ominty AI daemon;
 - full Herdr orchestration;
 - Agno integration;
 - voice;
@@ -798,8 +798,8 @@ Do not initially build:
 
 37. Success Criterion
 
-The AI architecture is proven when a user can naturally interact with Pi through Omivoid and Pi can safely consume Omivoid context and invoke selected Omivoid capabilities without needing implementation-specific desktop knowledge.
+The AI architecture is proven when a user can naturally interact with Pi through Ominty and Pi can safely consume Ominty context and invoke selected Ominty capabilities without needing implementation-specific desktop knowledge.
 
 The defining principle is:
 
-«Omivoid gives AI context and capabilities; AI does not need to understand the machinery underneath them.»
+«Ominty gives AI context and capabilities; AI does not need to understand the machinery underneath them.»

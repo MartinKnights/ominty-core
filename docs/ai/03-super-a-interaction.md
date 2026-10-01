@@ -1,6 +1,6 @@
-# Omivoid `Super+A` Interaction Specification
+# Ominty `Super+A` Interaction Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 03
 **Status:** Phase 1 Specification
@@ -9,7 +9,7 @@
 
 # 1. Purpose
 
-This document defines the primary human interaction model for AI within Omivoid.
+This document defines the primary human interaction model for AI within Ominty.
 
 The canonical keyboard entry point is:
 
@@ -19,11 +19,11 @@ Super+A
 
 `Super+A` is not intended to be a single chatbot shortcut.
 
-It is the root of the Omivoid AI interaction namespace.
+It is the root of the Ominty AI interaction namespace.
 
 The objective is:
 
-> **Make AI as predictable and discoverable as any other Omivoid desktop capability.**
+> **Make AI as predictable and discoverable as any other Ominty desktop capability.**
 
 ---
 
@@ -112,7 +112,7 @@ Preferred behaviour:
 ```text
 Super+A
    ↓
-DMS / Omivoid AI interface
+DMS / Ominty AI interface
    ↓
 AI options
 ```
@@ -137,7 +137,7 @@ Models / Agents
 
 # 6. Prefix Overlay
 
-When `Super+A` is pressed, Omivoid should display the available next keys where practical.
+When `Super+A` is pressed, Ominty should display the available next keys where practical.
 
 Example:
 
@@ -169,7 +169,7 @@ existing plugin
    ↓
 extend existing plugin
    ↓
-Omivoid DMS plugin
+Ominty DMS plugin
    ↓
 standalone UI
 ```
@@ -241,7 +241,7 @@ Possible UI:
 
 ```text
 ┌─────────────────────────────────────────┐
-│ Ask Omivoid AI...                       │
+│ Ask Ominty AI...                       │
 └─────────────────────────────────────────┘
 ```
 
@@ -250,7 +250,7 @@ The prompt interface should display relevant context indicators when context is 
 Example:
 
 ```text
-[Project: omivoid-lmde] [File: provider.py]
+[Project: ominty-core] [File: provider.py]
 ```
 
 ---
@@ -428,7 +428,7 @@ Run tests
 
 Pi's native coding capabilities should remain available.
 
-The Omivoid UI primarily provides faster context-aware entry.
+The Ominty UI primarily provides faster context-aware entry.
 
 ---
 
@@ -498,7 +498,7 @@ depending on implementation.
 
 # 23. Navigation
 
-AI menus should follow Omivoid interaction conventions:
+AI menus should follow Ominty interaction conventions:
 
 ```text
 Arrow keys    navigate
@@ -565,7 +565,7 @@ Do not make unavailable functions appear operational.
 
 # 27. Capability Awareness
 
-The AI UI may eventually display what Omivoid actions are available to AI.
+The AI UI may eventually display what Ominty actions are available to AI.
 
 For example:
 
@@ -594,7 +594,7 @@ context
 Example:
 
 ```text
-Pi · local interface · Project: omivoid-lmde
+Pi · local interface · Project: ominty-core
 ```
 
 Avoid clutter.
@@ -618,13 +618,13 @@ This should be derived from provider/model configuration rather than guessed.
 
 # 30. Terminal Fallback
 
-If the graphical AI interface is unavailable, Omivoid should retain CLI/terminal access.
+If the graphical AI interface is unavailable, Ominty should retain CLI/terminal access.
 
 Examples:
 
 ```text
-omivoid ai ask "..."
-omivoid action run ai.pi.open
+ominty ai ask "..."
+ominty action run ai.pi.open
 ```
 
 DMS failure must not make AI entirely inaccessible.
@@ -772,6 +772,6 @@ Required test:
 
 # 40. Guiding Principle
 
-`Super+A` should become to AI what `Super+Space` is to general Omivoid actions:
+`Super+A` should become to AI what `Super+Space` is to general Ominty actions:
 
 > **A predictable, discoverable gateway into a larger capability system rather than a shortcut to one particular application.**

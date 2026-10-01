@@ -1,6 +1,6 @@
-# Omivoid AI Provider Interface
+# Ominty AI Provider Interface
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 01
 **Status:** Phase 1 Specification
@@ -9,23 +9,23 @@
 
 # 1. Purpose
 
-This document defines the contract between Omivoid and AI providers.
+This document defines the contract between Ominty and AI providers.
 
-The interface allows Omivoid to use Pi initially while retaining the ability to support other AI providers later.
+The interface allows Ominty to use Pi initially while retaining the ability to support other AI providers later.
 
 The central rule is:
 
-> **Omivoid interacts with AI capabilities through a provider contract rather than directly coupling user interactions to Pi-specific commands.**
+> **Ominty interacts with AI capabilities through a provider contract rather than directly coupling user interactions to Pi-specific commands.**
 
 ---
 
 # 2. Architectural Position
 
 ```text
-Omivoid Interaction
+Ominty Interaction
        │
        ▼
-Omivoid AI Layer
+Ominty AI Layer
        │
        ▼
 Provider Interface
@@ -48,9 +48,9 @@ Provider: Pi
 Model:    configured model used by Pi
 ```
 
-Omivoid should not assume that choosing Pi implies one particular model.
+Ominty should not assume that choosing Pi implies one particular model.
 
-Likewise, model selection should not require changing the Omivoid provider architecture.
+Likewise, model selection should not require changing the Ominty provider architecture.
 
 ---
 
@@ -67,7 +67,7 @@ An AI provider may be responsible for:
 * provider-specific configuration;
 * provider-specific history.
 
-Omivoid remains responsible for:
+Ominty remains responsible for:
 
 * desktop interaction;
 * context packaging;
@@ -165,7 +165,7 @@ ai.pi.open
 
 may invoke Pi interactively in the configured terminal or presentation environment.
 
-This is provider-specific behaviour exposed through an Omivoid action.
+This is provider-specific behaviour exposed through an Ominty action.
 
 ---
 
@@ -173,7 +173,7 @@ This is provider-specific behaviour exposed through an Omivoid action.
 
 Purpose:
 
-Describe provider features relevant to Omivoid.
+Describe provider features relevant to Ominty.
 
 Possible capabilities include:
 
@@ -187,7 +187,7 @@ project-context
 model-selection
 ```
 
-This allows Omivoid to avoid assuming every provider behaves identically.
+This allows Ominty to avoid assuming every provider behaves identically.
 
 ---
 
@@ -210,7 +210,7 @@ Provider IDs should be lowercase and stable.
 
 # 11. Default Provider
 
-Omivoid should support a configured default AI provider.
+Ominty should support a configured default AI provider.
 
 Example:
 
@@ -258,7 +258,7 @@ ai.ask
 
 # 13. Provider Configuration
 
-Omivoid should store only provider integration settings required by Omivoid.
+Ominty should store only provider integration settings required by Ominty.
 
 Example:
 
@@ -285,12 +285,12 @@ If Pi already manages:
 * sessions;
 * tools;
 
-Omivoid should not duplicate those settings unless integration requires it.
+Ominty should not duplicate those settings unless integration requires it.
 
 Preferred:
 
 ```text
-Omivoid
+Ominty
   → "Use Pi"
 
 Pi
@@ -312,7 +312,7 @@ IPC
 API
 ```
 
-Do not introduce an Omivoid daemon merely to wrap a functioning provider CLI.
+Do not introduce an Ominty daemon merely to wrap a functioning provider CLI.
 
 ---
 
@@ -324,7 +324,7 @@ Prefer provider interfaces that can return structured data.
 
 If Pi only exposes suitable CLI output, isolate parsing inside the Pi provider adapter.
 
-Do not leak parsing assumptions into the wider Omivoid AI layer.
+Do not leak parsing assumptions into the wider Ominty AI layer.
 
 ---
 
@@ -365,7 +365,7 @@ Exact transport is an implementation decision.
 
 # 19. Context Contract
 
-Omivoid context should be packaged independently of provider-specific prompts.
+Ominty context should be packaged independently of provider-specific prompts.
 
 Conceptual structure:
 
@@ -406,7 +406,7 @@ The context specification will define these in more detail.
 
 # 21. Capability Contract
 
-Omivoid may expose selected Action Registry capabilities to a provider.
+Ominty may expose selected Action Registry capabilities to a provider.
 
 Conceptual capability:
 
@@ -432,7 +432,7 @@ Pi may decide that it wants to call:
 app.browser.open
 ```
 
-but Omivoid decides whether the call is allowed.
+but Ominty decides whether the call is allowed.
 
 Flow:
 
@@ -441,7 +441,7 @@ Pi
  ↓
 tool request
  ↓
-Omivoid policy
+Ominty policy
  ↓
 allowed?
  ↓
@@ -454,7 +454,7 @@ The provider must not bypass this step.
 
 # 23. Capability Filtering
 
-Before exposing actions, Omivoid should filter them by:
+Before exposing actions, Ominty should filter them by:
 
 ```text
 ai_accessible
@@ -486,7 +486,7 @@ critical
 
 The provider itself should not be trusted to enforce final confirmation policy.
 
-Omivoid remains the enforcement boundary.
+Ominty remains the enforcement boundary.
 
 ---
 
@@ -520,7 +520,7 @@ Failure:
 
 # 26. Provider Errors
 
-Provider-level errors should be distinguishable from Omivoid action errors.
+Provider-level errors should be distinguishable from Ominty action errors.
 
 Possible provider errors:
 
@@ -642,7 +642,7 @@ This becomes particularly important for:
 Provider credentials must not be stored in:
 
 * Action Registry;
-* committed Omivoid config;
+* committed Ominty config;
 * documentation;
 * generated capability files.
 
@@ -654,7 +654,7 @@ Use provider-native or appropriate secret mechanisms.
 
 Pi should own Pi sessions.
 
-Omivoid may store:
+Ominty may store:
 
 ```text
 current provider
@@ -703,7 +703,7 @@ Correct:
 ```text
 DMS
  ↓
-Omivoid AI
+Ominty AI
  ↓
 Provider
 ```
@@ -717,7 +717,7 @@ CLI should be able to invoke the same provider without DMS.
 Phase 1 should provide an equivalent of:
 
 ```bash
-omivoid ai ask "Explain Niri's scrolling layout"
+ominty ai ask "Explain Niri's scrolling layout"
 ```
 
 before requiring the full `Super+A` graphical experience.
@@ -753,7 +753,7 @@ availability
 basic ask
 interactive open
 context input
-Omivoid capability exposure
+Ominty capability exposure
 tool result handling
 ```
 
@@ -795,11 +795,11 @@ Do not build during this stage:
 The provider interface is successful when:
 
 ```text
-omivoid ai ask ...
+ominty ai ask ...
 ```
 
-can use Pi while the rest of Omivoid does not need to understand Pi's internal implementation.
+can use Pi while the rest of Ominty does not need to understand Pi's internal implementation.
 
 The defining contract is:
 
-> **Omivoid defines the AI interaction; the provider defines how the intelligence is supplied.**
+> **Ominty defines the AI interaction; the provider defines how the intelligence is supplied.**

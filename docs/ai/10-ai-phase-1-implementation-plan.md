@@ -1,6 +1,6 @@
-# Omivoid AI Phase 1 Implementation Plan
+# Ominty AI Phase 1 Implementation Plan
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 10
 **Status:** Implementation Plan
@@ -9,7 +9,7 @@
 
 # 1. Purpose
 
-This document defines the implementation sequence for the first Omivoid AI milestone.
+This document defines the implementation sequence for the first Ominty AI milestone.
 
 The objective is to prove the architecture with the smallest useful implementation before introducing distributed orchestration or advanced AI workflows.
 
@@ -142,7 +142,7 @@ Implement provider availability detection.
 Target conceptual behaviour:
 
 ```bash
-omivoid ai provider status pi
+ominty ai provider status pi
 ```
 
 It should distinguish:
@@ -170,7 +170,7 @@ through the Action Registry.
 Expected:
 
 ```text
-Omivoid
+Ominty
  ↓
 configured terminal
  ↓
@@ -207,7 +207,7 @@ The generic action must not hard-code Pi semantics.
 Prove:
 
 ```bash
-omivoid ai ask "..."
+ominty ai ask "..."
 ```
 
 before implementing the full graphical AI interaction.
@@ -264,7 +264,7 @@ Implement bounded file context.
 Prove a request equivalent to:
 
 ```bash
-omivoid ai ask --file docs/00-project-overview.md \
+ominty ai ask --file docs/00-project-overview.md \
   "Summarise the architectural goals."
 ```
 
@@ -322,7 +322,7 @@ Do not invent duplicate actions.
 
 # 17. Stage AI-11 — Pi Tool Bridge
 
-Map the filtered Omivoid capabilities into Pi's actual tool/extension mechanism.
+Map the filtered Ominty capabilities into Pi's actual tool/extension mechanism.
 
 Keep Pi-specific translation inside the Pi adapter/integration.
 
@@ -341,7 +341,7 @@ Pi
         ↓
 app.browser.open
         ↓
-Omivoid policy
+Ominty policy
         ↓
 Action runner
         ↓
@@ -650,7 +650,7 @@ Niri works
 DMS works
 Super+K works
 Super+Space works
-non-AI Omivoid actions work
+non-AI Ominty actions work
 ```
 
 ---
@@ -872,12 +872,12 @@ The implementation agent should stop and report rather than improvise architectu
 
 # 48. Definition of Done
 
-The first Omivoid AI milestone is complete when:
+The first Ominty AI milestone is complete when:
 
 ```text
 Super+A
    ↓
-Omivoid AI layer
+Ominty AI layer
    ↓
 Pi
 ```
@@ -889,7 +889,7 @@ and:
 ```text
 Pi
  ↓
-Omivoid capability
+Ominty capability
  ↓
 policy
  ↓
@@ -922,7 +922,7 @@ Before proceeding to Herdr implementation, review whether the completed system s
 Pi
     = interactive intelligence
 
-Omivoid
+Ominty
     = context + capabilities + policy
 
 DMS
@@ -947,6 +947,6 @@ If these boundaries have blurred significantly, resolve the architecture before 
 
 # 50. Final Principle
 
-> **First make AI genuinely native to one Omivoid laptop. Then make Omivoid capable of delegating beyond that laptop.**
+> **First make AI genuinely native to one Ominty laptop. Then make Ominty capable of delegating beyond that laptop.**
 
 Distributed complexity must follow a proven local architecture, not compensate for the absence of one.

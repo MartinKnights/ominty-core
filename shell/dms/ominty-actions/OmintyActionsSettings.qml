@@ -1,6 +1,6 @@
-// Omivoid Actions — DMS launcher plugin settings.
+// Ominty Actions — DMS launcher plugin settings.
 //
-// Configuration for the Omivoid Action Registry bridge. All values are
+// Configuration for the Ominty Action Registry bridge. All values are
 // stored by DMS via PluginSettings; the launcher component reads the same
 // keys through pluginService.loadPluginData(...).
 
@@ -12,11 +12,11 @@ import qs.Modules.Plugins
 
 PluginSettings {
     id: root
-    pluginId: "omivoidActions"
+    pluginId: "omintyActions"
 
     StyledText {
         width: parent.width
-        text: I18n.tr("Omivoid Actions")
+        text: I18n.tr("Ominty Actions")
         font.pixelSize: Theme.fontSizeLarge
         font.weight: Font.Bold
         color: Theme.surfaceText
@@ -24,7 +24,7 @@ PluginSettings {
 
     StyledText {
         width: parent.width
-        text: I18n.tr("Search and run Omivoid action registry entries from the DMS launcher.")
+        text: I18n.tr("Search and run Ominty action registry entries from the DMS launcher.")
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         wrapMode: Text.WordWrap
@@ -53,7 +53,7 @@ PluginSettings {
                 id: noTriggerToggle
                 settingKey: "noTrigger"
                 label: I18n.tr("Always Active")
-                description: value ? I18n.tr("Omivoid actions merge into all searches (universal palette)") : I18n.tr("Use a trigger prefix to activate")
+                description: value ? I18n.tr("Ominty actions merge into all searches (universal palette)") : I18n.tr("Use a trigger prefix to activate")
                 defaultValue: true
                 onValueChanged: {
                     if (!isInitialized)
@@ -70,7 +70,7 @@ PluginSettings {
                 visible: !noTriggerToggle.value
                 settingKey: "trigger"
                 label: I18n.tr("Trigger Prefix")
-                description: I18n.tr("Type this prefix to search Omivoid actions")
+                description: I18n.tr("Type this prefix to search Ominty actions")
                 placeholder: "!"
                 defaultValue: "!"
             }
@@ -99,10 +99,10 @@ PluginSettings {
             StringSetting {
                 id: cliSetting
                 settingKey: "cliPath"
-                label: I18n.tr("Omivoid CLI Path")
+                label: I18n.tr("Ominty CLI Path")
                 description: I18n.tr("Executable used to read the registry and run actions")
-                placeholder: "omivoid"
-                defaultValue: "omivoid"
+                placeholder: "ominty"
+                defaultValue: "ominty"
             }
 
             SelectionSetting {
@@ -152,7 +152,7 @@ PluginSettings {
             }
 
             StyledText {
-                text: I18n.tr("Omivoid actions merge into the launcher alongside applications (Super+Space). Type \"!!\" to open the interaction explorer (Super+K) showing every action and its canonical keybinding. Selecting an item runs it via `omivoid action run <id>`.\n\nBindings are shown from the Action Registry, which remains authoritative.")
+                text: I18n.tr("Ominty actions merge into the launcher alongside applications (Super+Space). Type \"!!\" to open the interaction explorer (Super+K) showing every action and its canonical keybinding. Selecting an item runs it via `ominty action run <id>`.\n\nBindings are shown from the Action Registry, which remains authoritative.")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
                 wrapMode: Text.WordWrap

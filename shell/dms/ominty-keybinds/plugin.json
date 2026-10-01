@@ -1,16 +1,16 @@
 {
-    "id": "omivoidKeybinds",
-    "name": "Omivoid Keybindings",
+    "id": "omintyKeybinds",
+    "name": "Ominty Keybindings",
     "description": "GKS keybindings cheat sheet — every binding, grouped into tabs by domain (read-only).",
     "version": "0.1.0",
-    "author": "Omivoid",
+    "author": "Ominty",
     "icon": "keyboard",
     "type": "daemon",
     "capabilities": [
         "daemon"
     ],
     "components": {
-        "daemon": "./OmivoidKeybinds.qml"
+        "daemon": "./OmintyKeybinds.qml"
     },
     "requires_dms": ">=1.2.0",
     "permissions": [

@@ -1,6 +1,6 @@
-# Omivoid Herdr Integration Specification
+# Ominty Herdr Integration Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 07
 **Status:** Architectural Specification / Post-Core Phase 1
@@ -9,7 +9,7 @@
 
 # 1. Purpose
 
-This document defines the intended relationship between Omivoid and Herdr.
+This document defines the intended relationship between Ominty and Herdr.
 
 Herdr is introduced as a delegation and orchestration layer.
 
@@ -27,7 +27,7 @@ The core distinction is:
 User
   │
   ▼
-Omivoid
+Ominty
   │
   ▼
 Pi
@@ -148,7 +148,7 @@ A delegation request should eventually contain structured information such as:
 ```json
 {
   "task": "Run the full test suite and investigate failures.",
-  "project": "omivoid-lmde",
+  "project": "ominty-core",
   "requirements": {
     "capabilities": ["development", "testing"]
   },
@@ -225,7 +225,7 @@ Herdr may use connectivity available through Tailscale.
 
 However:
 
-> **Tailscale is transport infrastructure, not the Omivoid delegation API.**
+> **Tailscale is transport infrastructure, not the Ominty delegation API.**
 
 Pi should not normally manipulate Tailscale addressing as part of delegation.
 
@@ -240,7 +240,7 @@ Herdr may eventually route suitable work there.
 Conceptually:
 
 ```text
-Omivoid Laptop
+Ominty Laptop
       ↓
      Herdr
       ↓
@@ -296,7 +296,7 @@ failed
 cancelled
 ```
 
-Do not implement a parallel Omivoid task engine if Herdr already provides suitable lifecycle management.
+Do not implement a parallel Ominty task engine if Herdr already provides suitable lifecycle management.
 
 **Phase 1 implementation note (AI-35).** The readiness audit
 (`docs/implementation/herdr-readiness-review.md`) found that Herdr 0.9.0
@@ -308,7 +308,7 @@ session → workspace → tab → pane → agent
 
 Lifecycle is observed through `herdr agent wait` (block until an agent
 reaches a state) and results through `herdr agent read` / `herdr api
-snapshot`. A future adapter must map an Omivoid delegation request onto
+snapshot`. A future adapter must map an Ominty delegation request onto
 Herdr sessions/agents rather than assuming the queue model. The list above
 remains the conceptual vocabulary; the concrete states must come from the
 actual Herdr interface.
@@ -324,7 +324,7 @@ worker
   ↓
 Herdr
   ↓
-Omivoid/Pi
+Ominty/Pi
   ↓
 User
 ```
@@ -420,7 +420,7 @@ Remote workers requiring credentials should obtain them through authorised infra
 
 # 23. Herdr Adapter
 
-Omivoid should integrate Herdr behind a defined adapter.
+Ominty should integrate Herdr behind a defined adapter.
 
 Conceptually:
 
@@ -438,7 +438,7 @@ Do not spread Herdr-specific commands throughout:
 
 # 24. Herdr Availability
 
-Omivoid should be able to determine:
+Ominty should be able to determine:
 
 ```text
 Herdr available
@@ -455,7 +455,7 @@ If Herdr is unavailable:
 
 ```text
 Pi local workflows
-Omivoid actions
+Ominty actions
 DMS
 Niri
 ```
@@ -549,7 +549,7 @@ Do not design an adapter against assumptions.
 
 # 32. Success Criterion
 
-Herdr integration is successful when Omivoid can express:
+Herdr integration is successful when Ominty can express:
 
 > "Delegate this task"
 
@@ -564,7 +564,7 @@ Pi understands the task.
 
 Herdr understands where/how the task should run.
 
-Omivoid understands the user's context and policy.
+Ominty understands the user's context and policy.
 ```
 
 Keep these responsibilities separate.

@@ -1,14 +1,14 @@
 # ADR-003 — Action Registry as the Source of Truth
 
 **Status:** Accepted
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 
 ---
 
 # 1. Context
 
-Omivoid exposes desktop capabilities through several interaction surfaces:
+Ominty exposes desktop capabilities through several interaction surfaces:
 
 * keyboard;
 * GUI;
@@ -25,7 +25,7 @@ For example:
 ```text
 Super+Shift+B
 browser button
-omivoid app browser
+ominty app browser
 AI "open browser"
 ```
 
@@ -37,7 +37,7 @@ This would create configuration drift and inconsistent behaviour.
 
 # 2. Decision
 
-> **The Omivoid Action Registry is the canonical source of truth for meaningful Omivoid actions and their interaction metadata.**
+> **The Ominty Action Registry is the canonical source of truth for meaningful Ominty actions and their interaction metadata.**
 
 Canonical action IDs form a stable internal API.
 
@@ -177,7 +177,7 @@ The implementation may compile TOML into a runtime representation such as JSON.
 Example:
 
 ```text
-~/.cache/omivoid/registry.json
+~/.cache/ominty/registry.json
 ```
 
 This is generated state.
@@ -202,7 +202,7 @@ Example:
 custom.notes.daily
 ```
 
-These participate in discovery and execution while remaining distinguishable from canonical Omivoid actions.
+These participate in discovery and execution while remaining distinguishable from canonical Ominty actions.
 
 ---
 
@@ -269,7 +269,7 @@ DMS may provide graphical controls that were not generated directly from the reg
 
 This is acceptable.
 
-However, when an operation is exposed as an Omivoid action, its canonical identity should remain the same.
+However, when an operation is exposed as an Ominty action, its canonical identity should remain the same.
 
 ---
 
@@ -296,13 +296,13 @@ Validation and generation tooling must be maintained.
 
 Poor schema design could become restrictive.
 
-These costs are accepted because the registry is central to Omivoid's interaction goals.
+These costs are accepted because the registry is central to Ominty's interaction goals.
 
 ---
 
 # 16. Rejected Alternative — Niri Config as Source of Truth
 
-Niri configuration cannot describe all Omivoid actions because many actions are not compositor operations.
+Niri configuration cannot describe all Ominty actions because many actions are not compositor operations.
 
 It also cannot naturally provide:
 
@@ -320,7 +320,7 @@ Rejected.
 
 DMS is a presentation/shell implementation.
 
-Making it authoritative would couple Omivoid's action model to one shell.
+Making it authoritative would couple Ominty's action model to one shell.
 
 Rejected.
 
@@ -363,4 +363,4 @@ The architectural flow is:
                       AI
 ```
 
-The Action Registry is one of the defining architectural components of Omivoid.
+The Action Registry is one of the defining architectural components of Ominty.

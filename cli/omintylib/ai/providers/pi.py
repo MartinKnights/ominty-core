@@ -1,6 +1,6 @@
 """Pi provider adapter (docs/ai/02-pi-integration.md §10).
 
-All Pi-specific invocation details live here. Omivoid interacts with Pi
+All Pi-specific invocation details live here. Ominty interacts with Pi
 through the provider contract (docs/ai/01 §1).
 
 Readiness: binary in PATH + provider ready (`pi auth check`) with a

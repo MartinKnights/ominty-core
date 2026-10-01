@@ -1,6 +1,6 @@
-# Omivoid Action Registry Specification
+# Ominty Action Registry Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Specification version:** 0.1
 **Registry schema version:** 1
 **Phase:** Phase 1
@@ -9,7 +9,7 @@
 
 # 1. Status
 
-The Omivoid Action Registry is the canonical definition of meaningful actions exposed by the Omivoid desktop.
+The Ominty Action Registry is the canonical definition of meaningful actions exposed by the Ominty desktop.
 
 The fundamental architectural contract is:
 
@@ -218,7 +218,7 @@ arguments = ""
 
 command = []
 
-key_owner = "omivoid"
+key_owner = "ominty"
 
 cli = []
 
@@ -248,7 +248,7 @@ icon = ""
 ```
 
 `key_owner` records which surface **owns the action's binding(s)** (docs/03
-§11); it defaults to `omivoid`. Conventional values are `omivoid`, `niri`,
+§11); it defaults to `ominty`. Conventional values are `ominty`, `niri`,
 `dms`, `gks`, `user`, or `plugin:<id>` for DMS plugin owners.
 
 Do not implement optional fields merely because they exist unless Phase 1 requires them.
@@ -360,12 +360,12 @@ identifies the binding presented most prominently to the user.
 ## Binding Ownership
 
 Every binding has an owner: the surface that owns or claims the key(s). This
-is recorded per action with `key_owner` (default `omivoid`).
+is recorded per action with `key_owner` (default `ominty`).
 
 Conventional owners:
 
 ```text
-omivoid          → the key is an Omivoid registry binding (generated)
+ominty          → the key is an Ominty registry binding (generated)
 niri             → the compositor owns it (native binding)
 dms              → the shell claims it (e.g. DMS's own shortcuts)
 gks              → the GKS plugin owns it (DMS keyboard help)
@@ -373,7 +373,7 @@ user             → user configuration owns it
 plugin:<id>      → a specific DMS plugin owns it
 ```
 
-The default `omivoid` means the key is generated from the registry. Actions
+The default `ominty` means the key is generated from the registry. Actions
 whose bindings are owned elsewhere (e.g. DMS-claimed keys) use the matching
 `key_owner`; collision handling then lives in the data instead of the
 generator.
@@ -582,13 +582,13 @@ cli = ["network", "wifi", "toggle"]
 maps to:
 
 ```text
-omivoid network wifi toggle
+ominty network wifi toggle
 ```
 
 The generic form is:
 
 ```text
-omivoid action run network.wifi.toggle
+ominty action run network.wifi.toggle
 ```
 
 The canonical action ID remains authoritative.
@@ -619,7 +619,7 @@ An action has exactly one implementation form:
 
 | Form | When | Where parameters go |
 | ---- | ---- | ------------------- |
-| `adapter = "command"` | raw argv is acceptable (typically user actions) | top-level `command = [...]` — the argv Omivoid executes, no shell |
+| `adapter = "command"` | raw argv is acceptable (typically user actions) | top-level `command = [...]` — the argv Ominty executes, no shell |
 | any other `adapter` | all other cases | `arguments = { ... }` — adapter-defined parameters |
 
 State rule:
@@ -628,7 +628,7 @@ State rule:
    A `command` without `adapter = "command"` is invalid.
 2. `arguments` and `command` are **mutually exclusive**: an action must not set
    both. The `command` adapter ignores `arguments`.
-3. `arguments.command` is **not** Omivoid-executed argv. It is adapter-specific
+3. `arguments.command` is **not** Ominty-executed argv. It is adapter-specific
    payload only where an adapter documents it — currently `shell.explorer`
    (ADR-006 §12), which receives the argv it spawns to open its panel.
 4. Adapter parameters always belong under `arguments` except for the
@@ -681,7 +681,7 @@ rather than:
 
 ```text
 Niri
-→ spawn Omivoid
+→ spawn Ominty
 → invoke Niri IPC
 ```
 
@@ -776,7 +776,7 @@ Do not assume these example applications are installed.
 User-defined actions live under:
 
 ```text
-~/.config/omivoid/actions/
+~/.config/ominty/actions/
 ```
 
 They should use:
@@ -798,7 +798,7 @@ adapter = "command"
 command = [...]
 ```
 
-Core Omivoid actions should prefer adapters.
+Core Ominty actions should prefer adapters.
 
 ---
 
@@ -842,7 +842,7 @@ Canonical action identity remains unchanged.
 Phase 1 MUST provide:
 
 ```text
-omivoid registry validate
+ominty registry validate
 ```
 
 Validation should detect at least:
@@ -867,13 +867,13 @@ Validation should distinguish errors from warnings.
 The CLI should eventually support:
 
 ```text
-omivoid action list
-omivoid action show <id>
-omivoid action search <query>
-omivoid action run <id>
+ominty action list
+ominty action show <id>
+ominty action search <query>
+ominty action run <id>
 
-omivoid registry validate
-omivoid registry build
+ominty registry validate
+ominty registry build
 ```
 
 The first Phase 1 milestone may implement these incrementally.
@@ -942,7 +942,7 @@ The human-maintained source is TOML.
 A future or Phase 1 registry build may produce a runtime representation such as:
 
 ```text
-~/.cache/omivoid/registry.json
+~/.cache/ominty/registry.json
 ```
 
 The generated representation is disposable.
@@ -960,7 +960,7 @@ The implementation must:
 1. inspect active configuration;
 2. identify conflicts;
 3. preserve unrelated bindings;
-4. clearly separate generated Omivoid configuration where possible;
+4. clearly separate generated Ominty configuration where possible;
 5. report unresolved conflicts.
 
 ---
@@ -971,7 +971,7 @@ Quickshell is also already installed.
 
 The registry implementation must not assume a clean or disposable Quickshell environment.
 
-DMS integration and any custom Omivoid Quickshell components should be isolated where practical.
+DMS integration and any custom Ominty Quickshell components should be isolated where practical.
 
 ---
 
@@ -1000,10 +1000,10 @@ Do not inflate the registry with speculative actions merely to reach a number.
 
 All implementations must preserve these three rules:
 
-> **1. No Omivoid interaction surface should need to know how an action is implemented.**
+> **1. No Ominty interaction surface should need to know how an action is implemented.**
 
 > **2. The Action Registry is authoritative for intent and interaction metadata; adapters are authoritative for implementation.**
 
-> **3. AI should receive controlled Omivoid capabilities instead of being forced to manipulate implementation-specific shell commands wherever practical.**
+> **3. AI should receive controlled Ominty capabilities instead of being forced to manipulate implementation-specific shell commands wherever practical.**
 
 These contracts are more important than the exact Phase 1 implementation language or tooling.

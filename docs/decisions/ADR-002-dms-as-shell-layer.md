@@ -1,14 +1,14 @@
 # ADR-002 — DankMaterialShell as the Preferred Shell Layer
 
 **Status:** Provisionally Accepted — Validate During Phase 1
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 
 ---
 
 # 1. Context
 
-Omivoid requires graphical desktop-shell functionality including:
+Ominty requires graphical desktop-shell functionality including:
 
 * bar;
 * system status;
@@ -25,9 +25,9 @@ Omivoid requires graphical desktop-shell functionality including:
 
 Quickshell is already installed on the Phase 1 LMDE machine.
 
-DankMaterialShell (DMS) is a Quickshell-based desktop shell with explicit Niri support and provides many of the capabilities Omivoid requires.
+DankMaterialShell (DMS) is a Quickshell-based desktop shell with explicit Niri support and provides many of the capabilities Ominty requires.
 
-Building all of these components independently would create significant implementation and maintenance work without necessarily improving the Omivoid interaction architecture.
+Building all of these components independently would create significant implementation and maintenance work without necessarily improving the Ominty interaction architecture.
 
 ---
 
@@ -35,9 +35,9 @@ Building all of these components independently would create significant implemen
 
 > **DankMaterialShell is the preferred Phase 1 graphical shell implementation, subject to practical validation.**
 
-Omivoid should use DMS for shell capabilities that DMS already provides adequately.
+Ominty should use DMS for shell capabilities that DMS already provides adequately.
 
-Omivoid should build custom Quickshell components only where an Omivoid-specific requirement cannot reasonably be satisfied through DMS.
+Ominty should build custom Quickshell components only where an Ominty-specific requirement cannot reasonably be satisfied through DMS.
 
 ---
 
@@ -51,7 +51,7 @@ Provisionally Accepted
 
 rather than permanently accepted.
 
-Phase 1 must validate DMS against actual Omivoid requirements.
+Phase 1 must validate DMS against actual Ominty requirements.
 
 The project must not become architecturally dependent on DMS before that validation is complete.
 
@@ -81,7 +81,7 @@ Subject to validation, DMS should provide or participate in:
 
 ---
 
-# 5. Omivoid Responsibilities
+# 5. Ominty Responsibilities
 
 DMS does not own:
 
@@ -96,7 +96,7 @@ DMS does not own:
 * risk classification;
 * interaction semantics.
 
-Those remain Omivoid responsibilities.
+Those remain Ominty responsibilities.
 
 ---
 
@@ -105,7 +105,7 @@ Those remain Omivoid responsibilities.
 The intended relationship is:
 
 ```text
-Omivoid
+Ominty
    │
    ├── Interaction Model
    ├── Action Registry
@@ -123,7 +123,7 @@ Omivoid
 Not:
 
 ```text
-Omivoid
+Ominty
    =
 DMS configuration
 ```
@@ -137,7 +137,7 @@ For every shell requirement, classify it as:
 ```text
 USE DMS
 EXTEND DMS
-BUILD OMIVOID COMPONENT
+BUILD OMINTY COMPONENT
 DEFER
 ```
 
@@ -147,7 +147,7 @@ DEFER
 
 # 8. Preferred Interfaces
 
-Omivoid should integrate with DMS through supported interfaces wherever possible.
+Ominty should integrate with DMS through supported interfaces wherever possible.
 
 Preference order:
 
@@ -162,7 +162,7 @@ Preference order:
 
 # 9. Fork Policy
 
-DMS should not be forked during Phase 1 unless a critical Omivoid requirement cannot otherwise be implemented.
+DMS should not be forked during Phase 1 unless a critical Ominty requirement cannot otherwise be implemented.
 
 A fork creates:
 
@@ -175,9 +175,9 @@ A missing convenience feature is not sufficient justification.
 
 ---
 
-# 10. Custom Omivoid UI
+# 10. Custom Ominty UI
 
-Likely Omivoid-specific interfaces include:
+Likely Ominty-specific interfaces include:
 
 * `Super+K` Interaction Explorer;
 * chord continuation overlays;
@@ -193,7 +193,7 @@ A small separate Quickshell component is acceptable if necessary.
 
 # 11. Command Palette Question
 
-DMS launcher functionality must be evaluated against the Omivoid requirement for:
+DMS launcher functionality must be evaluated against the Ominty requirement for:
 
 ```text
 Super+Space
@@ -201,7 +201,7 @@ Super+Space
 
 to search more than applications.
 
-The Omivoid palette should eventually be capable of searching:
+The Ominty palette should eventually be capable of searching:
 
 * applications;
 * actions;
@@ -211,7 +211,7 @@ The Omivoid palette should eventually be capable of searching:
 
 If DMS can provide this cleanly, use it.
 
-If not, Omivoid may provide its own action palette.
+If not, Ominty may provide its own action palette.
 
 ---
 
@@ -219,7 +219,7 @@ If not, Omivoid may provide its own action palette.
 
 DMS's wallpaper and Matugen functionality should be used where practical.
 
-However, Omivoid requires a theme architecture capable of serving consumers outside DMS.
+However, Ominty requires a theme architecture capable of serving consumers outside DMS.
 
 Therefore:
 
@@ -228,16 +228,16 @@ DMS theme capability
        ↓
 participates in
        ↓
-Omivoid theme architecture
+Ominty theme architecture
 ```
 
-rather than becoming the only source available to other Omivoid components.
+rather than becoming the only source available to other Ominty components.
 
 ---
 
 # 13. Failure Isolation
 
-Core Omivoid functionality should not disappear entirely if DMS fails.
+Core Ominty functionality should not disappear entirely if DMS fails.
 
 In particular:
 
@@ -256,7 +256,7 @@ should remain recoverable where practical.
 
 DMS may eliminate the need to independently maintain numerous desktop components.
 
-This allows Omivoid development to focus on its differentiators:
+This allows Ominty development to focus on its differentiators:
 
 * interaction architecture;
 * discoverability;
@@ -266,11 +266,11 @@ This allows Omivoid development to focus on its differentiators:
 
 ## Negative
 
-Omivoid becomes partially dependent on an external project for graphical shell behaviour.
+Ominty becomes partially dependent on an external project for graphical shell behaviour.
 
 DMS changes may require adapter maintenance.
 
-Some Omivoid UX requirements may not fit DMS directly.
+Some Ominty UX requirements may not fit DMS directly.
 
 These costs are acceptable if the dependency remains bounded.
 
@@ -284,9 +284,9 @@ It is rejected unless DMS proves unsuitable.
 
 ---
 
-# 16. Rejected Alternative — Make DMS the Omivoid Architecture
+# 16. Rejected Alternative — Make DMS the Ominty Architecture
 
-Using DMS configuration itself as the definition of Omivoid would tightly couple:
+Using DMS configuration itself as the definition of Ominty would tightly couple:
 
 * actions;
 * keyboard behaviour;
@@ -323,9 +323,9 @@ Reconsider DMS if:
 
 * required Niri integration is unreliable;
 * extension mechanisms are insufficient;
-* core Omivoid interaction requires extensive patching;
+* core Ominty interaction requires extensive patching;
 * DMS introduces unacceptable performance or stability issues;
-* maintaining compatibility becomes harder than maintaining a focused Omivoid shell.
+* maintaining compatibility becomes harder than maintaining a focused Ominty shell.
 
 ---
 
@@ -333,4 +333,4 @@ Reconsider DMS if:
 
 Phase 1 begins with the assumption:
 
-> **Use DMS for conventional shell infrastructure and reserve custom Omivoid development for the interaction capabilities that make Omivoid distinct.**
+> **Use DMS for conventional shell infrastructure and reserve custom Ominty development for the interaction capabilities that make Ominty distinct.**

@@ -18,8 +18,8 @@ from unittest.mock import patch
 
 import pytest
 
-from omivoidlib.registry import Action, Registry, load_registry
-from omivoidlib.runner import run_action
+from omintylib.registry import Action, Registry, load_registry
+from omintylib.runner import run_action
 
 
 def make_action(**overrides) -> Action:
@@ -64,7 +64,7 @@ def test_action_not_found():
 
 def test_platform_unsupported():
     action = make_action(platforms=["void"])
-    with patch("omivoidlib.runner.detect_platform", return_value="debian"):
+    with patch("omintylib.runner.detect_platform", return_value="debian"):
         result = run_action(action.id, registry_with(action))
     assert result["success"] is False
     assert result["error"]["code"] == "PLATFORM_UNSUPPORTED"
@@ -79,7 +79,7 @@ def test_no_implementation():
 
 def test_missing_requirement():
     action = make_action(adapter="command", command=["true"], requires=["matugen"])
-    with patch("omivoidlib.runner._requirement_available", return_value=False):
+    with patch("omintylib.runner._requirement_available", return_value=False):
         result = run_action(action.id, registry_with(action))
     assert result["success"] is False
     assert result["error"]["code"] == "DEPENDENCY_MISSING"
@@ -103,7 +103,7 @@ def test_app_launch_missing_role():
 
 def test_app_launch_no_configured_app():
     action = make_action(adapter="app.launch", arguments={"role": "browser"})
-    with patch("omivoidlib.config.load_apps_config", return_value={}):
+    with patch("omintylib.config.load_apps_config", return_value={}):
         result = run_action(action.id, registry_with(action))
     assert result["success"] is False
     assert result["error"]["code"] == "ACTION_UNAVAILABLE"
@@ -111,7 +111,7 @@ def test_app_launch_no_configured_app():
 
 def test_app_launch_binary_missing():
     action = make_action(adapter="app.launch", arguments={"role": "browser"})
-    with patch("omivoidlib.config.load_apps_config", return_value={"browser": "no-such-browser-xyz"}):
+    with patch("omintylib.config.load_apps_config", return_value={"browser": "no-such-browser-xyz"}):
         result = run_action(action.id, registry_with(action))
     assert result["success"] is False
     assert result["error"]["code"] == "DEPENDENCY_MISSING"
@@ -119,7 +119,7 @@ def test_app_launch_binary_missing():
 
 def test_app_launch_success():
     action = make_action(adapter="app.launch", arguments={"role": "browser"})
-    with patch("omivoidlib.config.load_apps_config", return_value={"browser": "true"}):
+    with patch("omintylib.config.load_apps_config", return_value={"browser": "true"}):
         with patch("subprocess.Popen") as popen:
             result = run_action(action.id, registry_with(action))
     assert result["success"] is True

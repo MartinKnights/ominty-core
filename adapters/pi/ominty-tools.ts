@@ -1,27 +1,27 @@
 /**
- * Omivoid Pi Tool Bridge (docs/ai/02 §17–19, docs/ai/10 §17, AI-11)
+ * Ominty Pi Tool Bridge (docs/ai/02 §17–19, docs/ai/10 §17, AI-11)
  *
- * Exposes the Omivoid AI-accessible capability catalogue as Pi tools.
+ * Exposes the Ominty AI-accessible capability catalogue as Pi tools.
  *
  * Tool definitions are GENERATED from the Action Registry at session
- * start via `omivoid ai capabilities --json` — no hand-written
+ * start via `ominty ai capabilities --json` — no hand-written
  * catalogue (docs/ai/02 §18).
  *
  * Tool name translation: Pi tool names are restricted to [a-z0-9_],
  * so `app.browser.open` becomes `app_browser_open`. The canonical
  * action ID is preserved and passed to the runner.
  *
- * Execution: `omivoid action run <id> --ai --json`. Pi never executes
+ * Execution: `ominty action run <id> --ai --json`. Pi never executes
  * implementation commands directly for registered capabilities
  * (docs/ai/02 §19). Only actions in the AI-accessible catalogue can
  * be invoked — the catalogue is the policy boundary (AGENTS.md §17),
- * and Omivoid re-checks policy per request (docs/ai/09).
+ * and Ominty re-checks policy per request (docs/ai/09).
  *
- * Confirmation: when Omivoid returns CONFIRMATION_REQUIRED, the user
+ * Confirmation: when Ominty returns CONFIRMATION_REQUIRED, the user
  * is asked via Pi's UI and the action is retried with --confirmed.
  * The model can never approve its own action (docs/ai/09 §10).
  *
- * CLI resolution: $OMIVOID_CLI if set, otherwise `omivoid` from PATH.
+ * CLI resolution: $OMINTY_CLI if set, otherwise `ominty` from PATH.
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -48,18 +48,18 @@ function toToolName(actionId: string): string {
   return actionId.replace(/[^a-z0-9_]/g, "_");
 }
 
-function resolveOmivoidCli(): string {
-  return process.env.OMIVOID_CLI ?? "omivoid";
+function resolveOmintyCli(): string {
+  return process.env.OMINTY_CLI ?? "ominty";
 }
 
-export default function omivoidToolsExtension(pi: ExtensionAPI) {
-  const cli = resolveOmivoidCli();
+export default function omintyToolsExtension(pi: ExtensionAPI) {
+  const cli = resolveOmintyCli();
 
   async function loadCapabilities(): Promise<Capability[]> {
     const result = await pi.exec(cli, ["ai", "capabilities", "--json"]);
     if (result.code !== 0) {
       throw new Error(
-        `omivoid ai capabilities failed (${result.code}): ` +
+        `ominty ai capabilities failed (${result.code}): ` +
           `${result.stderr || result.stdout}`,
       );
     }
@@ -81,7 +81,7 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
       return JSON.parse(result.stdout) as ActionResult;
     } catch {
       throw new Error(
-        `omivoid action run ${actionId} failed (${result.code}): ` +
+        `ominty action run ${actionId} failed (${result.code}): ` +
           `${result.stderr || result.stdout}`,
       );
     }
@@ -92,8 +92,8 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
     pi.registerTool({
       name: toolName,
       label: cap.name,
-      description: `${cap.description} (Omivoid action ${cap.id}, risk: ${cap.risk})`,
-      promptSnippet: `Run the Omivoid desktop action ${cap.id} (${cap.name})`,
+      description: `${cap.description} (Ominty action ${cap.id}, risk: ${cap.risk})`,
+      promptSnippet: `Run the Ominty desktop action ${cap.id} (${cap.name})`,
       promptGuidelines: [
         `Use ${toolName} when the user asks to ${cap.description.toLowerCase()}`,
       ],
@@ -101,13 +101,13 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
       async execute(_toolCallId, _params, _signal, _onUpdate, ctx) {
         let result = await runAction(cap.id, false);
 
-        // Omivoid policy may require user confirmation. The user decides;
+        // Ominty policy may require user confirmation. The user decides;
         // the model can never set --confirmed itself (docs/ai/09 §10).
         if (!result.success && result.confirmation_required) {
           let approved = false;
           try {
             approved = await ctx.ui.confirm(
-              "Omivoid: confirm action",
+              "Ominty: confirm action",
               `${cap.name} (${cap.id})\n` +
                 `risk: ${cap.risk}  ·  confirmation: ${cap.confirmation}\n\n` +
                 `An AI request wants to run this action. Approve?`,
@@ -135,7 +135,7 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
           content: [
             {
               type: "text",
-              text: `Omivoid action ${cap.id} executed successfully.`,
+              text: `Ominty action ${cap.id} executed successfully.`,
             },
           ],
           details: { action: cap.id, state: result.state ?? {} },
@@ -151,12 +151,12 @@ export default function omivoidToolsExtension(pi: ExtensionAPI) {
         registerTool(cap);
       }
       ctx.ui.notify(
-        `Omivoid bridge: ${caps.length} capability/capabilities registered`,
+        `Ominty bridge: ${caps.length} capability/capabilities registered`,
         "info",
       );
     } catch (err) {
       ctx.ui.notify(
-        `Omivoid bridge: ${(err as Error).message}`,
+        `Ominty bridge: ${(err as Error).message}`,
         "error",
       );
     }

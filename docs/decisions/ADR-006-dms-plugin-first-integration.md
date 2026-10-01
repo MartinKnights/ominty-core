@@ -1,7 +1,7 @@
 # ADR-006 — DMS Plugin-First Integration
 
 **Status:** Accepted
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 **Decision scope:** Desktop UI, shell extensions and DMS integration
 
@@ -9,7 +9,7 @@
 
 # 1. Context
 
-Omivoid uses Niri as its compositor and Quickshell as part of its desktop architecture.
+Ominty uses Niri as its compositor and Quickshell as part of its desktop architecture.
 
 DankMaterialShell (DMS) has been selected as the preferred Phase 1 shell layer, subject to practical validation.
 
@@ -25,7 +25,7 @@ In addition to core functionality, DMS provides a plugin architecture capable of
 * composite plugins;
 * integrations with external applications and services.
 
-The DMS plugin ecosystem also already contains implementations of capabilities relevant to Omivoid.
+The DMS plugin ecosystem also already contains implementations of capabilities relevant to Ominty.
 
 Examples include:
 
@@ -38,21 +38,21 @@ Examples include:
 * AI interfaces;
 * research/read-later integration.
 
-This changes the cost/benefit calculation for developing custom Omivoid shell components.
+This changes the cost/benefit calculation for developing custom Ominty shell components.
 
 ---
 
 # 2. Decision
 
-> **Omivoid will follow a DMS plugin-first strategy for desktop-facing functionality.**
+> **Ominty will follow a DMS plugin-first strategy for desktop-facing functionality.**
 
 Before implementing a new graphical shell component, the project MUST determine whether the requirement can reasonably be satisfied through:
 
 1. DMS core functionality;
 2. an existing DMS plugin;
 3. extension or configuration of an existing DMS plugin;
-4. a dedicated Omivoid DMS plugin;
-5. a standalone Omivoid component.
+4. a dedicated Ominty DMS plugin;
+5. a standalone Ominty component.
 
 A standalone implementation is therefore the final option rather than the default.
 
@@ -81,13 +81,13 @@ DMS    plugin provide it?
        ▼      ▼
      Use /   Can it be implemented
      extend  cleanly as an
-     plugin  Omivoid DMS plugin?
+     plugin  Ominty DMS plugin?
                 │
              ┌──┴──┐
             Yes    No
              │      │
              ▼      ▼
-          Omivoid  Standalone
+          Ominty  Standalone
           plugin   component
 ```
 
@@ -100,7 +100,7 @@ Existing Plugin
    ↓
 Extend Plugin
    ↓
-Omivoid Plugin
+Ominty Plugin
    ↓
 Standalone Component
 ```
@@ -109,9 +109,9 @@ Standalone Component
 
 # 4. Purpose
 
-The plugin-first strategy exists to prevent Omivoid from unnecessarily rebuilding mature desktop functionality.
+The plugin-first strategy exists to prevent Ominty from unnecessarily rebuilding mature desktop functionality.
 
-Omivoid development effort should primarily be invested in the capabilities that differentiate Omivoid:
+Ominty development effort should primarily be invested in the capabilities that differentiate Ominty:
 
 * canonical actions;
 * interaction semantics;
@@ -127,14 +127,14 @@ Generic shell infrastructure should be reused wherever practical.
 
 ---
 
-# 5. DMS Does Not Define Omivoid
+# 5. DMS Does Not Define Ominty
 
 This decision does NOT make DMS the architectural source of truth.
 
 The intended relationship remains:
 
 ```text
-              OMIVOID
+              OMINTY
                  │
      ┌───────────┼───────────┐
      │           │           │
@@ -149,19 +149,19 @@ The intended relationship remains:
                  │
         ┌────────┼────────┐
         ▼        ▼        ▼
-       Core    Plugins  Omivoid
+       Core    Plugins  Ominty
                         Plugins
 ```
 
 DMS provides presentation and integration capabilities.
 
-Omivoid retains ownership of Omivoid semantics.
+Ominty retains ownership of Ominty semantics.
 
 ---
 
 # 6. Architectural Ownership
 
-The following remain authoritative Omivoid responsibilities:
+The following remain authoritative Ominty responsibilities:
 
 * Action Registry;
 * canonical action IDs;
@@ -174,7 +174,7 @@ The following remain authoritative Omivoid responsibilities:
 * project/workflow semantics;
 * platform abstraction;
 * adapter architecture;
-* Omivoid configuration precedence.
+* Ominty configuration precedence.
 
 A DMS plugin may expose these capabilities but must not silently redefine them.
 
@@ -195,13 +195,13 @@ DMS and its plugins may provide:
 * service integrations;
 * user interaction surfaces.
 
-Where DMS already provides a good implementation, Omivoid SHOULD consume or integrate with it rather than duplicate it.
+Where DMS already provides a good implementation, Ominty SHOULD consume or integrate with it rather than duplicate it.
 
 ---
 
 # 8. Action Registry Relationship
 
-DMS plugins that invoke Omivoid capabilities SHOULD use canonical actions.
+DMS plugins that invoke Ominty capabilities SHOULD use canonical actions.
 
 Preferred:
 
@@ -212,7 +212,7 @@ DMS Plugin
 app.browser.open
     │
     ▼
-Omivoid Action Resolver
+Ominty Action Resolver
     │
     ▼
 Application Adapter
@@ -235,7 +235,7 @@ This preserves application roles and implementation independence.
 
 # 9. DMS as an Interaction Surface
 
-DMS should be considered one of several Omivoid interaction surfaces.
+DMS should be considered one of several Ominty interaction surfaces.
 
 ```text
                  Action Registry
@@ -248,32 +248,32 @@ DMS should be considered one of several Omivoid interaction surfaces.
                       AI
 ```
 
-DMS is therefore a consumer of Omivoid actions rather than their owner.
+DMS is therefore a consumer of Ominty actions rather than their owner.
 
 ---
 
-# 10. Omivoid DMS Plugin
+# 10. Ominty DMS Plugin
 
 Phase 1 SHOULD investigate creating a dedicated:
 
 ```text
-Omivoid Actions
+Ominty Actions
 ```
 
 DMS plugin.
 
-This plugin may become the primary graphical bridge between DMS and the Omivoid architecture.
+This plugin may become the primary graphical bridge between DMS and the Ominty architecture.
 
 The plugin should remain focused on integration rather than duplicating DMS core functionality.
 
 ---
 
-# 11. Candidate Omivoid Plugin Capabilities
+# 11. Candidate Ominty Plugin Capabilities
 
-A future Omivoid DMS plugin may provide:
+A future Ominty DMS plugin may provide:
 
 ```text
-Omivoid Actions
+Ominty Actions
 │
 ├── Launcher Provider
 │   └── Action Registry search
@@ -300,7 +300,7 @@ These capabilities may initially be implemented incrementally rather than as one
 
 # 12. `Super+K`
 
-The existing plan calls for an Omivoid Interaction Explorer available through:
+The existing plan calls for an Ominty Interaction Explorer available through:
 
 ```text
 Super+K
@@ -308,12 +308,12 @@ Super+K
 
 Before implementing a custom interface, Phase 1 MUST evaluate existing DMS keyboard-shortcut discovery functionality.
 
-If an existing plugin can consume or be extended to consume Omivoid registry data, it SHOULD be preferred.
+If an existing plugin can consume or be extended to consume Ominty registry data, it SHOULD be preferred.
 
 The desired architecture is:
 
 ```text
-Omivoid Action Registry
+Ominty Action Registry
           │
           ├── binding metadata
           ├── categories
@@ -337,12 +337,12 @@ DMS provides presentation.
 
 The universal command palette requirement should similarly be implemented through DMS where practical.
 
-The Omivoid requirement extends beyond application launching.
+The Ominty requirement extends beyond application launching.
 
 The palette should eventually search:
 
 * applications;
-* Omivoid actions;
+* Ominty actions;
 * settings;
 * project actions;
 * AI actions;
@@ -362,10 +362,10 @@ Potential architecture:
 Super+A
    │
    ▼
-DMS / Omivoid AI interface
+DMS / Ominty AI interface
    │
    ▼
-Omivoid AI Layer
+Ominty AI Layer
    │
  ┌─┴──────────────┐
  ▼                ▼
@@ -376,7 +376,7 @@ Pi               Herdr
 
 DMS may provide the interface.
 
-Omivoid defines:
+Ominty defines:
 
 * available AI actions;
 * provider routing;
@@ -460,14 +460,14 @@ docs/implementation/dms-plugin-inventory.md
 
 Suggested structure:
 
-| Plugin            | Purpose            | Decision           | Omivoid Role        | Notes                              |
+| Plugin            | Purpose            | Decision           | Ominty Role        | Notes                              |
 | ----------------- | ------------------ | ------------------ | ------------------- | ---------------------------------- |
 | Launcher Keys     | Shortcut discovery | Evaluate           | `Super+K`           | Registry integration required      |
 | Hooks             | Event integration  | Evaluate           | Action/event bridge | May avoid daemon                   |
 | Tailscale Manager | Mesh networking    | Adopt candidate    | Network UI          | Relevant to IBIS infrastructure    |
-| Command Runner    | Command execution  | Evaluate           | Expert interface    | Prefer Omivoid actions             |
+| Command Runner    | Command execution  | Evaluate           | Expert interface    | Prefer Ominty actions             |
 | Taskwarrior       | Tasks              | Defer/Evaluate     | Project workflow    | Strong local-first fit             |
-| AI Assistant      | AI UI              | Reference/Evaluate | AI presentation     | Must not replace Omivoid AI policy |
+| AI Assistant      | AI UI              | Reference/Evaluate | AI presentation     | Must not replace Ominty AI policy |
 
 The inventory should evolve as the DMS ecosystem changes.
 
@@ -475,7 +475,7 @@ The inventory should evolve as the DMS ecosystem changes.
 
 # 19. Plugin Installation Is Not Architecture
 
-Installing a plugin does not automatically make it part of canonical Omivoid.
+Installing a plugin does not automatically make it part of canonical Ominty.
 
 There is a distinction between:
 
@@ -486,10 +486,10 @@ User-installed DMS plugin
 and:
 
 ```text
-Omivoid-supported DMS integration
+Ominty-supported DMS integration
 ```
 
-Omivoid-supported plugins should be deliberately selected, documented and tested.
+Ominty-supported plugins should be deliberately selected, documented and tested.
 
 Users remain free to install additional DMS plugins.
 
@@ -497,28 +497,28 @@ Users remain free to install additional DMS plugins.
 
 # 20. Default Plugin Set
 
-Omivoid MAY eventually define a recommended/default plugin set.
+Ominty MAY eventually define a recommended/default plugin set.
 
 It should remain deliberately small.
 
-A plugin belongs in the default set only if it contributes directly to the intended Omivoid experience.
+A plugin belongs in the default set only if it contributes directly to the intended Ominty experience.
 
-Avoid turning Omivoid into a large bundle of unrelated DMS plugins.
+Avoid turning Ominty into a large bundle of unrelated DMS plugins.
 
 ---
 
 # 21. Optional Plugin Profiles
 
-Future Omivoid releases MAY provide optional plugin profiles.
+Future Ominty releases MAY provide optional plugin profiles.
 
 For example:
 
 ```text
-omivoid-core
-omivoid-development
-omivoid-research
-omivoid-infrastructure
-omivoid-writing
+ominty-core
+ominty-development
+ominty-research
+ominty-infrastructure
+ominty-writing
 ```
 
 Possible mapping:
@@ -527,7 +527,7 @@ Possible mapping:
 Core
 ├── interaction discovery
 ├── hooks
-└── Omivoid Actions
+└── Ominty Actions
 
 Development
 ├── development-service monitoring
@@ -564,7 +564,7 @@ Particular attention should be paid to:
 * package names;
 * hard-coded paths.
 
-These matter because Omivoid Phase 1 runs on LMDE and the eventual target includes Void Linux.
+These matter because Ominty Phase 1 runs on LMDE and the eventual target includes Void Linux.
 
 ---
 
@@ -591,21 +591,21 @@ Plugin is Arch-specific
        REFERENCE ONLY
 ```
 
-Do not contaminate Omivoid core with distro-specific workarounds merely to support one plugin.
+Do not contaminate Ominty core with distro-specific workarounds merely to support one plugin.
 
 ---
 
 # 24. Compositor Compatibility
 
-Similarly, a Hyprland-specific plugin must not be assumed suitable for Omivoid.
+Similarly, a Hyprland-specific plugin must not be assumed suitable for Ominty.
 
-Since Omivoid uses Niri, compositor-specific dependencies must be evaluated.
+Since Ominty uses Niri, compositor-specific dependencies must be evaluated.
 
 Where the plugin concept is valuable but implementation is Hyprland-specific, consider:
 
 1. upstream Niri support;
 2. a clean portable contribution;
-3. an Omivoid/Niri plugin;
+3. an Ominty/Niri plugin;
 4. reference only.
 
 ---
@@ -648,7 +648,7 @@ Forking is NOT justified merely to:
 
 # 27. Event Integration
 
-DMS plugins capable of responding to desktop events should be evaluated before Omivoid introduces a persistent daemon.
+DMS plugins capable of responding to desktop events should be evaluated before Ominty introduces a persistent daemon.
 
 Potential model:
 
@@ -659,7 +659,7 @@ DMS event
 Hook / plugin
    │
    ▼
-Omivoid Action
+Ominty Action
 ```
 
 Examples may include:
@@ -669,20 +669,20 @@ wallpaper changed
     → theme.palette.regenerate
 
 desktop event
-    → registered Omivoid action
+    → registered Ominty action
 ```
 
 This may satisfy Phase 1 requirements without introducing:
 
 ```text
-omivoidd
+omintyd
 ```
 
 ---
 
 # 28. Daemon Deferral
 
-ADR-006 strengthens the existing Phase 1 decision to defer an Omivoid daemon.
+ADR-006 strengthens the existing Phase 1 decision to defer an Ominty daemon.
 
 Before proposing a daemon, implementation MUST determine whether the requirement can be satisfied through:
 
@@ -690,10 +690,10 @@ Before proposing a daemon, implementation MUST determine whether the requirement
 * DMS IPC;
 * DMS plugin;
 * DMS event hook;
-* one-shot Omivoid action;
+* one-shot Ominty action;
 * existing system service.
 
-Only introduce a persistent Omivoid process when persistent Omivoid-owned state or event handling genuinely requires it.
+Only introduce a persistent Ominty process when persistent Ominty-owned state or event handling genuinely requires it.
 
 ---
 
@@ -710,7 +710,7 @@ arbitrary shell execution
 must not replace:
 
 ```text
-canonical Omivoid actions
+canonical Ominty actions
 ```
 
 for normal supported workflows.
@@ -720,7 +720,7 @@ Preferred:
 ```text
 DMS
   ↓
-omivoid action run app.browser.open
+ominty action run app.browser.open
 ```
 
 rather than embedding:
@@ -748,7 +748,7 @@ Before adopting a plugin that:
 
 review its behaviour and permissions.
 
-Plugin convenience does not override Omivoid's security model.
+Plugin convenience does not override Ominty's security model.
 
 ---
 
@@ -760,9 +760,9 @@ Existing DMS AI plugins should be evaluated primarily as:
 * UX references;
 * integration examples.
 
-They must not silently replace the Omivoid AI architecture.
+They must not silently replace the Ominty AI architecture.
 
-Omivoid intends to support a controlled AI layer involving Pi, Herdr and potentially additional providers.
+Ominty intends to support a controlled AI layer involving Pi, Herdr and potentially additional providers.
 
 AI capability access remains governed by the Action Registry.
 
@@ -770,14 +770,14 @@ AI capability access remains governed by the Action Registry.
 
 # 32. Plugin Locking and Reproducibility
 
-Where DMS supports reproducible plugin configuration or locking, Omivoid SHOULD use it for officially supported plugins.
+Where DMS supports reproducible plugin configuration or locking, Ominty SHOULD use it for officially supported plugins.
 
 The project should be able to determine:
 
 * which plugins are expected;
 * which versions/revisions are active where supported;
 * which plugins are optional;
-* which configuration belongs to Omivoid.
+* which configuration belongs to Ominty.
 
 This supports reproducible LMDE and future Void installations.
 
@@ -797,13 +797,13 @@ core desktop interaction
 
 must remain available independently of optional DMS plugins.
 
-Similarly, failure of an Omivoid plugin should not prevent basic DMS functionality.
+Similarly, failure of an Ominty plugin should not prevent basic DMS functionality.
 
 ---
 
 # 34. Testing
 
-Official Omivoid plugin integrations must be included in Phase 1 testing.
+Official Ominty plugin integrations must be included in Phase 1 testing.
 
 Test at minimum:
 
@@ -824,7 +824,7 @@ For every officially adopted plugin, document:
 
 ```text
 Purpose
-Why Omivoid uses it
+Why Ominty uses it
 Dependencies
 Configuration
 Canonical actions exposed
@@ -833,7 +833,7 @@ Known issues
 Removal/rollback
 ```
 
-Do not rely solely on external plugin documentation for Omivoid-specific integration behaviour.
+Do not rely solely on external plugin documentation for Ominty-specific integration behaviour.
 
 ---
 
@@ -869,7 +869,7 @@ DMS Plugin Audit
       ↓
 DMS Integration
       ↓
-Omivoid DMS Plugin Prototype
+Ominty DMS Plugin Prototype
       ↓
 Super+K / Super+Space
       ↓
@@ -878,7 +878,7 @@ AI Integration
 Project Integration
 ```
 
-This replaces any assumption that Omivoid should first build independent interfaces for each capability.
+This replaces any assumption that Ominty should first build independent interfaces for each capability.
 
 ---
 
@@ -892,15 +892,15 @@ This approach:
 * reduces maintenance;
 * accelerates Phase 1;
 * benefits from existing DMS UX;
-* keeps Omivoid visually coherent;
+* keeps Ominty visually coherent;
 * provides a natural extension mechanism;
-* reduces pressure to create an Omivoid daemon;
-* lets development focus on Omivoid-specific capabilities;
+* reduces pressure to create an Ominty daemon;
+* lets development focus on Ominty-specific capabilities;
 * creates opportunities to contribute improvements upstream.
 
 ## Negative
 
-Omivoid becomes more dependent on the DMS ecosystem.
+Ominty becomes more dependent on the DMS ecosystem.
 
 Plugin APIs may change.
 
@@ -914,7 +914,7 @@ These costs are accepted because the dependency remains behind defined architect
 
 ---
 
-# 39. Rejected Alternative — Build Omivoid UI First
+# 39. Rejected Alternative — Build Ominty UI First
 
 Building custom:
 
@@ -942,19 +942,19 @@ Installing every attractive plugin would create:
 
 Rejected.
 
-Omivoid should remain curated.
+Ominty should remain curated.
 
 ---
 
 # 41. Rejected Alternative — Make Plugins Authoritative
 
-Allowing plugins to independently define Omivoid semantics would fragment the architecture.
+Allowing plugins to independently define Ominty semantics would fragment the architecture.
 
 Rejected.
 
 Plugins provide implementation and presentation.
 
-The Action Registry and Omivoid specifications remain authoritative.
+The Action Registry and Ominty specifications remain authoritative.
 
 ---
 
@@ -963,10 +963,10 @@ The Action Registry and Omivoid specifications remain authoritative.
 This decision should be reconsidered if:
 
 * DMS plugin APIs prove unstable;
-* plugins cannot access the capabilities required by Omivoid;
+* plugins cannot access the capabilities required by Ominty;
 * plugin integration creates excessive coupling;
 * DMS performance becomes problematic;
-* maintaining DMS compatibility becomes more expensive than maintaining focused Omivoid components;
+* maintaining DMS compatibility becomes more expensive than maintaining focused Ominty components;
 * the project later replaces DMS.
 
 Individual plugin decisions may change without invalidating this ADR.
@@ -975,9 +975,9 @@ Individual plugin decisions may change without invalidating this ADR.
 
 # 43. Result
 
-The new Omivoid development rule is:
+The new Ominty development rule is:
 
-> **Before building a desktop-facing capability, determine whether DMS already provides the capability, whether an existing plugin provides it, or whether it can be implemented cleanly as an Omivoid DMS plugin. Build a standalone component only when those approaches are inadequate.**
+> **Before building a desktop-facing capability, determine whether DMS already provides the capability, whether an existing plugin provides it, or whether it can be implemented cleanly as an Ominty DMS plugin. Build a standalone component only when those approaches are inadequate.**
 
 This keeps the architectural distinction clear:
 
@@ -985,10 +985,10 @@ This keeps the architectural distinction clear:
 DMS
     = desktop presentation and shell ecosystem
 
-Omivoid
+Ominty
     = interaction, actions, AI, workflow and system abstraction
 ```
 
 The goal is not to build another desktop shell on top of DMS.
 
-The goal is to make DMS an effective presentation and extension platform for the Omivoid operating experience.
+The goal is to make DMS an effective presentation and extension platform for the Ominty operating experience.

@@ -23,7 +23,7 @@ Size: S ≈ <1 h, M ≈ half day, L ≈ multi-session.
 | 4 | **`dankHooks` evaluation** — event bridge for `theme.palette.regenerate` on wallpaper change | Agent (+User to install) | M | `docs/implementation/dankhooks-evaluation.md` | ✅ DONE (activated 2026-09-27) |
 | 5 | **docs/08 (theme) + docs/12 (config layout) reconciliation** | Agent | S | both docs reflect the implementation | TODO |
 | 6 | **Link + commit** the exit review from `PROGRESS.md` / `HANDOVER.md` | Agent | S | commit | ✅ DONE (`de0a001`-era; Accepted + linked 2026-09-27) |
-| 7 | **Repo-boundary decision** — keep `omivoid-lmde/` inside the `OmiVoid` repo, or split | **User** | S | decision recorded | ✅ DONE (**split**, 2026-09-27) |
+| 7 | **Repo-boundary decision** — keep `ominty-core/` inside the `Ominty` repo, or split | **User** | S | decision recorded | ✅ DONE (**split**, 2026-09-27) |
 
 **Exit criterion:** items 1–2 done + Tier-1 agent items committed → Phase 1
 declared complete. **Met 2026-09-27** — items 1 and 2 are done; remaining
@@ -35,8 +35,8 @@ Tier-1 rows are non-blocking housekeeping (#3, #5).
 > that file); status per row.
 
 > **Repo note:** with the 2026-09-27 split, this document (and everything under
-> `omivoid-lmde/`) now lives in its **own git repository**. `../PROGRESS.md`
-> is external — it lives in the umbrella repo `~/Projects/OmiVoid`.
+> `ominty-core/`) now lives in its **own git repository**. `../PROGRESS.md`
+> is external — it lives in the umbrella repo `~/Projects/Ominty`.
 
 ---
 

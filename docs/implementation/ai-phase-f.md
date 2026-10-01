@@ -33,7 +33,7 @@ and `remote-delegation-readiness.md` (AI-34).
 
 ## 2. AI-26/27 — Project discovery and context
 
-`cli/omivoidlib/ai/project/__init__.py`:
+`cli/omintylib/ai/project/__init__.py`:
 
 ```text
 discover_project(cwd, explicit) -> {root, name, method}
@@ -43,7 +43,7 @@ collect_project(cwd, explicit)  -> ContextObject(type="project")
 Resolution precedence (refined during implementation — see §8):
 
 ```text
-explicit root (--root / OMIVOID_PROJECT)
+explicit root (--root / OMINTY_PROJECT)
     → nearest AGENTS.md (walk-up, bounded by home)
     → Git root
     → current working directory
@@ -60,9 +60,9 @@ explicit root (--root / OMIVOID_PROJECT)
 CLI:
 
 ```text
-omivoid project current [--root R] [--json]
-omivoid project context [--root R] [--json]
-omivoid ai ask "<prompt>" --project     # attach project context
+ominty project current [--root R] [--json]
+ominty project context [--root R] [--json]
+ominty ai ask "<prompt>" --project     # attach project context
 ```
 
 `--project` composes with `--clipboard` (a list of context objects).
@@ -103,18 +103,18 @@ Pi is genuinely unavailable on this machine (`misconfigured`), which
 provided a real failure case:
 
 ```text
-$ omivoid ai provider status pi
+$ ominty ai provider status pi
 State:  misconfigured
 Detail: OPENAI_API_BASE 'http://localhost:4000' is not reachable
 
-$ omivoid ai ask "hello" --provider pi
+$ ominty ai ask "hello" --provider pi
 PROVIDER_UNAVAILABLE: provider 'pi' is misconfigured: … not reachable
 
 # with Pi down:
-$ omivoid action run workspace.previous      → exit 0
-$ omivoid search palette                     → 1 match(es)
-$ omivoid ai ask "Reply with just OK"        → OK        (default ollama)
-$ pgrep -f omivoid                           → none      (no daemon)
+$ ominty action run workspace.previous      → exit 0
+$ ominty search palette                     → 1 match(es)
+$ ominty ai ask "Reply with just OK"        → OK        (default ollama)
+$ pgrep -f ominty                           → none      (no daemon)
 ```
 
 Niri IPC verified live, DMS running (`/usr/bin/dms run --session`), and a
@@ -122,7 +122,7 @@ reversible native action round-tripped (`workspace.next` 1→2,
 `workspace.previous` 2→1). AI failure does not touch the desktop.
 
 Desktop-only checks (Super+K, Super+Space) remain user-verifiable; their
-CLI backing (`omivoid help`, `omivoid search`) works with Pi down.
+CLI backing (`ominty help`, `ominty search`) works with Pi down.
 
 ---
 
@@ -131,8 +131,8 @@ CLI backing (`omivoid help`, `omivoid search`) works with Pi down.
 Startup-safety verified:
 
 ```text
-$ grep spawn-at-startup ~/.config/niri/config.kdl     → none (for omivoid)
-$ tail ~/.config/omivoid/generated/niri/bindings.kdl  → spawn only inside keybinds
+$ grep spawn-at-startup ~/.config/niri/config.kdl     → none (for ominty)
+$ tail ~/.config/ominty/generated/niri/bindings.kdl  → spawn only inside keybinds
 $ grep "include optional" ~/.config/niri/config.kdl   → include optional=true ".../bindings.kdl"
 ```
 
@@ -178,7 +178,7 @@ Measured on the reference machine (4 vCPU, no GPU, qwen2.5:3b Q4_K_M):
 | `dms` (RSS) | 75 MiB |
 | ollama server (RSS) | 49 MiB |
 | loaded model | 2.2 GB (unloads ~4 min idle) |
-| persistent Omivoid process | none |
+| persistent Ominty process | none |
 
 **Finding:** prompt evaluation dominates; on CPU-only inference a large
 project context can exceed the 120 s provider timeout. Mitigation in this
@@ -213,7 +213,7 @@ Two specification assumptions were corrected from implementation evidence:
 
 1. **docs/ai/06 §6 — project discovery precedence.** The Git root and the
    instruction boundary can differ (here the Git root is the parent
-   directory; `AGENTS.md` is in `omivoid-lmde/`). Recorded precedence now
+   directory; `AGENTS.md` is in `ominty-core/`). Recorded precedence now
    puts the nearest `AGENTS.md` above the Git root.
 2. **docs/ai/07 §16 — Herdr task lifecycle.** Herdr 0.9.0 does not expose a
    `created/queued/assigned/…` job queue; it models sessions and agents with
@@ -228,19 +228,19 @@ Phase E's selection decision (CLIPBOARD FALLBACK) was already reconciled in
 ## 9. Evidence
 
 ```text
-$ omivoid project current
-Project: omivoid-lmde
-Root:    ~/Projects/OmiVoid/omivoid-lmde
+$ ominty project current
+Project: ominty-core
+Root:    ~/Projects/Ominty/ominty-core
 Method:  AGENTS.md
 
-$ omivoid project context | wc -c
+$ ominty project context | wc -c
 4477
 
-$ omivoid ai ask "In one sentence, what is this project?" --project
-This project is the Phase 1 reference implementation of Omivoid, a
+$ ominty ai ask "In one sentence, what is this project?" --project
+This project is the Phase 1 reference implementation of Ominty, a
 keyboard-first, action-driven system, validated on the LMDE platform.
 
-$ omivoid registry validate
+$ ominty registry validate
 26 action(s), 0 error(s), 0 warning(s), 0 info
 ```
 
@@ -255,8 +255,8 @@ hostile-argument safety.
 
 | File | Change |
 |---|---|
-| `cli/omivoidlib/ai/project/__init__.py` | discovery + context collector (new) |
-| `cli/omivoidlib/cli.py` | `project current` / `project context`, `ai ask --project` |
+| `cli/omintylib/ai/project/__init__.py` | discovery + context collector (new) |
+| `cli/omintylib/cli.py` | `project current` / `project context`, `ai ask --project` |
 | `tests/test_ai.py` | Phase F + security-validation tests |
 | `docs/ai/06-project-context.md` | discovery precedence note (AI-35) |
 | `docs/ai/07-herdr-integration.md` | actual Herdr model note (AI-35) |
@@ -279,5 +279,5 @@ hostile-argument safety.
   practical constraint.
 * **Restart validation** — logout/login and reboot smoke tests remain a
   user step.
-* **`OMIVOID_CLI`/paths** — the DMS plugin still uses an absolute `cliPath`
-  default; installing `omivoid` on `PATH` remains outstanding.
+* **`OMINTY_CLI`/paths** — the DMS plugin still uses an absolute `cliPath`
+  default; installing `ominty` on `PATH` remains outstanding.

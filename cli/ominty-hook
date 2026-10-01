@@ -1,0 +1,34 @@
+#!/bin/sh
+# ominty-hook — DankHooks → Ominty action dispatcher (docs/implementation/
+# dankhooks-evaluation.md §4).
+#
+# DankHooks invokes the configured hook script as: <script> "<hookName>" "<hookValue>".
+# This dispatcher maps a DMS event to an Ominty action. It is intentionally
+# minimal and reviewable; add mappings only for Ominty-owned reactions. Pointing
+# DankHooks at a different script replaces the whole mapping set (AGENTS.md §24).
+#
+# Mapped hooks log a line to $XDG_STATE_HOME/ominty/hook.log (or
+# ~/.local/state/ominty/hook.log) before running the action.
+
+set -u
+
+dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -x "$dir/ominty" ]; then
+    ominty="$dir/ominty"
+else
+    ominty=ominty
+fi
+
+state="${XDG_STATE_HOME:-$HOME/.local/state}/ominty"
+log="$state/hook.log"
+mkdir -p "$state" 2>/dev/null || true
+
+case "${1:-}" in
+    onWallpaperChanged)
+        printf '%s onWallpaperChanged %s\n' "$(date -Is)" "${2:-}" >> "$log" 2>/dev/null || true
+        exec "$ominty" action run theme.palette.regenerate
+        ;;
+    *)
+        exit 0
+        ;;
+esac

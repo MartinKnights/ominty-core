@@ -5,7 +5,7 @@ Clipboard-based alternative to selection summarise (docs/ai/10 §31).
 
 from __future__ import annotations
 
-from omivoidlib.ai.clipboard_actions import run_with_clipboard
+from omintylib.ai.clipboard_actions import run_with_clipboard
 
 
 def run(action, args: dict) -> dict:

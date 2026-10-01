@@ -1,6 +1,6 @@
-# Omivoid LMDE — Niri Integration Specification
+# Ominty LMDE — Niri Integration Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 **Compositor:** Niri
 **Current status:** Already installed
@@ -9,11 +9,11 @@
 
 # 1. Purpose
 
-This document defines how Omivoid integrates with Niri.
+This document defines how Ominty integrates with Niri.
 
 Niri is the compositor and remains authoritative for compositor behaviour.
 
-Omivoid provides:
+Ominty provides:
 
 * canonical action naming;
 * binding metadata;
@@ -21,7 +21,7 @@ Omivoid provides:
 * generated configuration where useful;
 * integration with other interaction surfaces.
 
-Omivoid MUST NOT unnecessarily reimplement Niri functionality.
+Ominty MUST NOT unnecessarily reimplement Niri functionality.
 
 ---
 
@@ -48,14 +48,14 @@ The current configuration should be backed up before modification.
 
 The existing Niri configuration is not disposable.
 
-The agent MUST NOT replace the entire configuration with an Omivoid-generated file unless explicitly authorised.
+The agent MUST NOT replace the entire configuration with an Ominty-generated file unless explicitly authorised.
 
 Preferred approach:
 
 ```text
 existing config
       +
-Omivoid generated include
+Ominty generated include
 ```
 
 or another modular mechanism supported by the installed Niri version.
@@ -80,7 +80,7 @@ Niri owns:
 * compositor-level shortcuts;
 * compositor lifecycle.
 
-Omivoid should describe these behaviours through canonical actions but not duplicate their implementation.
+Ominty should describe these behaviours through canonical actions but not duplicate their implementation.
 
 ---
 
@@ -101,7 +101,7 @@ Avoid:
 ```text
 key
   ↓
-spawn omivoid
+spawn ominty
   ↓
 Niri IPC
   ↓
@@ -162,7 +162,7 @@ adapter = "niri.window.close"
 
 The final syntax may be determined during implementation.
 
-The important point is that the registry can distinguish native Niri actions from actions requiring the Omivoid runner.
+The important point is that the registry can distinguish native Niri actions from actions requiring the Ominty runner.
 
 ---
 
@@ -194,7 +194,7 @@ Additional native actions may be added once the initial interaction grammar is v
 
 # 9. Respect Niri's Scrolling Model
 
-Omivoid MUST NOT attempt to force Niri into a Hyprland-style tiling model.
+Ominty MUST NOT attempt to force Niri into a Hyprland-style tiling model.
 
 The design should embrace:
 
@@ -203,7 +203,7 @@ The design should embrace:
 * Niri-native workspace concepts;
 * Niri-native window movement.
 
-Omivoid borrows useful workflow ideas from Omarchy, not Hyprland mechanics.
+Ominty borrows useful workflow ideas from Omarchy, not Hyprland mechanics.
 
 ---
 
@@ -241,7 +241,7 @@ The implementation should not assume fixed workspace behaviour that contradicts 
 
 # 12. Numeric Workspace Bindings
 
-The proposed Omivoid interaction model includes:
+The proposed Ominty interaction model includes:
 
 ```text
 Super+1..9
@@ -274,16 +274,16 @@ binding validation
       ↓
 Niri generator
       ↓
-generated Omivoid binding fragment
+generated Ominty binding fragment
 ```
 
-The generated fragment should contain only bindings owned by Omivoid.
+The generated fragment should contain only bindings owned by Ominty.
 
 ---
 
 # 14. Do Not Generate Unrelated Niri Configuration
 
-The Omivoid generator should not rewrite:
+The Ominty generator should not rewrite:
 
 * outputs;
 * input;
@@ -292,7 +292,7 @@ The Omivoid generator should not rewrite:
 * startup;
 * decorations;
 
-unless those sections are explicitly managed by Omivoid.
+unless those sections are explicitly managed by Ominty.
 
 The binding generator should initially concern itself only with relevant interaction configuration.
 
@@ -300,14 +300,14 @@ The binding generator should initially concern itself only with relevant interac
 
 # 15. Binding Conflict Audit
 
-Before generating Omivoid bindings, the implementation should build a conflict report.
+Before generating Ominty bindings, the implementation should build a conflict report.
 
 Example:
 
 ```text
 Super+Q
 Existing: close-window
-Omivoid:  window.close
+Ominty:  window.close
 Status: compatible
 ```
 
@@ -316,7 +316,7 @@ or:
 ```text
 Super+K
 Existing: spawn application
-Omivoid:  help.keys.open
+Ominty:  help.keys.open
 Status: conflict
 ```
 
@@ -332,13 +332,13 @@ If an existing binding already provides the exact intended behaviour:
 Super+Q → close-window
 ```
 
-and Omivoid defines:
+and Ominty defines:
 
 ```text
 Super+Q → window.close
 ```
 
-the implementation may preserve the existing native binding and simply register/document it as satisfying the Omivoid action.
+the implementation may preserve the existing native binding and simply register/document it as satisfying the Ominty action.
 
 It does not need to rewrite working configuration merely for ownership purity.
 
@@ -346,7 +346,7 @@ It does not need to rewrite working configuration merely for ownership purity.
 
 # 17. Binding Generation Is Not Binding Ownership
 
-An action may be defined by Omivoid while the actual Niri configuration remains manually maintained.
+An action may be defined by Ominty while the actual Niri configuration remains manually maintained.
 
 Phase 1 should prioritise correctness and safety over full automation.
 
@@ -365,28 +365,28 @@ ai.open
 help.keys.open
 ```
 
-may require Niri to spawn the Omivoid action runner or another defined command.
+may require Niri to spawn the Ominty action runner or another defined command.
 
 Example concept:
 
 ```kdl
 Mod+Shift+B {
-    spawn "omivoid" "action" "run" "app.browser.open"
+    spawn "ominty" "action" "run" "app.browser.open"
 }
 ```
 
-These actions should be routed through the appropriate Omivoid layer.
+These actions should be routed through the appropriate Ominty layer.
 
 ---
 
 # 19. Startup Integration
 
-If Omivoid components need to start with the Niri session, startup configuration should be minimal and documented.
+If Ominty components need to start with the Niri session, startup configuration should be minimal and documented.
 
 Potential examples:
 
 * DMS;
-* Omivoid helper;
+* Ominty helper;
 * generated shell component.
 
 Do not add persistent background components unless required.
@@ -453,7 +453,7 @@ Window rules are outside the initial Action Registry implementation.
 
 They remain part of Niri configuration.
 
-However, Omivoid may eventually maintain documented rules for:
+However, Ominty may eventually maintain documented rules for:
 
 * floating utility windows;
 * AI palettes;
@@ -461,7 +461,7 @@ However, Omivoid may eventually maintain documented rules for:
 * picture-in-picture;
 * shell overlays.
 
-Do not prematurely move all window rules into Omivoid.
+Do not prematurely move all window rules into Ominty.
 
 ---
 
@@ -477,7 +477,7 @@ Niri configuration
 
 or a future machine profile.
 
-It should not be generated from generic Omivoid action definitions.
+It should not be generated from generic Ominty action definitions.
 
 ---
 
@@ -485,7 +485,7 @@ It should not be generated from generic Omivoid action definitions.
 
 Keyboard, mouse and touchpad tuning belong primarily to Niri and machine/user configuration.
 
-Omivoid may document recommended settings but should not overwrite existing preferences without need.
+Ominty may document recommended settings but should not overwrite existing preferences without need.
 
 ---
 
@@ -503,7 +503,7 @@ Quickshell/DMS may render:
 * help;
 * system UI.
 
-Omivoid should not ask Quickshell to emulate native compositor functions that Niri already provides well.
+Ominty should not ask Quickshell to emulate native compositor functions that Niri already provides well.
 
 ---
 
@@ -511,9 +511,9 @@ Omivoid should not ask Quickshell to emulate native compositor functions that Ni
 
 If DMS integrates directly with Niri, preserve that integration where useful.
 
-Omivoid should not insert itself into every Niri↔DMS interaction merely for architectural ownership.
+Ominty should not insert itself into every Niri↔DMS interaction merely for architectural ownership.
 
-The Action Registry should govern Omivoid actions, not become a mandatory proxy for all desktop communications.
+The Action Registry should govern Ominty actions, not become a mandatory proxy for all desktop communications.
 
 ---
 
@@ -554,7 +554,7 @@ The agent should never leave the user without a usable compositor session becaus
 
 # 29. Backup Policy
 
-Before the first Omivoid modification, create a timestamped or otherwise clearly named backup of the active Niri configuration.
+Before the first Ominty modification, create a timestamped or otherwise clearly named backup of the active Niri configuration.
 
 Do not create repeated uncontrolled backup files on every run.
 
@@ -567,7 +567,7 @@ Backups should be deterministic and documented.
 Niri integration is successful when:
 
 * existing Niri remains functional;
-* Omivoid bindings do not unexpectedly destroy existing behaviour;
+* Ominty bindings do not unexpectedly destroy existing behaviour;
 * native Niri actions remain native;
 * registry actions map correctly to compositor functions;
 * `Super+K` can describe Niri bindings;

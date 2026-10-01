@@ -1,4 +1,4 @@
-"""shell.explorer adapter — open the Omivoid interaction explorer (Super+K).
+"""shell.explorer adapter — open the Ominty interaction explorer (Super+K).
 
 ADR-006 §12: the explorer is presented through the DMS launcher provider.
 The registry declares the presentation command as:

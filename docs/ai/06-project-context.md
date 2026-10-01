@@ -1,6 +1,6 @@
-# Omivoid Project Context Specification
+# Ominty Project Context Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 06
 **Status:** Phase 1 Specification
@@ -9,9 +9,9 @@
 
 # 1. Purpose
 
-This document defines how Omivoid represents and supplies project-specific context to AI.
+This document defines how Ominty represents and supplies project-specific context to AI.
 
-Projects are a primary unit of work within Omivoid.
+Projects are a primary unit of work within Ominty.
 
 A project may represent:
 
@@ -64,7 +64,7 @@ A project establishes a logical boundary around related work.
 Example:
 
 ```text
-~/Projects/omivoid-lmde/
+~/Projects/ominty-core/
 ```
 
 may represent one project.
@@ -117,11 +117,11 @@ Example conceptual metadata:
 
 ```toml
 [project]
-name = "omivoid-lmde"
+name = "ominty-core"
 type = "software"
 ```
 
-A formal Omivoid project manifest is not required for Phase 1.
+A formal Ominty project manifest is not required for Phase 1.
 
 ---
 
@@ -144,11 +144,11 @@ Explicit user selection should take precedence over inference.
 **Phase 1 implementation note (AI-35).** Implementation revealed that the
 Git root and the instruction boundary can differ. In this repository the
 Git root is the parent directory, while the project instructions
-(`AGENTS.md`) live in `omivoid-lmde/`; using the Git root alone produced
+(`AGENTS.md`) live in `ominty-core/`; using the Git root alone produced
 the wrong project. Phase 1 therefore resolves:
 
 ```text
-explicit root (--root / OMIVOID_PROJECT)
+explicit root (--root / OMINTY_PROJECT)
     → nearest AGENTS.md (walk-up, bounded by home)
     → Git root
     → current working directory
@@ -157,7 +157,7 @@ explicit root (--root / OMIVOID_PROJECT)
 `AGENTS.md` outranks the Git root because it is the strongest
 project-instruction boundary (docs/ai/06 §8–9). See
 `docs/implementation/ai-phase-f.md` and
-`cli/omivoidlib/ai/project/__init__.py`.
+`cli/omintylib/ai/project/__init__.py`.
 
 ---
 
@@ -213,12 +213,12 @@ AI working on the project should receive relevant instructions before proposing 
 
 # 10. Instruction Hierarchy
 
-Project instructions should not override higher-level security or Omivoid policy.
+Project instructions should not override higher-level security or Ominty policy.
 
 Conceptually:
 
 ```text
-Omivoid security/policy
+Ominty security/policy
         ↓
 provider/tool policy
         ↓
@@ -244,7 +244,7 @@ AI may receive a bounded project tree.
 Example:
 
 ```text
-omivoid-lmde/
+ominty-core/
 ├── AGENTS.md
 ├── actions/
 ├── adapters/
@@ -282,7 +282,7 @@ This is preferable to sending the entire repository.
 
 Project documentation may be particularly valuable for AI planning.
 
-Omivoid should support discovering relevant documents without loading all documentation automatically.
+Ominty should support discovering relevant documents without loading all documentation automatically.
 
 ---
 
@@ -403,7 +403,7 @@ Higher levels should be loaded only as required.
 
 # 23. Active Project
 
-Omivoid may maintain the concept of:
+Ominty may maintain the concept of:
 
 ```text
 current project
@@ -576,14 +576,14 @@ This complements rather than duplicates `Super+A`.
 The user should eventually be able to inspect:
 
 ```text
-What does Omivoid currently consider the project?
+What does Ominty currently consider the project?
 ```
 
 Example:
 
 ```text
-Project: omivoid-lmde
-Root: ~/Projects/omivoid-lmde
+Project: ominty-core
+Root: ~/Projects/ominty-core
 Instructions: AGENTS.md
 Git: clean
 ```
@@ -595,9 +595,9 @@ Git: clean
 Potential conceptual commands:
 
 ```bash
-omivoid project current
-omivoid project context
-omivoid project open <path>
+ominty project current
+ominty project context
+ominty project open <path>
 ```
 
 Exact CLI design should follow existing conventions.
@@ -666,7 +666,7 @@ Project identity must be separate from local filesystem location.
 
 # 38. Future Project Registry
 
-A future Omivoid project registry may map:
+A future Ominty project registry may map:
 
 ```text
 project identity
@@ -686,9 +686,9 @@ This is not required for the initial AI phase.
 Initial project-context proof:
 
 ```text
-cd ~/Projects/omivoid-lmde
+cd ~/Projects/ominty-core
        ↓
-Omivoid identifies project
+Ominty identifies project
        ↓
 reads project instructions
        ↓
@@ -719,4 +719,4 @@ Project context is sufficiently proven when:
 
 > **A project gives AI orientation, not unrestricted ingestion.**
 
-Omivoid should provide enough project context for Pi to understand what the user is working on while retaining clear boundaries around what information is supplied.
+Ominty should provide enough project context for Pi to understand what the user is working on while retaining clear boundaries around what information is supplied.

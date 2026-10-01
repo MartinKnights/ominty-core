@@ -1,6 +1,6 @@
-# Omivoid LMDE — Testing and Validation Specification
+# Ominty LMDE — Testing and Validation Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 
 ---
@@ -9,7 +9,7 @@
 
 This document defines the minimum testing and validation requirements for Phase 1.
 
-Omivoid changes desktop configuration and system interaction.
+Ominty changes desktop configuration and system interaction.
 
 Testing must therefore protect both:
 
@@ -183,7 +183,7 @@ These should be tested on the actual compositor session after static validation.
 
 # 12. Existing Behaviour Regression
 
-Record important existing Niri behaviour before Omivoid changes.
+Record important existing Niri behaviour before Ominty changes.
 
 After integration verify that unrelated functionality still works.
 
@@ -261,12 +261,12 @@ Repeated generation from unchanged inputs should ideally produce no diff.
 Test:
 
 ```text
-omivoid action list
-omivoid action show
-omivoid action search
-omivoid action run
-omivoid registry validate
-omivoid registry build
+ominty action list
+ominty action show
+ominty action search
+ominty action run
+ominty registry validate
+ominty registry build
 ```
 
 Invalid action IDs must return non-zero exit status where appropriate.
@@ -522,7 +522,7 @@ At least once before Phase 1 completion:
 
 1. restore previous Niri configuration;
 2. verify Niri can start/use it;
-3. restore Omivoid configuration.
+3. restore Ominty configuration.
 
 This proves configuration changes are reversible.
 
@@ -534,7 +534,7 @@ Reboot or restart the desktop session as appropriate and verify:
 
 * Niri starts;
 * DMS starts if enabled;
-* Omivoid-generated configuration loads;
+* Ominty-generated configuration loads;
 * no duplicate shell components start;
 * shortcuts work.
 

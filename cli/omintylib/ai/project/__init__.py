@@ -2,7 +2,7 @@
 
 Phase F implements minimum project identification:
 
-    explicit root (OMIVOID_PROJECT / --root)
+    explicit root (OMINTY_PROJECT / --root)
         → Git root
         → AGENTS.md walk-up (bounded by home)
         → current working directory
@@ -170,7 +170,7 @@ def _git_state(root: Path) -> dict[str, Any] | None:
 def discover_project(cwd: Path | None = None, explicit: str | None = None) -> dict:
     """Identify the project root (docs/ai/06 §6, AI-26).
 
-    Signal precedence: explicit root (argument or OMIVOID_PROJECT) →
+    Signal precedence: explicit root (argument or OMINTY_PROJECT) →
     nearest AGENTS.md walk-up → Git root → cwd. AGENTS.md outranks the
     Git root because it is the strongest project-instruction boundary
     (docs/ai/06 §8–9): a repository may contain several instruction
@@ -182,7 +182,7 @@ def discover_project(cwd: Path | None = None, explicit: str | None = None) -> di
         {"success": False, "error": {"code", "message"}}
     """
     start = Path(cwd or os.getcwd()).resolve()
-    explicit = explicit or os.environ.get("OMIVOID_PROJECT")
+    explicit = explicit or os.environ.get("OMINTY_PROJECT")
 
     if explicit:
         root = Path(explicit).expanduser().resolve()

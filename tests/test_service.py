@@ -5,7 +5,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-from omivoidlib.adapters import load_adapter, resolve_adapter_path
+from omintylib.adapters import load_adapter, resolve_adapter_path
 
 REPO = Path(__file__).resolve().parents[1]
 DEBIAN = REPO / "adapters" / "debian" / "service_restart.py"

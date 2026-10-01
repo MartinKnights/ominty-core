@@ -1,6 +1,6 @@
-# Omivoid Pi Integration Specification
+# Ominty Pi Integration Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 02
 **Status:** Phase 1 Specification
@@ -9,13 +9,13 @@
 
 # 1. Purpose
 
-This document defines how Pi integrates with Omivoid.
+This document defines how Pi integrates with Ominty.
 
-Pi is the preferred initial AI provider for Omivoid laptops.
+Pi is the preferred initial AI provider for Ominty laptops.
 
 The objective is not to transform Pi into a large orchestration framework.
 
-The objective is to use Pi as a lightweight, extensible AI agent operating close to the user's desktop, files, projects and Omivoid capabilities.
+The objective is to use Pi as a lightweight, extensible AI agent operating close to the user's desktop, files, projects and Ominty capabilities.
 
 ---
 
@@ -27,7 +27,7 @@ Pi occupies this position:
 User
  │
  ▼
-Omivoid
+Ominty
  │
  ▼
 AI Provider Interface
@@ -41,7 +41,7 @@ Pi
  ├── file work
  ├── research assistance
  ├── tools
- └── Omivoid capabilities
+ └── Ominty capabilities
 ```
 
 Pi remains replaceable.
@@ -50,7 +50,7 @@ Pi remains replaceable.
 
 # 3. Why Pi
 
-Pi is attractive for Omivoid because the laptop does not require a heavyweight orchestration system for everyday AI interaction.
+Pi is attractive for Ominty because the laptop does not require a heavyweight orchestration system for everyday AI interaction.
 
 The desired characteristics are:
 
@@ -65,23 +65,23 @@ The desired characteristics are:
 * suitable for research;
 * capable of integrating with external systems.
 
-These characteristics align with the Omivoid laptop role.
+These characteristics align with the Ominty laptop role.
 
 ---
 
-# 4. Pi Is Not Omivoid
+# 4. Pi Is Not Ominty
 
-Pi must not become the location where Omivoid architecture is defined.
+Pi must not become the location where Ominty architecture is defined.
 
 Pi may consume:
 
 ```text
-Omivoid actions
-Omivoid context
-Omivoid project metadata
+Ominty actions
+Ominty context
+Ominty project metadata
 ```
 
-but canonical definitions remain in Omivoid.
+but canonical definitions remain in Ominty.
 
 ---
 
@@ -127,11 +127,11 @@ Pi integration should prove:
 
 1. Pi can be detected;
 2. Pi can be launched;
-3. Omivoid can submit a request;
+3. Ominty can submit a request;
 4. context can be supplied;
-5. Omivoid actions can be exposed;
+5. Ominty actions can be exposed;
 6. Pi can request an allowed action;
-7. Omivoid policy can approve/deny it;
+7. Ominty policy can approve/deny it;
 8. result can be returned to Pi.
 
 ---
@@ -181,7 +181,7 @@ ai/providers/pi/
 Conceptually:
 
 ```text
-Omivoid AI request
+Ominty AI request
        │
        ▼
 Pi provider adapter
@@ -201,7 +201,7 @@ The adapter must determine whether Pi is usable.
 Conceptual command:
 
 ```text
-omivoid ai provider status pi
+ominty ai provider status pi
 ```
 
 Potential result:
@@ -211,7 +211,7 @@ Provider: pi
 Available: yes
 ```
 
-Exact CLI syntax may follow existing Omivoid conventions.
+Exact CLI syntax may follow existing Ominty conventions.
 
 ---
 
@@ -223,7 +223,7 @@ Canonical action:
 ai.pi.open
 ```
 
-should open Pi in the configured Omivoid terminal workflow.
+should open Pi in the configured Ominty terminal workflow.
 
 This action explicitly targets Pi and is therefore allowed to be provider-specific.
 
@@ -264,7 +264,7 @@ Before implementing DMS AI UI, prove Pi through CLI.
 Example conceptual interface:
 
 ```bash
-omivoid ai ask "Explain this project structure"
+ominty ai ask "Explain this project structure"
 ```
 
 Expected flow:
@@ -272,7 +272,7 @@ Expected flow:
 ```text
 CLI
  ↓
-Omivoid AI layer
+Ominty AI layer
  ↓
 provider resolver
  ↓
@@ -289,7 +289,7 @@ response
 
 Pi-native configuration remains owned by Pi.
 
-Omivoid should not duplicate settings such as:
+Ominty should not duplicate settings such as:
 
 * model provider;
 * API keys;
@@ -297,13 +297,13 @@ Omivoid should not duplicate settings such as:
 * native Pi preferences;
 * session history;
 
-unless required for Omivoid integration.
+unless required for Ominty integration.
 
 ---
 
-# 16. Omivoid Pi Configuration
+# 16. Ominty Pi Configuration
 
-Omivoid may maintain integration-specific settings.
+Ominty may maintain integration-specific settings.
 
 Example:
 
@@ -323,9 +323,9 @@ Only add settings when needed.
 
 ---
 
-# 17. Pi Tools and Omivoid Actions
+# 17. Pi Tools and Ominty Actions
 
-The key integration point is exposing selected Omivoid actions as Pi tools/capabilities.
+The key integration point is exposing selected Ominty actions as Pi tools/capabilities.
 
 Example:
 
@@ -388,7 +388,7 @@ Pi
  ↓
 app.browser.open
  ↓
-Omivoid
+Ominty
  ↓
 policy
  ↓
@@ -420,7 +420,7 @@ Examples:
 * development commands;
 * one-off technical investigation.
 
-Omivoid actions are not intended to replace Pi's general development capabilities.
+Ominty actions are not intended to replace Pi's general development capabilities.
 
 ---
 
@@ -429,12 +429,12 @@ Omivoid actions are not intended to replace Pi's general development capabilitie
 Use this rule:
 
 ```text
-Stable known Omivoid operation?
+Stable known Ominty operation?
        │
       yes
        │
        ▼
-Omivoid Action Registry
+Ominty Action Registry
 
 Open-ended technical task?
        │
@@ -508,7 +508,7 @@ Privileged/destructive actions should not be part of the initial proof.
 
 # 25. Context Input
 
-Pi should be able to receive structured Omivoid context.
+Pi should be able to receive structured Ominty context.
 
 Initial experiments should consider:
 
@@ -612,9 +612,9 @@ Project context is specified in a later document.
 
 # 30. AGENTS.md Awareness
 
-Where Pi supports project instructions, Omivoid projects should be able to expose their local `AGENTS.md`.
+Where Pi supports project instructions, Ominty projects should be able to expose their local `AGENTS.md`.
 
-This is especially important because Omivoid itself uses `AGENTS.md` to constrain implementation agents.
+This is especially important because Ominty itself uses `AGENTS.md` to constrain implementation agents.
 
 Pi should respect project-local agent instructions where its architecture supports this.
 
@@ -627,7 +627,7 @@ Pi's extensibility should be used selectively.
 Useful extension categories may include:
 
 ```text
-Omivoid action access
+Ominty action access
 project context
 research workflow
 writing workflow
@@ -656,20 +656,20 @@ Potentially useful concepts include:
 
 However:
 
-> **Omivoid should adopt useful capabilities, not inherit another project's entire opinionated Pi environment.**
+> **Ominty should adopt useful capabilities, not inherit another project's entire opinionated Pi environment.**
 
-Each borrowed capability must solve an Omivoid requirement.
+Each borrowed capability must solve an Ominty requirement.
 
 ---
 
-# 33. Omivoid Pi Extension
+# 33. Ominty Pi Extension
 
-If Pi's extension system supports it cleanly, prefer one focused Omivoid integration package.
+If Pi's extension system supports it cleanly, prefer one focused Ominty integration package.
 
 Conceptually:
 
 ```text
-pi-omivoid
+pi-ominty
 │
 ├── actions
 ├── context
@@ -683,7 +683,7 @@ Exact implementation depends on Pi's supported extension architecture.
 
 # 34. Avoid Extension Fragmentation
 
-Do not create separate Pi extensions for every trivial Omivoid action.
+Do not create separate Pi extensions for every trivial Ominty action.
 
 Prefer one coherent integration boundary where practical.
 
@@ -693,7 +693,7 @@ Prefer one coherent integration boundary where practical.
 
 Interactive Pi sessions should use Pi's native session management.
 
-Omivoid should not implement a competing session database during Phase 1.
+Ominty should not implement a competing session database during Phase 1.
 
 ---
 
@@ -717,7 +717,7 @@ This is not required for initial integration.
 
 Pi should remain responsible for its supported model configuration.
 
-Omivoid may later expose:
+Ominty may later expose:
 
 ```text
 Super+A,M
@@ -797,7 +797,7 @@ Desired future flow:
 ```text
 Pi
  ↓
-Omivoid delegation request
+Ominty delegation request
  ↓
 Herdr
  ↓
@@ -829,7 +829,7 @@ Possible interaction:
 ```text
 DMS
  ↓
-Omivoid AI
+Ominty AI
  ↓
 Pi
 ```
@@ -862,7 +862,7 @@ Examples:
 
 ```text
 Context: Selected text
-Context: project omivoid-lmde
+Context: project ominty-core
 Context: current file
 ```
 
@@ -882,7 +882,7 @@ Provider/model locality should be distinguishable where practical.
 
 Pi credentials remain under Pi/provider-native secret handling.
 
-Omivoid must not extract or duplicate them unnecessarily.
+Ominty must not extract or duplicate them unnecessarily.
 
 ---
 
@@ -916,7 +916,7 @@ PROVIDER_FAILED
 PROVIDER_TIMEOUT
 ```
 
-Omivoid action failures returned through Pi retain Action Registry error semantics.
+Ominty action failures returned through Pi retain Action Registry error semantics.
 
 ---
 
@@ -937,7 +937,7 @@ Super+K
 Super+Space
 Niri
 DMS
-Omivoid actions
+Ominty actions
 ```
 
 must continue to function.
@@ -954,7 +954,7 @@ Recommended integration tests:
 3. send basic prompt
 4. receive response
 5. provide simple context
-6. expose one Omivoid capability
+6. expose one Ominty capability
 7. ask Pi to invoke capability
 8. enforce policy
 9. return result
@@ -984,7 +984,7 @@ discovers app.browser.open
  ↓
 requests action
  ↓
-Omivoid policy
+Ominty policy
  ↓
 Action Registry
  ↓
@@ -1004,7 +1004,7 @@ After the first proof works, test a read-only information capability or context 
 For example:
 
 ```text
-"What are my available Omivoid application actions?"
+"What are my available Ominty application actions?"
 ```
 
 Pi should be able to reason from exposed capability metadata rather than a manually maintained prompt.
@@ -1035,10 +1035,10 @@ Pi integration is complete for the first AI milestone when:
 * Pi is detected;
 * `ai.pi.open` works;
 * generic `ai.ask` can resolve to Pi;
-* Omivoid can supply context;
+* Ominty can supply context;
 * selected registry capabilities can be exposed;
 * Pi can request an allowed action;
-* Omivoid executes it;
+* Ominty executes it;
 * failures are structured;
 * policy remains authoritative;
 * Pi-specific implementation is isolated inside its provider adapter.
@@ -1055,7 +1055,7 @@ The desired architecture is:
 Pi
     = intelligence close to the user
 
-Omivoid
+Ominty
     = desktop context + controlled capabilities
 
 Herdr
@@ -1067,4 +1067,4 @@ Agno
 
 The goal is not to make Pi do everything.
 
-The goal is to make Pi exceptionally effective at the work being performed on the Omivoid laptop.
+The goal is to make Pi exceptionally effective at the work being performed on the Ominty laptop.

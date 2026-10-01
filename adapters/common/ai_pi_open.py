@@ -2,7 +2,7 @@
 
 Flow:
 
-    Omivoid
+    Ominty
      ↓
     configured terminal (role)
      ↓
@@ -17,7 +17,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 
-from omivoidlib.config import load_apps_config
+from omintylib.config import load_apps_config
 
 # Terminal flag used to run a command. alacritty/kitty/xterm use -e;
 # wezterm and gnome-terminal differ. Unknown terminals default to -e.

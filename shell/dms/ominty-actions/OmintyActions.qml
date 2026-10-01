@@ -1,17 +1,17 @@
-// Omivoid Actions — DMS launcher provider.
+// Ominty Actions — DMS launcher provider.
 //
-// Bridges the Omivoid Action Registry into the DMS launcher.
+// Bridges the Ominty Action Registry into the DMS launcher.
 //
-//   Omivoid Action Registry
-//          │  (omivoid action list --json)
+//   Ominty Action Registry
+//          │  (ominty action list --json)
 //          ▼
-//   OmivoidActions.qml
+//   OmintyActions.qml
 //          │  (launcher items)
 //          ▼
 //   DMS launcher / spotlight
 //          │  (executeItem)
 //          ▼
-//   omivoid action run <id>
+//   ominty action run <id>
 //
 // The Action Registry remains authoritative. This plugin is presentation
 // and invocation only; it never redefines action semantics (ADR-006 §5–6).
@@ -31,11 +31,11 @@ Item {
     signal itemsChanged()
 
     // ---- Configuration ---------------------------------------------------
-    // Path to the Omivoid CLI. Portable default: the OMIVOID_CLI environment
-    // variable if set, otherwise `omivoid` on PATH. Machine-specific paths
+    // Path to the Ominty CLI. Portable default: the OMINTY_CLI environment
+    // variable if set, otherwise `ominty` on PATH. Machine-specific paths
     // belong in plugin settings (user config), not in this source
     // (AGENTS.md §22–24).
-    property string cliPath: Quickshell.env("OMIVOID_CLI") || "omivoid"
+    property string cliPath: Quickshell.env("OMINTY_CLI") || "ominty"
 
     // Which registry actions to surface.
     //   "all"          — every action
@@ -51,19 +51,19 @@ Item {
         if (!pluginService)
             return;
 
-        // First-run default (ADR-006 §13): merge Omivoid actions into the
+        // First-run default (ADR-006 §13): merge Ominty actions into the
         // universal palette (Super+Space). The interaction explorer (Super+K)
         // is opened with the "!!" sentinel instead of a trigger. Users may
         // switch to trigger mode from the plugin settings.
-        if (pluginService.loadPluginData("omivoidActions", "noTrigger", undefined) === undefined) {
-            pluginService.savePluginData("omivoidActions", "noTrigger", true);
-            pluginService.savePluginData("omivoidActions", "trigger", "");
+        if (pluginService.loadPluginData("omintyActions", "noTrigger", undefined) === undefined) {
+            pluginService.savePluginData("omintyActions", "noTrigger", true);
+            pluginService.savePluginData("omintyActions", "trigger", "");
         }
 
-        trigger = pluginService.loadPluginData("omivoidActions", "trigger", "");
-        cliPath = pluginService.loadPluginData("omivoidActions", "cliPath", cliPath);
-        filterMode = pluginService.loadPluginData("omivoidActions", "filterMode", "all");
-        console.info("[OmivoidActions] Activation mode:",
+        trigger = pluginService.loadPluginData("omintyActions", "trigger", "");
+        cliPath = pluginService.loadPluginData("omintyActions", "cliPath", cliPath);
+        filterMode = pluginService.loadPluginData("omintyActions", "filterMode", "all");
+        console.info("[OmintyActions] Activation mode:",
                      trigger.trim() === "" ? "always-active (palette merge)" : ("trigger '" + trigger + "'"));
         Qt.callLater(loadActions);
     }
@@ -104,7 +104,7 @@ Item {
     // ---- AI menu (Super+A) -----------------------------------------------
     // Lists AI-category actions. When the query carried a prompt
     // ("!ai what is 2+2"), a direct "Ask AI" entry is offered first.
-    // ai.ask routes through the Omivoid provider layer, never a second path.
+    // ai.ask routes through the Ominty provider layer, never a second path.
     function aiItems(rest) {
         const prompt = (rest || "").trim();
         const results = [];
@@ -115,7 +115,7 @@ Item {
                 icon: "material:bolt",
                 comment: "Ask the default AI provider",
                 action: "ask:" + prompt,
-                categories: ["Omivoid · AI"]
+                categories: ["Ominty · AI"]
             });
         } else {
             results.push({
@@ -123,7 +123,7 @@ Item {
                 icon: "material:bolt",
                 comment: "Type your question to ask the default AI provider",
                 action: "askhint:",
-                categories: ["Omivoid · AI"]
+                categories: ["Ominty · AI"]
             });
         }
 
@@ -145,14 +145,14 @@ Item {
                          (chip ? chip + "  " : "") +
                          (a.description || a.id),
                 action: "run:" + a.id,
-                categories: ["Omivoid · AI"],
-                _omivoidId: a.id,
-                _omivoidBinding: binding,
-                _omivoidRisk: a.risk || "routine"
+                categories: ["Ominty · AI"],
+                _omintyId: a.id,
+                _omintyBinding: binding,
+                _omintyRisk: a.risk || "routine"
             });
         }
 
-        console.info("[OmivoidActions] AI mode:", results.length, "items");
+        console.info("[OmintyActions] AI mode:", results.length, "items");
         return results;
     }
 
@@ -213,16 +213,16 @@ Item {
                 icon: "material:bolt",
                 comment: (binding ? binding + "  ·  " : "") + (a.description || a.id),
                 action: "run:" + a.id,
-                categories: ["Omivoid · " + (a.category || "Actions")],
-                _omivoidId: a.id,
-                _omivoidBinding: binding,
-                _omivoidRisk: a.risk || "routine"
+                categories: ["Ominty · " + (a.category || "Actions")],
+                _omintyId: a.id,
+                _omintyBinding: binding,
+                _omintyRisk: a.risk || "routine"
             });
         }
 
         results.sort((x, y) => (x.name || "").localeCompare(y.name || ""));
         if (explicit)
-            console.info("[OmivoidActions] Explorer requested:", results.length, "actions");
+            console.info("[OmintyActions] Explorer requested:", results.length, "actions");
         return results.slice(0, 50);
     }
 
@@ -240,45 +240,45 @@ Item {
                 askProcess.command = [cliPath, "action", "run", value, "--json"];
                 askProcess.running = true;
                 if (typeof ToastService !== "undefined")
-                    ToastService.showInfo("Omivoid AI", "Asking…");
+                    ToastService.showInfo("Ominty AI", "Asking…");
                 return;
             }
             Quickshell.execDetached([cliPath, "action", "run", value]);
             if (typeof ToastService !== "undefined")
-                ToastService.showInfo("Omivoid", item.name);
+                ToastService.showInfo("Ominty", item.name);
             return;
         }
 
         if (kind === "ask") {
-            // Runs the same provider architecture as `omivoid ai ask`
+            // Runs the same provider architecture as `ominty ai ask`
             // (AI-19); the AI menu never creates a second invocation path.
             askProcess.command = [cliPath, "ai", "ask", value];
             askProcess.running = true;
             if (typeof ToastService !== "undefined")
-                ToastService.showInfo("Omivoid AI", "Asking…");
+                ToastService.showInfo("Ominty AI", "Asking…");
             return;
         }
 
         if (kind === "askhint") {
             if (typeof ToastService !== "undefined")
-                ToastService.showInfo("Omivoid AI", "Type your question after Super+A");
+                ToastService.showInfo("Ominty AI", "Type your question after Super+A");
         }
     }
 
     onTriggerChanged: {
         if (pluginService)
-            pluginService.savePluginData("omivoidActions", "trigger", trigger);
+            pluginService.savePluginData("omintyActions", "trigger", trigger);
     }
 
     // ---- AI ask ----------------------------------------------------------
-    // Runs `omivoid ai ask <prompt>` (plain text) or
-    // `omivoid action run ai.clipboard.* --json` (structured). Replies are
+    // Runs `ominty ai ask <prompt>` (plain text) or
+    // `ominty action run ai.clipboard.* --json` (structured). Replies are
     // delivered as DMS notifications (docs/ai/03 §34) — persistent in the
     // notification centre, unlike a transient toast.
     function notifyReply(reply) {
         const body = (reply && reply.length > 0) ? reply : "(no response)";
-        Quickshell.execDetached(["notify-send", "-a", "Omivoid AI", "-t", "0",
-                                 "Omivoid AI", body]);
+        Quickshell.execDetached(["notify-send", "-a", "Ominty AI", "-t", "0",
+                                 "Ominty AI", body]);
     }
 
     Process {
@@ -304,8 +304,8 @@ Item {
 
         onExited: exitCode => {
             if (exitCode !== 0) {
-                Quickshell.execDetached(["notify-send", "-a", "Omivoid AI",
-                                         "-u", "critical", "Omivoid AI",
+                Quickshell.execDetached(["notify-send", "-a", "Ominty AI",
+                                         "-u", "critical", "Ominty AI",
                                          "Ask failed (exit " + exitCode + ")"]);
             }
         }
@@ -321,9 +321,9 @@ Item {
             onStreamFinished: {
                 try {
                     root._actions = JSON.parse(text);
-                    console.info("[OmivoidActions] Loaded", root._actions.length, "actions from registry");
+                    console.info("[OmintyActions] Loaded", root._actions.length, "actions from registry");
                 } catch (e) {
-                    console.error("[OmivoidActions] Failed to parse action list:", e);
+                    console.error("[OmintyActions] Failed to parse action list:", e);
                     root._actions = [];
                 }
                 root._loading = false;
@@ -333,7 +333,7 @@ Item {
 
         onExited: exitCode => {
             if (exitCode !== 0) {
-                console.warn("[OmivoidActions] action list failed, exit:", exitCode);
+                console.warn("[OmintyActions] action list failed, exit:", exitCode);
                 root._loading = false;
                 root.itemsChanged();
             }

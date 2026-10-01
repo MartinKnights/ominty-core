@@ -1,14 +1,14 @@
 # ADR-005 — LMDE as the Phase 1 Validation Platform
 
 **Status:** Accepted
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 
 ---
 
 # 1. Context
 
-The long-term Omivoid target is Void Linux.
+The long-term Ominty target is Void Linux.
 
 However, the current development machine is already running LMDE with:
 
@@ -18,7 +18,7 @@ However, the current development machine is already running LMDE with:
 
 Moving immediately to Void would combine two major tasks:
 
-1. designing the Omivoid desktop architecture;
+1. designing the Ominty desktop architecture;
 2. establishing a new Void Linux platform.
 
 This would make failures harder to diagnose and increase implementation complexity.
@@ -27,9 +27,9 @@ This would make failures harder to diagnose and increase implementation complexi
 
 # 2. Decision
 
-> **LMDE is the Phase 1 Omivoid validation and reference implementation platform.**
+> **LMDE is the Phase 1 Ominty validation and reference implementation platform.**
 
-The initial Omivoid interaction architecture will be developed and proven on LMDE before the full Void implementation.
+The initial Ominty interaction architecture will be developed and proven on LMDE before the full Void implementation.
 
 ---
 
@@ -44,7 +44,7 @@ Phase 1 is intended to answer architectural questions such as:
 * Does DMS provide an appropriate shell foundation?
 * Can wallpaper-driven theming provide visual coherence?
 * Can Pi participate naturally in the desktop?
-* Can AI safely invoke Omivoid capabilities?
+* Can AI safely invoke Ominty capabilities?
 * Are the abstraction boundaries sufficient for Void?
 
 These questions do not require Void Linux to answer.
@@ -53,11 +53,11 @@ These questions do not require Void Linux to answer.
 
 # 4. LMDE Is Not a Throwaway Prototype
 
-Although LMDE precedes the Void implementation, `omivoid-lmde` should be built as a usable implementation.
+Although LMDE precedes the Void implementation, `ominty-core` should be built as a usable implementation.
 
 It may later become:
 
-* a maintained Omivoid variant;
+* a maintained Ominty variant;
 * a Debian-family reference implementation;
 * a public GitHub project;
 * a useful desktop configuration for other users.
@@ -70,7 +70,7 @@ Therefore quality and portability still matter.
 
 LMDE provides the current operating environment.
 
-It does not define Omivoid.
+It does not define Ominty.
 
 Core components should avoid unnecessary assumptions about:
 
@@ -127,7 +127,7 @@ Preferred sequence:
 ```text
 existing working desktop
         ↓
-small Omivoid integration
+small Ominty integration
         ↓
 test
         ↓
@@ -145,7 +145,7 @@ Avoid large configuration replacements followed by debugging many failures simul
 Once the interaction architecture is proven:
 
 ```text
-Omivoid Core
+Ominty Core
        │
        ├── Action Registry
        ├── Interaction
@@ -233,7 +233,7 @@ Example structure:
 adapters/debian/
 ```
 
-Do not disguise LMDE-specific behaviour as portable Omivoid core functionality.
+Do not disguise LMDE-specific behaviour as portable Ominty core functionality.
 
 ---
 
@@ -242,13 +242,13 @@ Do not disguise LMDE-specific behaviour as portable Omivoid core functionality.
 Using LMDE first also allows the project to document the distinction between:
 
 ```text
-Omivoid core
+Ominty core
 ```
 
 and:
 
 ```text
-Omivoid platform implementation
+Ominty platform implementation
 ```
 
 before the second platform exists.
@@ -261,7 +261,7 @@ This is useful because portability becomes a deliberate design requirement rathe
 
 ## Positive
 
-LMDE provides a working environment in which Omivoid concepts can be tested quickly.
+LMDE provides a working environment in which Ominty concepts can be tested quickly.
 
 It reduces the number of simultaneously changing variables.
 
@@ -290,9 +290,9 @@ Moving immediately to Void would combine:
 * shell setup;
 * hardware configuration;
 * security configuration;
-* Omivoid architecture development.
+* Ominty architecture development.
 
-This would make it difficult to distinguish platform failures from Omivoid design failures.
+This would make it difficult to distinguish platform failures from Ominty design failures.
 
 Rejected for Phase 1.
 
@@ -326,7 +326,7 @@ Phase 1 is ready to inform the Void implementation when the following have been 
 * DMS suitability is understood;
 * wallpaper/theme integration works;
 * AI namespace works;
-* at least one AI→Omivoid capability path is proven;
+* at least one AI→Ominty capability path is proven;
 * platform-specific behaviour is reasonably isolated;
 * implementation and architecture are documented.
 
@@ -340,6 +340,6 @@ LMDE is both:
 
 and:
 
-> **the first reference implementation of Omivoid.**
+> **the first reference implementation of Ominty.**
 
-Void remains the eventual primary target, but the move to Void should happen after Omivoid's interaction architecture has been proven rather than while it is still being invented.
+Void remains the eventual primary target, but the move to Void should happen after Ominty's interaction architecture has been proven rather than while it is still being invented.

@@ -13,7 +13,7 @@
 Phase 1 has moved the architecture from *documented idea* to *tested working
 reference implementation*. The registry → adapter → generated-bindings chain is
 real and exercised; discovery (`Super+K` / `Super+Space` / `Super+A`) and the
-GKS cheat sheet (`Super+Shift+S`) run on DMS; AI proposes and Omivoid decides,
+GKS cheat sheet (`Super+Shift+S`) run on DMS; AI proposes and Ominty decides,
 with policy and confirmation on one execution path. The portable core is clean.
 
 The honest caveats: several **abstractions were validated only lightly**
@@ -32,9 +32,9 @@ questions in `void-portability-review.md` §5 should be closed first.
 - **Registry as the single source of truth.** Every binding the user sees is
   derivable from `actions/*.toml`; the cheat sheet and docs are generated, not
   hand-maintained (`docs/02` §12).
-- **The generator contract.** `omivoid registry build` emits the Niri fragment,
+- **The generator contract.** `ominty registry build` emits the Niri fragment,
   validates it with `niri validate`, and refuses to write invalid output; the
-  include is `optional=true` and last, so Omivoid wins collisions safely. The
+  include is `optional=true` and last, so Ominty wins collisions safely. The
   rollback test confirmed a lost fragment regenerates byte-identically.
 - **Adapter separation (Contract 2/5).** `common` / `niri` / `dms` / `pi`
   adapters kept the core portable and testable; role indirection
@@ -121,7 +121,7 @@ and namespace rules were enough to express 44 real actions across 12 categories.
 **Gaps found:**
 
 1. **No ownership/claim field.** Nothing records that a key is owned by DMS/Niri
-   vs Omivoid, so collision handling lives in the generator instead of the data.
+   vs Ominty, so collision handling lives in the generator instead of the data.
 2. **Adapter/argument shape is loose.** `dms.ipc` uses `arguments.dms`, the
    `command` adapter uses top-level `command`; the schema allows both with no
    stated rule.

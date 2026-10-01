@@ -1,39 +1,39 @@
-# Keybindings Reference — omivoid-lmde
+# Keybindings Reference — ominty-core
 
 **Status:** generated reference (read-only).
 **Source of truth:** the Action Registry plus the live Niri/DMS configuration.
-This page is produced from `omivoid keybinds --json` — **do not edit by hand**;
+This page is produced from `ominty keybinds --json` — **do not edit by hand**;
 regenerate with the commands below.
 
 ## 1. How this is produced
 
 | Command | Purpose |
 |---|---|
-| `omivoid keybinds --json` | merge registry + Niri + DMS, tag each row with its GKS domain |
-| `omivoid registry build` | regenerate the Niri bindings fragment from the registry |
-| `omivoid registry validate` | validate the registry before generating |
+| `ominty keybinds --json` | merge registry + Niri + DMS, tag each row with its GKS domain |
+| `ominty registry build` | regenerate the Niri bindings fragment from the registry |
+| `ominty registry validate` | validate the registry before generating |
 
 ## 2. Configuration files
 
 | Path | Role | Managed by |
 |---|---|---|
-| `~/.config/niri/config.kdl` | Niri compositor config; includes the DMS + Omivoid fragments | user / Omivoid |
+| `~/.config/niri/config.kdl` | Niri compositor config; includes the DMS + Ominty fragments | user / Ominty |
 | `~/.config/niri/dms/binds.kdl` | DMS shell bindings (launcher, media, window management) | DMS |
-| `~/.config/omivoid/generated/niri/bindings.kdl` | Omivoid-generated Niri fragment | **generated** — never hand-edit |
-| `<repo>/actions/*.toml` | Action Registry — the source of actions and their keys | Omivoid |
-| `<repo>/cli/omivoidlib/generator.py` | Registry → Niri fragment generator | Omivoid |
-| `<repo>/cli/omivoidlib/keybinds.py` | Cheat-sheet data aggregation + plain-English labels | Omivoid |
-| `~/.config/DankMaterialShell/plugins/omivoidKeybinds/` | GKS cheat-sheet DMS plugin (mirror of `<repo>/shell/dms/omivoid-keybinds/`) | Omivoid |
+| `~/.config/ominty/generated/niri/bindings.kdl` | Ominty-generated Niri fragment | **generated** — never hand-edit |
+| `<repo>/actions/*.toml` | Action Registry — the source of actions and their keys | Ominty |
+| `<repo>/cli/omintylib/generator.py` | Registry → Niri fragment generator | Ominty |
+| `<repo>/cli/omintylib/keybinds.py` | Cheat-sheet data aggregation + plain-English labels | Ominty |
+| `~/.config/DankMaterialShell/plugins/omintyKeybinds/` | GKS cheat-sheet DMS plugin (mirror of `<repo>/shell/dms/ominty-keybinds/`) | Ominty |
 
 ## 3. The cheat sheet
 
 | Item | Value |
 |---|---|
 | Opens with | `Super+Shift+S` (Niri `Mod+Shift+S`) |
-| IPC | `dms ipc call omivoidKeybinds toggle` |
+| IPC | `dms ipc call omintyKeybinds toggle` |
 | Registry action | `help.keybinds.open` |
-| Plugin | `omivoidKeybinds` (DMS `PluginComponent`, tabbed by domain) |
-| Data | `omivoid keybinds --json` |
+| Plugin | `omintyKeybinds` (DMS `PluginComponent`, tabbed by domain) |
+| Data | `ominty keybinds --json` |
 | Nature | read-only; one tab per GKS domain; labels rendered in plain English |
 
 > The interaction explorer (`Super+K`) and the cheat sheet (`Super+Shift+S`) are
@@ -106,7 +106,7 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + I | Focus Workspace Up | `Mod+I` | DMS |
 | Super + J | Focus Window Down | `Mod+J` | DMS |
 | Super + K | Focus Window Up | `Mod+K` | DMS (shadowed) |
-| Super + K | Interaction Explorer | `Mod+K` | OmiVoid |
+| Super + K | Interaction Explorer | `Mod+K` | Ominty |
 | Super + L | Focus Column Right | `Mod+L` | DMS |
 | Super + Left | Focus Column Left | `Mod+Left` | DMS |
 | Super + M | Task Manager | `Mod+M` | DMS |
@@ -119,7 +119,7 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + . | Expel Window from Column | `Mod+Period` | DMS |
 | Super + Q | Close Window | `Mod+Q` | DMS |
 | Super + R | Cycle Column Width | `Mod+R` | DMS |
-| Super + Enter | Open Terminal | `Mod+Return` | OmiVoid |
+| Super + Enter | Open Terminal | `Mod+Return` | Ominty |
 | Super + Right | Focus Column Right | `Mod+Right` | DMS |
 | Super + Shift + 1 | Move Column to Workspace 1 | `Mod+Shift+1` | DMS |
 | Super + Shift + 2 | Move Column to Workspace 2 | `Mod+Shift+2` | DMS |
@@ -130,7 +130,7 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + Shift + 7 | Move Column to Workspace 7 | `Mod+Shift+7` | DMS |
 | Super + Shift + 8 | Move Column to Workspace 8 | `Mod+Shift+8` | DMS |
 | Super + Shift + 9 | Move Column to Workspace 9 | `Mod+Shift+9` | DMS |
-| Super + Shift + B | Open Browser | `Mod+Shift+B` | OmiVoid |
+| Super + Shift + B | Open Browser | `Mod+Shift+B` | Ominty |
 | Super + Shift + Down | Move Window Down | `Mod+Shift+Down` | DMS |
 | Super + Shift + E | Quit | `Mod+Shift+E` | DMS |
 | Super + Shift + = | Grow Window Height | `Mod+Shift+Equal` | DMS |
@@ -148,7 +148,7 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + Shift + F10 | Move Workspace Up | `Mod+Shift+Page_Up` | DMS |
 | Super + Shift + R | Cycle Window Height | `Mod+Shift+R` | DMS |
 | Super + Shift + Right | Move Column Right | `Mod+Shift+Right` | DMS |
-| Super + Shift + S | Keybindings Cheat Sheet | `Mod+Shift+S` | OmiVoid |
+| Super + Shift + S | Keybindings Cheat Sheet | `Mod+Shift+S` | Ominty |
 | Super + Shift + Slash | Show Hotkeys | `Mod+Shift+Slash` | DMS |
 | Super + Shift + T | Toggle Floating | `Mod+Shift+T` | DMS |
 | Super + Shift + U | Move Workspace Down | `Mod+Shift+U` | DMS |
@@ -186,7 +186,7 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Ctrl + Super + K | Focus Monitor Up | `Ctrl+Mod+K` | DMS |
 | Ctrl + Super + L | Focus Monitor Right | `Ctrl+Mod+L` | DMS |
 | Ctrl + Super + Left | Focus Monitor Left | `Ctrl+Mod+Left` | DMS |
-| Ctrl + Super + P | Wallpaper Carousel | `Ctrl+Mod+P` | OmiVoid |
+| Ctrl + Super + P | Wallpaper Carousel | `Ctrl+Mod+P` | Ominty |
 | Ctrl + Super + R | Reset Window Height | `Ctrl+Mod+R` | DMS |
 | Ctrl + Super + Right | Focus Monitor Right | `Ctrl+Mod+Right` | DMS |
 | Ctrl + Super + Shift + Down | Move Column to Monitor Down | `Ctrl+Mod+Shift+Down` | DMS |
@@ -216,11 +216,11 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
-| Super + A | AI Menu | `Mod+A` | OmiVoid |
-| Super + A, A | Ask AI | `Mod+A,A` | OmiVoid |
-| Super + A, E | Explain Clipboard | `Mod+A,E` | OmiVoid |
-| Super + A, P | Open AI Prompt | `Mod+A,P` | OmiVoid |
-| Super + A, S | Summarise Clipboard | `Mod+A,S` | OmiVoid |
+| Super + A | AI Menu | `Mod+A` | Ominty |
+| Super + A, A | Ask AI | `Mod+A,A` | Ominty |
+| Super + A, E | Explain Clipboard | `Mod+A,E` | Ominty |
+| Super + A, P | Open AI Prompt | `Mod+A,P` | Ominty |
+| Super + A, S | Summarise Clipboard | `Mod+A,S` | Ominty |
 
 ### Projects (`Projects`) — reserved, no bindings yet
 
@@ -240,4 +240,4 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 
 ---
 
-*Generated from `omivoid keybinds --json`. 154 bindings; one tab per GKS domain.*
+*Generated from `ominty keybinds --json`. 154 bindings; one tab per GKS domain.*

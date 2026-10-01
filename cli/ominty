@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Omivoid CLI entry point.
+"""Ominty CLI entry point.
 
 Run from the repository without installation:
 
-    cli/omivoid action list
+    cli/ominty action list
 """
 
 import sys
@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from omivoidlib.cli import main  # noqa: E402
+from omintylib.cli import main  # noqa: E402
 
 if __name__ == "__main__":
     sys.exit(main())

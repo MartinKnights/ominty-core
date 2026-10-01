@@ -5,7 +5,7 @@
 **Status:** Complete — decision recorded
 
 This document evaluates DMS AI options before building an AI surface, per
-ADR-006 (check DMS core → existing plugin → extend → Omivoid component →
+ADR-006 (check DMS core → existing plugin → extend → Ominty component →
 standalone) and docs/ai/10 §23. It is part of the implementation record
 (AGENTS.md §28).
 
@@ -52,7 +52,7 @@ surfaces only.
 ```text
 dankLauncherKeys  launcher
 dankKDEConnect    widget
-omivoidActions    launcher   (Omivoid)
+omintyActions    launcher   (Ominty)
 quickCapture      composite
 wallpaperCarousel daemon
 ```
@@ -78,14 +78,14 @@ It talks to providers **directly over curl** with its own configuration and
 key handling. Adopting it as the AI surface would:
 
 * create a **second AI invocation path** (docs/ai/10 §25);
-* bypass the Omivoid provider layer (`ai.ask`, `ai.pi.open`);
+* bypass the Ominty provider layer (`ai.ask`, `ai.pi.open`);
 * bypass Action Registry policy (`ai_accessible`, `risk`, `confirmation`) —
   docs/ai/09 §2, §5–6;
-* require forking to route through Omivoid (discouraged — AGENTS.md §13,
+* require forking to route through Ominty (discouraged — AGENTS.md §13,
   ADR-006).
 
 **Classification: REFERENCE ONLY.** Useful as a presentation reference; may be
-revisited as **ADOPT WITH CONFIGURATION** only if Omivoid's provider layer can
+revisited as **ADOPT WITH CONFIGURATION** only if Ominty's provider layer can
 back a presentation surface without a second invocation path.
 
 ### 4.2 `dmsAgent` — DMS Agent (`Francisdelca/dms-agent`)
@@ -98,7 +98,7 @@ back a presentation surface without a second invocation path.
 | Purpose | Agentic desktop control via Claude Code (open apps, switch windows, play music, web search) |
 
 It controls the desktop through an agent with shell access, bypassing the
-Action Registry and Omivoid policy entirely.
+Action Registry and Ominty policy entirely.
 
 **Classification: REJECT.** Directly conflicts with AGENTS.md §16–17 and
 docs/ai/09 §2 ("avoid an unrestricted privileged shell as the normal desktop
@@ -118,7 +118,7 @@ executeItem(item) → run item action
 signal itemsChanged()
 ```
 
-Our `omivoidActions` plugin already bridges the Action Registry into it
+Our `omintyActions` plugin already bridges the Action Registry into it
 (ADR-006 §10–11). No key-chord or submap API is exposed.
 
 ---
@@ -149,9 +149,9 @@ mode**, where continued typing filters the AI actions and Enter executes.
 | Layer | Decision |
 |---|---|
 | DMS core AI | REFERENCE ONLY |
-| `aiAssistant` plugin | REFERENCE ONLY (revisit as ADOPT WITH CONFIGURATION only behind the Omivoid provider layer) |
+| `aiAssistant` plugin | REFERENCE ONLY (revisit as ADOPT WITH CONFIGURATION only behind the Ominty provider layer) |
 | `dmsAgent` plugin | REJECT |
-| AI presentation | **EXTEND DMS** — extend the `omivoidActions` launcher plugin with an AI mode |
+| AI presentation | **EXTEND DMS** — extend the `omintyActions` launcher plugin with an AI mode |
 | `Super+A` binding | Niri bind → `dms ipc call spotlight openQuery "!ai "` (AI-mode sentinel) |
 | Chords (`Super+A,A`, `Super+A,P`) | Registry intent/hint only; realised via the AI menu (no native chord support) |
 
@@ -162,12 +162,12 @@ Super+A
    ↓
 DMS spotlight (AI mode, "!ai" sentinel)
    ↓
-Omivoid Actions launcher plugin
+Ominty Actions launcher plugin
    ↓
 ai.ask / ai.pi.open  (Action Registry)
    ↓
-Omivoid provider layer + policy
+Ominty provider layer + policy
 ```
 
 No second AI invocation path; no custom AI UI; the Action Registry and
-Omivoid policy remain authoritative.
+Ominty policy remain authoritative.

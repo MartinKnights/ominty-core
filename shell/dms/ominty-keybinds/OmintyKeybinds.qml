@@ -8,13 +8,13 @@ import qs.Common
 import qs.Widgets
 import qs.Modules.Plugins
 
-// Omivoid Keybindings — GKS cheat sheet (docs/14-gks-keyboard-grammar.md §22).
+// Ominty Keybindings — GKS cheat sheet (docs/14-gks-keyboard-grammar.md §22).
 //
 // A read-only, tabbed overlay: one tab per GKS domain, each listing
-// `key → action`. Data comes from `omivoid keybinds --json`, which merges
+// `key → action`. Data comes from `ominty keybinds --json`, which merges
 // the registry, Niri and DMS bindings, so the sheet cannot drift.
 //
-// Opened with:  dms ipc call omivoidKeybinds toggle   (bound to Super+Shift+S)
+// Opened with:  dms ipc call omintyKeybinds toggle   (bound to Super+Shift+S)
 
 PluginComponent {
     id: root
@@ -25,7 +25,7 @@ PluginComponent {
     property int _tab: 0
     property string _query: ""
 
-    readonly property string cliPath: Quickshell.env("OMIVOID_CLI") || "omivoid"
+    readonly property string cliPath: Quickshell.env("OMINTY_CLI") || "ominty"
 
     readonly property var _rows: {
         const domain = (root._tab >= 0 && root._tab < root._domains.length)
@@ -69,7 +69,7 @@ PluginComponent {
                     root._domains = data.domains || [];
                     root._bindings = data.bindings || [];
                 } catch (e) {
-                    console.warn("[omivoidKeybinds] parse failed:", e);
+                    console.warn("[omintyKeybinds] parse failed:", e);
                 }
             }
         }
@@ -77,7 +77,7 @@ PluginComponent {
 
     // ---- IPC ------------------------------------------------------------
     IpcHandler {
-        target: "omivoidKeybinds"
+        target: "omintyKeybinds"
 
         function toggle(): string {
             overlay.visible = !overlay.visible;
@@ -102,7 +102,7 @@ PluginComponent {
         visible: false
         color: "transparent"
 
-        WlrLayershell.namespace: "omivoid:keybinds"
+        WlrLayershell.namespace: "ominty:keybinds"
         WlrLayershell.layer: WlrLayershell.Overlay
         WlrLayershell.exclusiveZone: -1
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive

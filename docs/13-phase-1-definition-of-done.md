@@ -1,6 +1,6 @@
-# Omivoid LMDE — Phase 1 Definition of Done
+# Ominty LMDE — Phase 1 Definition of Done
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Phase:** Phase 1
 
 ---
@@ -11,13 +11,13 @@ This document defines when Phase 1 is complete.
 
 Phase 1 is not complete simply because the desktop looks finished.
 
-It is complete when the core Omivoid architecture has been proven, documented and validated.
+It is complete when the core Ominty architecture has been proven, documented and validated.
 
 ---
 
 # 2. Primary Outcome
 
-At completion, `omivoid-lmde` should demonstrate:
+At completion, `ominty-core` should demonstrate:
 
 > **A keyboard-first, discoverable, dynamically themed, AI-aware Niri desktop driven by a canonical action model.**
 
@@ -54,7 +54,7 @@ The Phase 1 registry must:
 The project must provide:
 
 ```text
-omivoid registry validate
+ominty registry validate
 ```
 
 and validation must cover the core schema and key conflicts.
@@ -68,10 +68,10 @@ A clean Phase 1 registry must pass.
 The project must provide:
 
 ```text
-omivoid action run <id>
+ominty action run <id>
 ```
 
-for actions that require Omivoid runtime execution.
+for actions that require Ominty runtime execution.
 
 Errors must be understandable.
 
@@ -101,7 +101,7 @@ Niri integration must demonstrate:
 * native window actions;
 * native focus actions;
 * workspace actions;
-* Omivoid application bindings;
+* Ominty application bindings;
 * no major regression of existing Niri functionality.
 
 Frequent compositor actions must remain responsive.
@@ -133,7 +133,7 @@ Search is expected unless a documented technical limitation prevents it.
 
 # 11. `Super+Space` Complete
 
-The universal palette must expose Omivoid actions rather than function solely as a traditional app launcher.
+The universal palette must expose Ominty actions rather than function solely as a traditional app launcher.
 
 At minimum it should find:
 
@@ -152,7 +152,7 @@ For major shell responsibilities, the project should know whether the implementa
 ```text
 USE DMS
 EXTEND DMS
-OMIVOID COMPONENT
+OMINTY COMPONENT
 DEFER
 ```
 
@@ -209,7 +209,7 @@ At minimum, it should expose implemented AI capabilities and reserved conceptual
 
 # 17. Pi Integration Complete
 
-Pi should be launchable or invokable through the Omivoid AI layer.
+Pi should be launchable or invokable through the Ominty AI layer.
 
 If Pi itself is unavailable, the reason must be documented and the action marked unavailable.
 
@@ -227,13 +227,13 @@ ai.herdr.open
 
 or its equivalent architectural position must be defined.
 
-The future relationship between Omivoid and Herdr should remain clear.
+The future relationship between Ominty and Herdr should remain clear.
 
 ---
 
 # 19. AI-to-Action Proof Complete
 
-At least one controlled non-AI Omivoid action must be callable through the AI capability path.
+At least one controlled non-AI Ominty action must be callable through the AI capability path.
 
 Recommended:
 
@@ -316,7 +316,7 @@ After startup:
 
 * Niri works;
 * shell works;
-* Omivoid bindings work;
+* Ominty bindings work;
 * registry is valid;
 * no required manual startup commands remain undocumented.
 

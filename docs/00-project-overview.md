@@ -1,7 +1,7 @@
-# Omivoid LMDE — Project Overview
+# Ominty LMDE — Project Overview
 
-**Project:** Omivoid LMDE
-**Repository:** `omivoid-lmde`
+**Project:** Ominty LMDE
+**Repository:** `ominty-core`
 **Phase:** Phase 1 — LMDE Reference Implementation
 **Status:** Design and initial implementation
 **Target platform:** LMDE
@@ -12,7 +12,7 @@
 
 ## 1. Purpose
 
-Omivoid is a keyboard-first, AI-native Linux desktop environment and interaction architecture built around Niri.
+Ominty is a keyboard-first, AI-native Linux desktop environment and interaction architecture built around Niri.
 
 The project is inspired by aspects of the user experience and philosophy of Omarchy, particularly:
 
@@ -23,28 +23,28 @@ The project is inspired by aspects of the user experience and philosophy of Omar
 * unified visual theming across applications;
 * AI as a first-class desktop capability.
 
-Omivoid is not intended to reproduce Omarchy's implementation.
+Ominty is not intended to reproduce Omarchy's implementation.
 
-Instead, Omarchy serves as a reference for useful interaction concepts. Omivoid reimplements selected concepts using an architecture designed around Niri, Quickshell, portability, local-first AI and the user's actual computing environment.
+Instead, Omarchy serves as a reference for useful interaction concepts. Ominty reimplements selected concepts using an architecture designed around Niri, Quickshell, portability, local-first AI and the user's actual computing environment.
 
 ---
 
 ## 2. Phase 1 Project
 
-`omivoid-lmde` is the first reference implementation of Omivoid.
+`ominty-core` is the first reference implementation of Ominty.
 
-Its purpose is to develop and validate the Omivoid interaction architecture on LMDE before implementing the eventual Void Linux version.
+Its purpose is to develop and validate the Ominty interaction architecture on LMDE before implementing the eventual Void Linux version.
 
 LMDE is therefore not merely a temporary development environment. It is the first platform implementation of a desktop architecture intended to remain portable.
 
 The relationship should be understood as:
 
 ```text
-                    Omivoid
+                    Ominty
                        │
-              Omivoid Interaction
+              Ominty Interaction
                        │
-             Omivoid Action Registry
+             Ominty Action Registry
                        │
               Platform Abstraction
                  ┌─────┴─────┐
@@ -53,7 +53,7 @@ The relationship should be understood as:
               Phase 1      Later
 ```
 
-The majority of Omivoid behaviour above the platform abstraction should remain identical between the LMDE and Void implementations.
+The majority of Ominty behaviour above the platform abstraction should remain identical between the LMDE and Void implementations.
 
 ---
 
@@ -88,7 +88,7 @@ Changes should be deliberate and incremental.
 
 DankMaterialShell (DMS) is being considered as the primary desktop shell implementation.
 
-DMS potentially provides much of the conventional shell functionality Omivoid requires, including areas such as:
+DMS potentially provides much of the conventional shell functionality Ominty requires, including areas such as:
 
 * desktop bar;
 * status indicators;
@@ -103,17 +103,17 @@ Phase 1 should therefore evaluate and integrate DMS rather than unnecessarily re
 
 However:
 
-> DMS is an implementation component, not the definition of Omivoid.
+> DMS is an implementation component, not the definition of Ominty.
 
-The Omivoid interaction architecture must not become unnecessarily dependent on DMS internals.
+The Ominty interaction architecture must not become unnecessarily dependent on DMS internals.
 
-If DMS is later replaced, the Omivoid Action Registry and interaction model should remain substantially unchanged.
+If DMS is later replaced, the Ominty Action Registry and interaction model should remain substantially unchanged.
 
 ---
 
-## 5. What Omivoid Is
+## 5. What Ominty Is
 
-Omivoid should be understood primarily as an **interaction architecture**, not a Linux distribution.
+Ominty should be understood primarily as an **interaction architecture**, not a Linux distribution.
 
 Its defining characteristics are:
 
@@ -135,7 +135,7 @@ Chorded keyboard namespaces should display available next actions where practica
 
 ### 5.3 Action-driven
 
-Meaningful desktop operations are represented by canonical Omivoid actions.
+Meaningful desktop operations are represented by canonical Ominty actions.
 
 Examples:
 
@@ -167,7 +167,7 @@ Platform-specific behaviour belongs behind adapters.
 
 AI is a first-class interaction surface.
 
-AI capabilities should integrate with the desktop through controlled Omivoid actions rather than relying solely on unrestricted shell execution.
+AI capabilities should integrate with the desktop through controlled Ominty actions rather than relying solely on unrestricted shell execution.
 
 ### 5.6 Visually coherent
 
@@ -179,10 +179,10 @@ A wallpaper change should be capable of producing a corresponding system-wide vi
 
 ## 6. Interaction Surfaces
 
-A core Omivoid action may be exposed through several interaction surfaces:
+A core Ominty action may be exposed through several interaction surfaces:
 
 ```text
-                Omivoid Action
+                Ominty Action
                       │
        ┌──────────────┼──────────────┐
        │              │              │
@@ -205,8 +205,8 @@ might be invoked by:
 
 * a keyboard shortcut;
 * DMS;
-* the Omivoid command palette;
-* `omivoid theme wallpaper select`;
+* the Ominty command palette;
+* `ominty theme wallpaper select`;
 * an authorised AI agent;
 * eventually a voice request.
 
@@ -223,10 +223,10 @@ The initial architecture is:
 │          Interaction Surfaces         │
 │ Keyboard / GUI / CLI / AI / Voice     │
 ├───────────────────────────────────────┤
-│          Omivoid Action Registry      │
+│          Ominty Action Registry      │
 │ Canonical intent and metadata         │
 ├───────────────────────────────────────┤
-│          Omivoid Action Layer         │
+│          Ominty Action Layer         │
 │ Resolution / validation / execution   │
 ├───────────────────────────────────────┤
 │               Adapters                │
@@ -261,23 +261,23 @@ Niri remains authoritative for compositor functionality, including:
 * input configuration;
 * window rules.
 
-Omivoid should expose useful Niri operations through canonical actions without unnecessarily reimplementing them.
+Ominty should expose useful Niri operations through canonical actions without unnecessarily reimplementing them.
 
 ### Quickshell
 
 Quickshell provides the framework from which shell interfaces can be constructed.
 
-Omivoid should not assume that Quickshell itself defines the desktop interaction architecture.
+Ominty should not assume that Quickshell itself defines the desktop interaction architecture.
 
 ### DMS
 
 If adopted, DMS provides much of the graphical shell and presentation layer.
 
-Omivoid should integrate with it rather than fork or duplicate it unless there is a clear requirement.
+Ominty should integrate with it rather than fork or duplicate it unless there is a clear requirement.
 
-### Omivoid
+### Ominty
 
-Omivoid owns:
+Ominty owns:
 
 * interaction conventions;
 * keyboard grammar;
@@ -287,13 +287,13 @@ Omivoid owns:
 * platform abstraction;
 * application roles;
 * AI integration policy;
-* Omivoid-specific workflows.
+* Ominty-specific workflows.
 
 ### LMDE
 
 LMDE supplies the Phase 1 operating-system platform.
 
-LMDE-specific implementation details must remain below the Omivoid platform boundary wherever practical.
+LMDE-specific implementation details must remain below the Ominty platform boundary wherever practical.
 
 ---
 
@@ -303,7 +303,7 @@ Phase 1 must prove that the architecture works.
 
 The primary objectives are:
 
-1. establish the Omivoid keyboard interaction grammar;
+1. establish the Ominty keyboard interaction grammar;
 2. establish the Action Registry;
 3. implement an initial action catalogue;
 4. expose application roles rather than hard-coded application assumptions;
@@ -330,7 +330,7 @@ Existing Quickshell
      +
 DMS where suitable
      +
-Omivoid interaction architecture
+Ominty interaction architecture
 ```
 
 is preferable to:
@@ -349,7 +349,7 @@ New components require a demonstrated need.
 
 ## 11. Phase 1 Minimum Experience
 
-A successful Phase 1 should provide a recognisable Omivoid experience consisting of at least:
+A successful Phase 1 should provide a recognisable Ominty experience consisting of at least:
 
 ### Keyboard navigation
 
@@ -362,7 +362,7 @@ Predictable keyboard operation for:
 
 ### `Super+K`
 
-A searchable or browsable representation of available Omivoid interactions and bindings.
+A searchable or browsable representation of available Ominty interactions and bindings.
 
 ### `Super+Space`
 
@@ -378,7 +378,7 @@ Wallpaper selection should trigger or participate in a coherent colour/theme wor
 
 ### Action abstraction
 
-The above capabilities should be backed by canonical Omivoid actions rather than independent ad-hoc scripts.
+The above capabilities should be backed by canonical Ominty actions rather than independent ad-hoc scripts.
 
 ---
 
@@ -389,7 +389,7 @@ AI should be treated as part of the desktop interaction architecture.
 The intended environment includes:
 
 ```text
-Omivoid laptop
+Ominty laptop
      │
      ├── Pi
      │
@@ -400,7 +400,7 @@ Omivoid laptop
 
 The laptop is not expected to host every heavy AI workload.
 
-Omivoid should therefore support a model in which tasks can eventually be performed:
+Ominty should therefore support a model in which tasks can eventually be performed:
 
 * locally;
 * by a local agent;
@@ -420,7 +420,7 @@ Phase 1 must avoid architecture that makes the later Void implementation unneces
 The desired relationship is:
 
 ```text
-               Omivoid Core
+               Ominty Core
                     │
        ┌────────────┴────────────┐
        │                         │
@@ -435,10 +435,10 @@ A successful abstraction means most actions and interaction specifications requi
 
 ## 14. Repository Purpose
 
-The `omivoid-lmde` repository serves three purposes:
+The `ominty-core` repository serves three purposes:
 
 1. the working LMDE implementation;
-2. the reference implementation for Omivoid concepts;
+2. the reference implementation for Ominty concepts;
 3. a reusable project that may later be published for other LMDE/Debian users.
 
 Code and configuration should therefore be understandable outside the original development machine.
@@ -466,7 +466,7 @@ The implementation must not become the undocumented specification.
 
 ## 16. Success Criterion
 
-Phase 1 succeeds when Omivoid feels like a coherent desktop environment rather than a collection of Niri configuration files, scripts and shell widgets.
+Phase 1 succeeds when Ominty feels like a coherent desktop environment rather than a collection of Niri configuration files, scripts and shell widgets.
 
 The user should experience:
 

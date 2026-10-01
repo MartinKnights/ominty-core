@@ -1,11 +1,11 @@
 """Tests for the Super+K help data (docs/10 §15, docs/02 §10–12)."""
 
-from omivoidlib.helpdata import (
+from omintylib.helpdata import (
     build_help_data,
     format_help_text,
     search_help_data,
 )
-from omivoidlib.registry import Action, Registry
+from omintylib.registry import Action, Registry
 
 
 def make_registry() -> Registry:

@@ -1,6 +1,6 @@
-# Omivoid Remote Delegation Specification
+# Ominty Remote Delegation Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 08
 **Status:** Future Architecture / Post-Core Phase 1
@@ -9,7 +9,7 @@
 
 # 1. Purpose
 
-This document defines the architectural requirements for delegating work from an Omivoid laptop to other computing resources.
+This document defines the architectural requirements for delegating work from an Ominty laptop to other computing resources.
 
 The objective is to allow the laptop to remain lightweight while using more capable infrastructure when appropriate.
 
@@ -24,7 +24,7 @@ The objective is to allow the laptop to remain lightweight while using more capa
 # 3. Intended Topology
 
 ```text
-                  Omivoid Laptop
+                  Ominty Laptop
                         │
                        Pi
                         │
@@ -416,10 +416,10 @@ DMS may display their status.
 
 # 28. Notification
 
-When a delegated task completes, Omivoid may use DMS notification:
+When a delegated task completes, Ominty may use DMS notification:
 
 ```text
-Omivoid
+Ominty
 Research task completed.
 ```
 
@@ -544,6 +544,6 @@ No automatic file modification should be required.
 
 # 36. Guiding Principle
 
-> **Remote compute should feel like an Omivoid capability, not like manually administering another computer.**
+> **Remote compute should feel like an Ominty capability, not like manually administering another computer.**
 
 The orchestration layer hides topology while preserving user control.

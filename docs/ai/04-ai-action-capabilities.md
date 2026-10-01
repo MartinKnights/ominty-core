@@ -1,6 +1,6 @@
-# Omivoid AI Action Capability Specification
+# Ominty AI Action Capability Specification
 
-**Project:** `omivoid-lmde`
+**Project:** `ominty-core`
 **Subsystem:** AI
 **Document:** 04
 **Status:** Phase 1 Specification
@@ -9,15 +9,15 @@
 
 # 1. Purpose
 
-This document defines how Omivoid exposes Action Registry capabilities to AI providers.
+This document defines how Ominty exposes Action Registry capabilities to AI providers.
 
-The Action Registry is the authoritative definition of supported Omivoid operations.
+The Action Registry is the authoritative definition of supported Ominty operations.
 
 AI providers receive a filtered capability view.
 
 The governing rule is:
 
-> **AI may request capabilities; Omivoid decides whether and how those capabilities execute.**
+> **AI may request capabilities; Ominty decides whether and how those capabilities execute.**
 
 ---
 
@@ -76,7 +76,7 @@ AI should normally receive the capability rather than the command.
 
 AI capabilities are derived from Action Registry actions.
 
-Do not maintain an independent AI tool catalogue when the capability corresponds to an Omivoid action.
+Do not maintain an independent AI tool catalogue when the capability corresponds to an Ominty action.
 
 ---
 
@@ -315,9 +315,9 @@ Allow?
 
 # 18. Provider Does Not Confirm Itself
 
-The provider must not satisfy Omivoid confirmation requirements by claiming that the user approved something.
+The provider must not satisfy Ominty confirmation requirements by claiming that the user approved something.
 
-Confirmation belongs to Omivoid's interaction/policy layer.
+Confirmation belongs to Ominty's interaction/policy layer.
 
 ---
 
@@ -465,7 +465,7 @@ The provider should be able to obtain an appropriate capability list.
 Potential conceptual command:
 
 ```text
-omivoid ai capabilities
+ominty ai capabilities
 ```
 
 Possible output:
@@ -522,7 +522,7 @@ Pi:
 requests app.browser.open
 ```
 
-Omivoid:
+Ominty:
 
 ```text
 checks policy
@@ -547,7 +547,7 @@ browser opened
 User:
 
 ```text
-Show me the Omivoid keybindings.
+Show me the Ominty keybindings.
 ```
 
 Pi requests:
@@ -683,13 +683,13 @@ The capability system does not prohibit provider shell tools.
 However:
 
 ```text
-known Omivoid operation
+known Ominty operation
 ```
 
 should use:
 
 ```text
-Omivoid capability
+Ominty capability
 ```
 
 rather than arbitrary shell execution where practical.
@@ -839,8 +839,8 @@ The desired boundary is:
 
 ```text
 AI knows:
-    what Omivoid can do
+    what Ominty can do
 
 AI does not need to know:
-    how Omivoid does it
+    how Ominty does it
 ```

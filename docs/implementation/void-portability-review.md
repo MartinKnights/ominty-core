@@ -25,22 +25,22 @@ These carry to Void unchanged or with re-validation only.
 
 | Component | Path | Notes |
 |---|---|---|
-| CLI core | `cli/omivoidlib/` | Pure Python stdlib; no `apt`/`dpkg`/`systemctl` |
+| CLI core | `cli/omintylib/` | Pure Python stdlib; no `apt`/`dpkg`/`systemctl` |
 | Registry + schema | `actions/*.toml`, `registry.py` | Data + validation only |
 | Niri fragment generator | `generator.py` | Emits KDL; no platform calls |
 | Common adapters | `adapters/common/` | `app.launch`, `command`, `ai.*` |
 | Niri adapter | `adapters/niri/native.py` | Compositor-level, not distro-level |
 | DMS adapters | `adapters/dms/` | `dms.ipc`, `dms.theme`, `shell.explorer` — DMS runs on Void |
-| Config defaults | `config/` | TOML; overridden by `~/.config/omivoid/` |
-| XDG paths | `cli/omivoidlib/config.py`, `ai/project` | `XDG_CONFIG_HOME`, `XDG_STATE_HOME` |
+| Config defaults | `config/` | TOML; overridden by `~/.config/ominty/` |
+| XDG paths | `cli/omintylib/config.py`, `ai/project` | `XDG_CONFIG_HOME`, `XDG_STATE_HOME` |
 
 **Evidence:**
 
 ```text
-$ grep -rnE "apt|dpkg|systemctl" cli/omivoidlib adapters/common  → none (portable)
+$ grep -rnE "apt|dpkg|systemctl" cli/omintylib adapters/common  → none (portable)
 $ grep -rlE "apt|systemctl" adapters/debian                     → service_restart.py, package_install.py (platform-scoped, by design)
-$ grep -rhoE "XDG_[A-Z_]+" cli/omivoidlib adapters              → XDG_CONFIG_HOME, XDG_STATE_HOME
-$ grep -rhoE '"/[a-zA-Z0-9/_.-]+"' cli/omivoidlib adapters
+$ grep -rhoE "XDG_[A-Z_]+" cli/omintylib adapters              → XDG_CONFIG_HOME, XDG_STATE_HOME
+$ grep -rhoE '"/[a-zA-Z0-9/_.-]+"' cli/omintylib adapters
     "/etc/os-release"                 # standard on all Linux
     "/usr/share/quickshell/dms"       # DMS shell dir, overridable via DMS_SHELL_DIR
 ```
@@ -54,7 +54,7 @@ distro-specific package queries (`runner.py:_requirement_available`).
 
 | Component | Path | Nature |
 |---|---|---|
-| Platform detection | `cli/omivoidlib/platform.py` | Maps `ID=linuxmint`/`ID=debian` → `"debian"`, `ID=void` → `"void"` |
+| Platform detection | `cli/omintylib/platform.py` | Maps `ID=linuxmint`/`ID=debian` → `"debian"`, `ID=void` → `"void"` |
 | Debian adapters | `adapters/debian/` | `service_restart.py` (systemd), `package_install.py` (apt) |
 | Packaging | `adapters/debian/`, `adapters/void/` | `package.install` adapter: apt implemented (Debian), `xbps-install` reference (Void) — docs/05 §10–11, §5.2 |
 | Service management | `adapters/debian/`, `adapters/void/` | `service.restart` adapter: systemd implemented (Debian); runit stub (Void) — see §5.2 |
@@ -67,7 +67,7 @@ platform-specific. Everything else is common/Niri/DMS, so the Void port is: new
 
 Application role defaults (`config/apps.toml`: alacritty, librewolf, nemo,
 nvim, obsidian, thunderbird) are Debian/LMDE-flavoured but are **user
-configuration**, overridable via `~/.config/omivoid/apps.toml`; they are not
+configuration**, overridable via `~/.config/ominty/apps.toml`; they are not
 code assumptions.
 
 ---
@@ -85,7 +85,7 @@ code assumptions.
 | AI runtime | ollama / pi | ollama / pi | same |
 | Python | `python3` | `python3` | same |
 
-Because Omivoid's core is Python + TOML + KDL with no distro API calls, the
+Because Ominty's core is Python + TOML + KDL with no distro API calls, the
 Void port is primarily a **packaging** exercise, not a rewrite.
 
 ---

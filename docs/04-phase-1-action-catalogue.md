@@ -1,4 +1,4 @@
-# Omivoid LMDE — Phase 1 Action Catalogue
+# Ominty LMDE — Phase 1 Action Catalogue
 
 **Status:** Initial implementation catalogue
 **Registry schema:** v1
@@ -25,7 +25,7 @@ Its purpose is to prove:
 * AI namespace;
 * theme integration.
 
-Not every conceptual Omivoid capability belongs in Phase 1.
+Not every conceptual Ominty capability belongs in Phase 1.
 
 ---
 
@@ -506,7 +506,7 @@ Apply Wallpaper
        ↓
 Generate Palette
        ↓
-Apply Omivoid Theme
+Apply Ominty Theme
 ```
 
 DMS/Matugen should be evaluated as the primary implementation.
@@ -536,8 +536,8 @@ This action may be deferred if the provider does not expose a clean mechanism.
 Regenerate the theme palette from the current wallpaper.
 
 Also wired as the reaction to the `dankHooks` `onWallpaperChanged` event via
-`cli/omivoid-hook` (docs/implementation/dankhooks-evaluation.md §6) — a working
-event→action bridge without an Omivoid daemon.
+`cli/ominty-hook` (docs/implementation/dankhooks-evaluation.md §6) — a working
+event→action bridge without an Ominty daemon.
 
 ---
 
@@ -690,8 +690,8 @@ This is the basis of the universal action palette.
 **Risk:** `routine`
 **Context:** `global`
 
-Opens the read-only, tabbed GKS cheat sheet (the `omivoidKeybinds` DMS plugin),
-whose rows are generated from `omivoid keybinds --json`. Distinct from
+Opens the read-only, tabbed GKS cheat sheet (the `omintyKeybinds` DMS plugin),
+whose rows are generated from `ominty keybinds --json`. Distinct from
 `help.keys.open`, which runs the interaction explorer. See
 `docs/implementation/keybindings-reference.md`.
 
@@ -699,7 +699,7 @@ whose rows are generated from `omivoid keybinds --json`. Distinct from
 
 # 15. Project Namespace Reservation
 
-Project workflow is important to the wider Omivoid architecture, but a complete project system is not required to prove Phase 1.
+Project workflow is important to the wider Ominty architecture, but a complete project system is not required to prove Phase 1.
 
 Reserve:
 
@@ -815,7 +815,7 @@ capture.*
 session.*
 ```
 
-## Priority C — Omivoid differentiators
+## Priority C — Ominty differentiators
 
 Then implement:
 
@@ -824,7 +824,7 @@ theme.*
 ai.*
 ```
 
-These establish the visual and AI-native characteristics of Omivoid.
+These establish the visual and AI-native characteristics of Ominty.
 
 ---
 

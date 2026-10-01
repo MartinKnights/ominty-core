@@ -161,7 +161,7 @@ So the DoD §14 flow is satisfied:
 wallpaper → palette (matugen/dank16) → shell (DMS) → external app
 ```
 
-No Omivoid theme adapter is required for Phase 1; DMS is the palette
+No Ominty theme adapter is required for Phase 1; DMS is the palette
 provider (AGENTS.md §15, dms-evaluation.md §4.2/§13).
 
 ---
@@ -181,9 +181,9 @@ rather than a failure.
 |---|---|
 | `actions/theme.toml` | 5 Appearance actions (carousel + regenerate + mode) |
 | `adapters/dms/theme.py` | `dms.theme` regeneration adapter (new) |
-| `cli/omivoidlib/adapters.py` | register `dms.theme` |
-| `cli/omivoidlib/registry.py` | known adapter `dms.theme` |
-| `cli/omivoidlib/generator.py` | emit niri binds for `dms.ipc` actions |
+| `cli/omintylib/adapters.py` | register `dms.theme` |
+| `cli/omintylib/registry.py` | known adapter `dms.theme` |
+| `cli/omintylib/generator.py` | emit niri binds for `dms.ipc` actions |
 | `tests/test_theme.py` | 10 tests (new) |
 | `tests/test_generator.py` | `dms.ipc` bind test |
 | `~/.config/DankMaterialShell/plugin_settings.json` | carousel `wallpaperDirectory` (backup taken) |
@@ -194,15 +194,15 @@ rather than a failure.
 ## 9. Evidence
 
 ```text
-$ omivoid registry validate
+$ ominty registry validate
 29 action(s), 0 error(s), 0 warning(s), 0 info
 
-$ omivoid action run theme.palette.regenerate --json
+$ ominty action run theme.palette.regenerate --json
 {"success": true, "state": {"mode": "dark", "value": "~/Wallpapers/…"}}
 
-$ omivoid action run theme.mode.toggle      → dark → light → dark (restored)
+$ ominty action run theme.mode.toggle      → dark → light → dark (restored)
 
-$ omivoid action run theme.wallpaper.next
+$ ominty action run theme.wallpaper.next
 → dms ipc call wallpaperCarousel cycleNext   (opens + highlights)
 
 $ dms ipc call wallpaper next

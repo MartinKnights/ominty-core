@@ -1,22 +1,22 @@
-# AGENTS.md — Omivoid LMDE
+# AGENTS.md — Ominty LMDE
 
 ## 1. Purpose
 
-This file defines the operating instructions for any implementation agent working on the `omivoid-lmde` project.
+This file defines the operating instructions for any implementation agent working on the `ominty-core` project.
 
 The agent is responsible for implementing the project.
 
 The architecture is defined by the project documentation.
 
-The agent MUST treat the documentation as the design authority rather than independently redesigning Omivoid during implementation.
+The agent MUST treat the documentation as the design authority rather than independently redesigning Ominty during implementation.
 
 ---
 
 # 2. Project Objective
 
-`omivoid-lmde` is the Phase 1 reference implementation of Omivoid.
+`ominty-core` is the Phase 1 reference implementation of Ominty.
 
-Omivoid is intended to be:
+Ominty is intended to be:
 
 * keyboard-first;
 * discoverable;
@@ -225,7 +225,7 @@ Avoid unnecessary:
 ```text
 Niri
 → spawned script
-→ Omivoid
+→ Ominty
 → Niri IPC
 ```
 
@@ -254,7 +254,7 @@ Quickshell already exists.
 
 Do not reinstall or replace it unnecessarily.
 
-Custom Omivoid Quickshell components should be focused and isolated.
+Custom Ominty Quickshell components should be focused and isolated.
 
 Do not build a full shell from scratch unless DMS proves unsuitable.
 
@@ -269,7 +269,7 @@ For each capability classify:
 ```text
 USE DMS
 EXTEND DMS
-OMIVOID COMPONENT
+OMINTY COMPONENT
 DEFER
 ```
 
@@ -305,7 +305,7 @@ Wallpaper
    ↓
 Palette
    ↓
-Canonical Omivoid colours
+Canonical Ominty colours
    ↓
 Theme adapters
    ↓
@@ -330,7 +330,7 @@ Initial namespace:
 Super+A
 ```
 
-AI should use registered Omivoid capabilities for routine desktop actions where practical.
+AI should use registered Ominty capabilities for routine desktop actions where practical.
 
 Example:
 
@@ -702,7 +702,7 @@ Do not declare Phase 1 complete based solely on visual appearance or partial fun
 The following are intentionally deferred unless required to unblock Phase 1:
 
 ```text
-Omivoid daemon
+Ominty daemon
 event bus
 remote action routing
 full Herdr orchestration
@@ -765,7 +765,7 @@ Do not escalate trivial implementation choices.
 
 Before making a substantial decision ask:
 
-> Does this change what Omivoid is, what owns a capability, how users interact with it, or a boundary between components?
+> Does this change what Ominty is, what owns a capability, how users interact with it, or a boundary between components?
 
 If yes, it is probably an architectural decision and should be documented.
 
@@ -797,4 +797,4 @@ large implementation
 architecture after the fact
 ```
 
-The implementation agent's job is to make the Omivoid design concrete while protecting the architectural intent that makes the project coherent.
+The implementation agent's job is to make the Ominty design concrete while protecting the architectural intent that makes the project coherent.

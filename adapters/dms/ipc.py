@@ -1,6 +1,6 @@
 """dms.ipc adapter — invoke DMS capabilities via `dms ipc call`.
 
-docs/07 §29: DMS is infrastructure; Omivoid actions invoke DMS through
+docs/07 §29: DMS is infrastructure; Ominty actions invoke DMS through
 its stable IPC surface. The registry remains authoritative for identity,
 binding, and metadata (Contract 1–2).
 

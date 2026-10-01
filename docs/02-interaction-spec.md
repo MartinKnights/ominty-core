@@ -1,18 +1,18 @@
-# Omivoid LMDE — Interaction Specification
+# Ominty LMDE — Interaction Specification
 
 ## 1. Purpose
 
-This document defines how users interact with Omivoid.
+This document defines how users interact with Ominty.
 
 It defines interaction semantics rather than implementation details.
 
-The same conceptual interaction model should remain applicable when Omivoid later moves from LMDE to Void.
+The same conceptual interaction model should remain applicable when Ominty later moves from LMDE to Void.
 
 ---
 
 # 2. Core Interaction Model
 
-Every important Omivoid capability should, where practical, be available through:
+Every important Ominty capability should, where practical, be available through:
 
 ```text
 Keyboard
@@ -27,7 +27,7 @@ These are interaction surfaces over the same underlying action model.
 ```text
 Keyboard ─────┐
 GUI ──────────┤
-CLI ──────────┼──► Omivoid Action
+CLI ──────────┼──► Ominty Action
 AI ───────────┤
 Voice ────────┘
 ```
@@ -51,9 +51,9 @@ Mouse, touchpad and graphical controls remain fully valid interaction methods.
 
 ---
 
-# 4. The Omivoid Modifier
+# 4. The Ominty Modifier
 
-`Super` is the primary Omivoid desktop modifier.
+`Super` is the primary Ominty desktop modifier.
 
 The keyboard grammar should be built around predictable combinations of `Super`.
 
@@ -131,7 +131,7 @@ configured browser role
 
 # 7. Niri Navigation
 
-Niri's native scrolling model is part of Omivoid's interaction design.
+Niri's native scrolling model is part of Ominty's interaction design.
 
 The implementation should favour native Niri semantics rather than attempting to reproduce Hyprland behaviour.
 
@@ -158,14 +158,14 @@ Where Niri provides an appropriate native binding, the generated configuration s
 
 # 8. Universal Palette
 
-`Super+Space` opens the Omivoid universal command/action palette.
+`Super+Space` opens the Ominty universal command/action palette.
 
 It is not merely an application launcher.
 
 It should ultimately be capable of discovering:
 
 * applications;
-* Omivoid actions;
+* Ominty actions;
 * system functions;
 * settings;
 * projects;
@@ -192,7 +192,7 @@ Search results should derive from the Action Registry wherever applicable.
 
 # 9. Palette Behaviour
 
-The universal palette should follow standard Omivoid navigation semantics:
+The universal palette should follow standard Ominty navigation semantics:
 
 ```text
 typing      Search
@@ -214,7 +214,7 @@ Results should prefer commonly useful actions over obscure internal operations.
 
 # 10. `Super+K` Interaction Explorer
 
-`Super+K` opens the Omivoid Interaction Explorer.
+`Super+K` opens the Ominty Interaction Explorer.
 
 This is the primary discoverability interface.
 
@@ -278,7 +278,7 @@ should locate the relevant Niri window actions even if the user does not know th
 
 # 12. Self-Documenting Bindings
 
-The Interaction Explorer MUST derive its binding information from the same source that defines Omivoid actions.
+The Interaction Explorer MUST derive its binding information from the same source that defines Ominty actions.
 
 Do not maintain a separate manually authored keybinding cheat sheet as the authoritative source.
 
@@ -327,7 +327,7 @@ which represents simultaneous modifiers/keys.
 
 # 14. Visible Prefix Modes
 
-When a prefix is entered, Omivoid should display available continuation keys where practical.
+When a prefix is entered, Ominty should display available continuation keys where practical.
 
 Example:
 
@@ -413,7 +413,7 @@ Initial system interaction conventions may include:
 
 The final implementation should account for functionality already exposed effectively by DMS.
 
-Omivoid should not create redundant graphical controls solely to satisfy this specification.
+Ominty should not create redundant graphical controls solely to satisfy this specification.
 
 ---
 
@@ -437,7 +437,7 @@ The canonical actions should remain stable.
 
 # 19. Escape Semantics
 
-For Omivoid-controlled transient interfaces:
+For Ominty-controlled transient interfaces:
 
 > `Esc` means cancel, close or leave the current transient interaction.
 
@@ -456,7 +456,7 @@ A component that cannot follow this convention should be documented.
 
 # 20. Common Navigation Semantics
 
-Omivoid interfaces should use:
+Ominty interfaces should use:
 
 | Key         | Meaning               |
 | ----------- | --------------------- |
@@ -492,7 +492,7 @@ editor
 project
 ```
 
-For selected text, Omivoid may expose:
+For selected text, Ominty may expose:
 
 ```text
 Explain Selection
@@ -512,16 +512,16 @@ Public actions should ideally have a corresponding CLI interface.
 Examples:
 
 ```text
-omivoid app browser
-omivoid window close
-omivoid theme wallpaper select
-omivoid ai ask
+ominty app browser
+ominty window close
+ominty theme wallpaper select
+ominty ai ask
 ```
 
 A universal low-level form should also be possible:
 
 ```text
-omivoid action run app.browser.open
+ominty action run app.browser.open
 ```
 
 The CLI and keyboard interaction should resolve the same canonical action.
@@ -530,7 +530,7 @@ The CLI and keyboard interaction should resolve the same canonical action.
 
 # 23. Interaction Through AI
 
-AI should interact with Omivoid through registered capabilities where practical.
+AI should interact with Ominty through registered capabilities where practical.
 
 Example:
 
@@ -544,7 +544,7 @@ theme.wallpaper.select
 
 rather than the AI independently deciding how to modify wallpaper configuration.
 
-This allows Omivoid to apply:
+This allows Ominty to apply:
 
 * context checks;
 * permissions;
@@ -623,7 +623,7 @@ workspace.next
 
 should normally compile to native Niri operations.
 
-Actions requiring broader orchestration may go through the Omivoid action runner.
+Actions requiring broader orchestration may go through the Ominty action runner.
 
 ---
 
@@ -641,7 +641,7 @@ Palette
 Select Wallpaper
 
 CLI
-omivoid theme wallpaper select
+ominty theme wallpaper select
 
 AI
 "Choose a wallpaper"
@@ -657,12 +657,12 @@ theme.wallpaper.select
 
 # 29. Existing Binding Conflicts
 
-Because Niri is already installed and configured, the implementation agent MUST audit existing keybindings before generating Omivoid bindings.
+Because Niri is already installed and configured, the implementation agent MUST audit existing keybindings before generating Ominty bindings.
 
 For every conflict it should determine whether to:
 
 * preserve existing binding;
-* migrate it to the Omivoid equivalent;
+* migrate it to the Ominty equivalent;
 * propose an alternative;
 * request an architectural decision.
 

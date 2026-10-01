@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from omivoidlib.keybinds import (
+from omintylib.keybinds import (
     UNIVERSAL_CONVENTIONS,
     action_label,
     classify_domain,
@@ -12,7 +12,7 @@ from omivoidlib.keybinds import (
     parse_kdl_binds,
     registry_bindings,
 )
-from omivoidlib.registry import Action, Registry
+from omintylib.registry import Action, Registry
 
 
 def make_action(**overrides) -> Action:
@@ -96,10 +96,10 @@ def test_collect_marks_shadowed(tmp_path):
     gen.write_text(
         'binds {\n    Mod+K { spawn "dms" "ipc" "call" "spotlight" "openQuery" "!!"; }\n}\n'
     )
-    data = collect(None, sources=[("Niri", niri), ("OmiVoid", gen)])
+    data = collect(None, sources=[("Niri", niri), ("Ominty", gen)])
     winners = [b for b in data["bindings"] if b["key"] == "Mod+K" and not b["shadowed"]]
     assert len(winners) == 1
-    assert winners[0]["source"] == "OmiVoid"
+    assert winners[0]["source"] == "Ominty"
 
 
 def test_universal_conventions_present():

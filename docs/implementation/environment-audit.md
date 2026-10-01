@@ -1,4 +1,4 @@
-# Environment Audit — omivoid-lmde
+# Environment Audit — ominty-core
 
 **Date:** 2026-09-10
 **Stage:** 0 (docs/10-phase-1-implementation-plan.md §4)
@@ -34,7 +34,7 @@ LMDE is the Phase 1 validation platform (ADR-005). The eventual target is Void L
 - **Layout:** gaps 16, center-focused-column never, preset widths 1/3–1/2–2/3, default 1/2, focus-ring width 4 (active `#7fc8ff`, inactive `#505050`), border off.
 - **Workspaces:** 9 dynamic workspaces by index, "matching Cinnamon's default (Super+1..9)". No named workspaces.
 - **Window rules:** WezTerm initial-configure workaround; Firefox PiP floating.
-- **Startup:** `spawn-at-startup "quickshell" "-c" "omivoid"` (Omivoid shell, Stage 7 comment). xwayland-satellite auto-spawned by niri.
+- **Startup:** `spawn-at-startup "quickshell" "-c" "ominty"` (Ominty shell, Stage 7 comment). xwayland-satellite auto-spawned by niri.
 - **Screenshots:** `screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"`.
 - **Key bindings:** full inventory in §8 below.
 
@@ -51,10 +51,10 @@ LMDE is the Phase 1 validation platform (ADR-005). The eventual target is Void L
 | Field | Value |
 |---|---|
 | Version | **0.3.0** (revision , distributed by Debian) |
-| Config location | `~/.config/quickshell/omivoid/shell.qml` (2257 bytes) |
+| Config location | `~/.config/quickshell/ominty/shell.qml` (2257 bytes) |
 | Status | Running (pid visible in PipeWire client list) |
 
-Quickshell is already installed and running the minimal Omivoid shell. Do not reinstall (AGENTS.md §3, §12).
+Quickshell is already installed and running the minimal Ominty shell. Do not reinstall (AGENTS.md §3, §12).
 
 ## 4. DMS (DankMaterialShell)
 
@@ -172,10 +172,10 @@ Volume control via `wpctl` (used in existing Niri binds).
 
 ### 8.6 Binding audit implications (preliminary)
 
-- **Modifier:** `Mod` = Super (per Niri default). Omivoid grammar uses `Super+key` navigation, `Super+Shift+key` apps, `Super+Ctrl+key` system.
+- **Modifier:** `Mod` = Super (per Niri default). Ominty grammar uses `Super+key` navigation, `Super+Shift+key` apps, `Super+Ctrl+key` system.
 - **Conflicts to resolve in Stage 8 (niri-binding-audit.md):**
-  - `Mod+D` currently = fuzzel launcher. Omivoid palette (`Super+Space`) and Super+K explorer will need to replace or coexist with this.
-  - `Mod+T` currently = alacritty. Omivoid `app.terminal.open` (Super+Enter per docs/04) will conflict.
+  - `Mod+D` currently = fuzzel launcher. Ominty palette (`Super+Space`) and Super+K explorer will need to replace or coexist with this.
+  - `Mod+T` currently = alacritty. Ominty `app.terminal.open` (Super+Enter per docs/04) will conflict.
   - `Mod+Shift+E` = quit; `Mod+Shift+P` = power-off-monitors — system namespace candidates.
   - `Mod+1..9` workspace-by-index matches docs/04 workspace navigation intent.
   - `Mod+Q` close-window, `Mod+F` maximize, `Mod+V` floating — native actions that should stay native (Contract 4).
@@ -223,17 +223,17 @@ AI integration is Stage 18–20. This audit records presence only.
 | Node | v22.22.3 (via nvm) |
 | Shell | bash |
 
-## 13. Existing Omivoid State
+## 13. Existing Ominty State
 
 | Item | Status |
 |---|---|
-| `~/.config/omivoid/` | **does not exist** — runtime config to be created per docs/12 |
-| `~/.config/quickshell/omivoid/shell.qml` | exists (2257 bytes, minimal shell) |
+| `~/.config/ominty/` | **does not exist** — runtime config to be created per docs/12 |
+| `~/.config/quickshell/ominty/shell.qml` | exists (2257 bytes, minimal shell) |
 | `~/.config/niri/config.kdl` | exists (249 lines, audited above) |
-| OmiVoid repo | `~/Projects/OmiVoid` (git, branch main) |
-| omivoid-lmde location | `~/Projects/OmiVoid/omivoid-lmde/` — **currently untracked inside the OmiVoid repo** |
+| Ominty repo | `~/Projects/Ominty` (git, branch main) |
+| ominty-core location | `~/Projects/Ominty/ominty-core/` — **currently untracked inside the Ominty repo** |
 
-**Note:** `omivoid-lmde/` currently lives inside the OmiVoid git repository as an untracked directory. The docs describe it as its own repository ("Repository: omivoid-lmde"). Decision needed: keep as subdirectory of OmiVoid repo, or initialise as a separate repository. This does not block Stage 1–7.
+**Note:** `ominty-core/` currently lives inside the Ominty git repository as an untracked directory. The docs describe it as its own repository ("Repository: ominty-core"). Decision needed: keep as subdirectory of Ominty repo, or initialise as a separate repository. This does not block Stage 1–7.
 
 ## 14. Findings Summary
 
@@ -245,8 +245,8 @@ AI integration is Stage 18–20. This audit records presence only.
 | 4 | `playerctl` bound but not installed | Media keys fail silently | Install playerctl or use DMS media handling |
 | 5 | `brightnessctl` bound but not installed | Brightness keys fail silently | Install brightnessctl or use DMS equivalent |
 | 6 | No grim/slurp | Region capture limited to gnome-screenshot | Niri native screenshot binds are primary; evaluate in Stage 13 |
-| 7 | `Mod+D` = fuzzel, `Mod+T` = alacritty | Conflicts with Omivoid grammar (Super+Space palette, Super+Enter terminal) | Stage 8 binding audit |
-| 8 | omivoid-lmde inside OmiVoid repo (untracked) | Repo boundary unclear | Decide: separate repo vs subdirectory |
+| 7 | `Mod+D` = fuzzel, `Mod+T` = alacritty | Conflicts with Ominty grammar (Super+Space palette, Super+Enter terminal) | Stage 8 binding audit |
+| 8 | ominty-core inside Ominty repo (untracked) | Repo boundary unclear | Decide: separate repo vs subdirectory |
 | 9 | XDG vars unset | Defaults apply | Use XDG defaults with fallbacks (AGENTS.md §22) |
 
 ## 15. Baseline
@@ -256,7 +256,7 @@ The recoverable baseline for Phase 1:
 | Path | Purpose |
 |---|---|
 | `~/.config/niri/config.kdl` | Niri config (249 lines) — back up before any modification |
-| `~/.config/quickshell/omivoid/shell.qml` | Minimal Omivoid shell — back up before modification |
-| `~/.config/omivoid/` | Will be created fresh (no existing data to preserve) |
+| `~/.config/quickshell/ominty/shell.qml` | Minimal Ominty shell — back up before modification |
+| `~/.config/ominty/` | Will be created fresh (no existing data to preserve) |
 
-Backup strategy: copy to `~/.config/omivoid/backups/` or a timestamped directory before each significant change (AGENTS.md §30). At least one rollback path must be tested during Phase 1.
+Backup strategy: copy to `~/.config/ominty/backups/` or a timestamped directory before each significant change (AGENTS.md §30). At least one rollback path must be tested during Phase 1.

@@ -19,7 +19,7 @@ and mechanism decision are recorded separately in
 | AI-19 | `Super+A,A` → `ai.ask` | Complete (via AI menu) |
 | AI-20 | `Super+A,P` → `ai.pi.open` | Complete (via AI menu) |
 
-The AI namespace reuses the DMS launcher (EXTEND DMS) and the Omivoid
+The AI namespace reuses the DMS launcher (EXTEND DMS) and the Ominty
 provider layer — no second AI invocation path, no custom AI UI.
 
 ---
@@ -34,12 +34,12 @@ DMS spotlight:
 Super+A
    ↓  (Niri bind: dms ipc call spotlight openQuery "!ai ")
 DMS spotlight — AI mode ("!ai" sentinel)
-   ↓  (Omivoid Actions launcher plugin)
+   ↓  (Ominty Actions launcher plugin)
 AI items:  Ask AI  ·  Open Pi      (plus "Ask AI: <text>" once typed)
    ↓
-omivoid ai ask "<text>"   /   omivoid action run ai.pi.open
+ominty ai ask "<text>"   /   ominty action run ai.pi.open
    ↓
-Omivoid provider layer + policy
+Ominty provider layer + policy
 ```
 
 ---
@@ -69,7 +69,7 @@ Mod+A {
 }
 ```
 
-The `omivoidActions` DMS plugin gains an **AI mode**: a query starting `!ai`
+The `omintyActions` DMS plugin gains an **AI mode**: a query starting `!ai`
 returns the AI-category actions, independently of its normal palette filter.
 
 ---
@@ -80,7 +80,7 @@ The chord (`Super+A,A`) is declared in the registry as intent. It is realised
 by the AI menu:
 
 * typing after `Super+A` produces an **"Ask AI: <text>"** entry that runs
-  `omivoid ai ask "<text>"` — the same provider architecture proven by the CLI
+  `ominty ai ask "<text>"` — the same provider architecture proven by the CLI
   (AI-5) and used by the `ai.ask` action adapter. The response is shown via a
   DMS toast.
 * With no text, an **"Ask AI"** hint entry reminds the user to type a question
@@ -90,7 +90,7 @@ by the AI menu:
 
 ## 5. AI-20 — `Super+A,P` → `ai.pi.open`
 
-The **"Open Pi"** entry runs `omivoid action run ai.pi.open` — the existing
+The **"Open Pi"** entry runs `ominty action run ai.pi.open` — the existing
 registry action. The chord (`Super+A,P`) is registry intent.
 
 `ai.pi.open` metadata corrected to `ai_accessible = false` (AGENTS.md §18 —
@@ -113,15 +113,15 @@ actions that invoke AI must not be exposed back to AI).
 Registry:
 
 ```text
-$ omivoid registry validate
+$ ominty registry validate
 24 action(s), 0 error(s), 0 warning(s), 0 info
 Validation passed.
 
-$ omivoid action list --json | (AI category)
+$ ominty action list --json | (AI category)
 ['ai.ask', 'ai.menu.open', 'ai.pi.open']
 ```
 
-Generated fragment (`~/.config/omivoid/generated/niri/bindings.kdl`):
+Generated fragment (`~/.config/ominty/generated/niri/bindings.kdl`):
 
 ```kdl
 // ai.menu.open
@@ -133,14 +133,14 @@ Mod+A { spawn "dms" "ipc" "call" "spotlight" "openQuery" "!ai " }
 DMS launcher AI mode (journal):
 
 ```text
-[OmivoidActions] AI mode: 2 items        # "!ai "        → Ask AI, Open Pi
-[OmivoidActions] AI mode: 2 items        # "!ai <text>"  → Ask AI: <text>, Open Pi
+[OmintyActions] AI mode: 2 items        # "!ai "        → Ask AI, Open Pi
+[OmintyActions] AI mode: 2 items        # "!ai <text>"  → Ask AI: <text>, Open Pi
 ```
 
 Provider path:
 
 ```text
-$ omivoid ai ask "Reply with just the number: what is 2+2?"
+$ ominty ai ask "Reply with just the number: what is 2+2?"
 4
 ```
 
@@ -151,9 +151,9 @@ $ omivoid ai ask "Reply with just the number: what is 2+2?"
 | File | Change |
 |---|---|
 | `actions/ai.toml` | `[group.ai]`, `ai.menu.open`, chord keys, `ai_accessible` fix |
-| `cli/omivoidlib/generator.py` | top-level `command` bind |
-| `cli/omivoidlib/registry.py` | group-prefix chord-conflict suppression |
-| `shell/dms/omivoid-actions/OmivoidActions.qml` | AI mode (`!ai`), ask entry, toast |
+| `cli/omintylib/generator.py` | top-level `command` bind |
+| `cli/omintylib/registry.py` | group-prefix chord-conflict suppression |
+| `shell/dms/ominty-actions/OmintyActions.qml` | AI mode (`!ai`), ask entry, toast |
 | `tests/test_generator.py` | top-level command test |
 | `tests/test_registry.py` | group-prefix suppression test |
 | `tests/test_ai.py` | AI namespace integration test |
@@ -174,5 +174,5 @@ Tests: **124 passing** (was 121).
   (`ai-dms-evaluation.md` §4.1).
 * **Context indicators** (AI-21) and clipboard/selection context (AI-22+) are
   not yet implemented.
-* **`OMIVOID_CLI`/paths** — the plugin still uses an absolute `cliPath`
-  default; installing `omivoid` on `PATH` remains outstanding.
+* **`OMINTY_CLI`/paths** — the plugin still uses an absolute `cliPath`
+  default; installing `ominty` on `PATH` remains outstanding.
