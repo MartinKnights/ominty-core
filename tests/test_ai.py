@@ -12,6 +12,7 @@ Covers:
 
 from __future__ import annotations
 
+import json
 import subprocess
 import urllib.error
 from unittest.mock import MagicMock, patch
@@ -151,6 +152,118 @@ def test_ollama_status_unavailable():
     with patch("omintylib.ai.providers.ollama.binary_available", return_value=False):
         st = provider_status("ollama")
     assert st["state"] == "unavailable"
+
+
+# ── Ollama endpoint + think resolution ─────────────────────────────────────
+
+def test_ollama_endpoint_from_config():
+    from omintylib.ai.providers import ollama
+
+    cfg = {"providers": {"ollama": {"endpoint": "http://127.0.0.1:11435"}}}
+    with patch("omintylib.ai.providers.ollama.load_ai_config", return_value=cfg):
+        assert ollama._endpoint() == "http://127.0.0.1:11435"
+
+
+def test_ollama_endpoint_from_env_with_scheme_default():
+    from omintylib.ai.providers import ollama
+
+    with (
+        patch("omintylib.ai.providers.ollama.load_ai_config", return_value={}),
+        patch.dict("os.environ", {"OMINTY_OLLAMA_ENDPOINT": "127.0.0.1:9999"}),
+    ):
+        assert ollama._endpoint() == "http://127.0.0.1:9999"
+
+
+def test_ollama_endpoint_default():
+    from omintylib.ai.providers import ollama
+
+    with (
+        patch("omintylib.ai.providers.ollama.load_ai_config", return_value={}),
+        patch.dict("os.environ", {}, clear=True),
+    ):
+        assert ollama._endpoint() == ollama.DEFAULT_ENDPOINT
+
+
+def test_ollama_ask_sends_configured_endpoint_model_and_think():
+    from omintylib.ai.providers import ollama
+
+    captured: dict = {}
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return b'{"response": "OK"}'
+
+    def _fake_urlopen(req, timeout=None):
+        captured["url"] = req.full_url
+        captured["body"] = json.loads(req.data.decode())
+        return _Resp()
+
+    cfg = {
+        "providers": {
+            "ollama": {
+                "endpoint": "http://127.0.0.1:11435",
+                "model": "qwen3.5-9b",
+                "think": False,
+            }
+        }
+    }
+    with (
+        patch("omintylib.ai.providers.ollama.binary_available", return_value=True),
+        patch("omintylib.ai.providers.ollama._server_models", return_value=["m"]),
+        patch("omintylib.ai.providers.ollama.load_ai_config", return_value=cfg),
+        patch(
+            "omintylib.ai.providers.ollama.urllib.request.urlopen",
+            side_effect=_fake_urlopen,
+        ),
+    ):
+        result = ollama.ask("hello")
+
+    assert result["success"] is True
+    assert captured["url"] == "http://127.0.0.1:11435/api/generate"
+    assert captured["body"]["model"] == "qwen3.5-9b"
+    assert captured["body"]["think"] is False
+
+
+def test_ollama_ask_omits_think_when_unset():
+    from omintylib.ai.providers import ollama
+
+    captured: dict = {}
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return b'{"response": "OK"}'
+
+    def _fake_urlopen(req, timeout=None):
+        captured["body"] = json.loads(req.data.decode())
+        return _Resp()
+
+    with (
+        patch("omintylib.ai.providers.ollama.binary_available", return_value=True),
+        patch("omintylib.ai.providers.ollama._server_models", return_value=["m"]),
+        patch(
+            "omintylib.ai.providers.ollama.load_ai_config",
+            return_value={"providers": {"ollama": {"model": "m"}}},
+        ),
+        patch(
+            "omintylib.ai.providers.ollama.urllib.request.urlopen",
+            side_effect=_fake_urlopen,
+        ),
+    ):
+        ollama.ask("hello")
+
+    assert "think" not in captured["body"]
 
 
 # ── Generic ask ────────────────────────────────────────────────────────────

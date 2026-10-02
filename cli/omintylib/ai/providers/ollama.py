@@ -6,15 +6,24 @@ API (default endpoint http://localhost:11434).
 Readiness: binary in PATH + server reachable (/api/tags). Asks use the
 generate API with streaming disabled.
 
-The default model is configurable:
+The default model and endpoint are configurable:
 
     [ai.providers.ollama]
+    endpoint = "http://127.0.0.1:11434"
     model = "gemma3:4b"
+    think = false
+
+The endpoint resolves in order: user config endpoint →
+``OMINTY_OLLAMA_ENDPOINT`` → ``OLLAMA_HOST`` → the default above. A bare
+``host:port`` value is accepted (``http://`` is prepended). ``think`` is
+forwarded to ``/api/generate`` only when set, so reasoning-capable models
+(e.g. qwen3.5) can skip the reasoning tax for quick desktop asks.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import urllib.error
 import urllib.request
 
@@ -30,8 +39,32 @@ DEFAULT_MODEL = "gemma3:4b"
 DEFAULT_TIMEOUT = 120.0
 
 
+def _configured_endpoint() -> str | None:
+    """Return the configured endpoint, or None (docs/12 §configuration).
+
+    Precedence: user ``[ai.providers.ollama] endpoint`` →
+    ``OMINTY_OLLAMA_ENDPOINT`` → ``OLLAMA_HOST``.
+    """
+    cfg = load_ai_config()
+    endpoint = cfg.get("providers", {}).get("ollama", {}).get("endpoint")
+    if endpoint:
+        return str(endpoint)
+    for var in ("OMINTY_OLLAMA_ENDPOINT", "OLLAMA_HOST"):
+        value = os.environ.get(var)
+        if value:
+            return value
+    return None
+
+
 def _endpoint() -> str:
-    return DEFAULT_ENDPOINT
+    """Resolve the Ollama base URL (config → env → default)."""
+    endpoint = _configured_endpoint()
+    if not endpoint:
+        return DEFAULT_ENDPOINT
+    endpoint = endpoint.rstrip("/")
+    if not endpoint.startswith(("http://", "https://")):
+        endpoint = "http://" + endpoint
+    return endpoint
 
 
 def _configured_model() -> str | None:
@@ -39,6 +72,20 @@ def _configured_model() -> str | None:
     cfg = load_ai_config()
     model = cfg.get("providers", {}).get("ollama", {}).get("model")
     return str(model) if model else None
+
+
+def _configured_think() -> bool | None:
+    """Return the configured ``think`` flag, or None when unset.
+
+    Reasoning-capable models (e.g. ``qwen3.5``, ``deepseek-r1``) default to
+    emitting reasoning tokens, which slows a quick desktop ask. Set
+    ``think = false`` to skip that tax; leave unset to keep the model default.
+    """
+    cfg = load_ai_config()
+    value = cfg.get("providers", {}).get("ollama", {}).get("think")
+    if isinstance(value, bool):
+        return value
+    return None
 
 
 def _server_models() -> list[str]:
@@ -83,9 +130,11 @@ def ask(prompt: str, timeout: float | None = None) -> dict:
         }
 
     chosen = _configured_model() or models[0] or DEFAULT_MODEL
-    payload = json.dumps(
-        {"model": chosen, "prompt": prompt, "stream": False}
-    ).encode()
+    body: dict = {"model": chosen, "prompt": prompt, "stream": False}
+    think = _configured_think()
+    if think is not None:
+        body["think"] = think
+    payload = json.dumps(body).encode()
     req = urllib.request.Request(
         f"{_endpoint()}/api/generate",
         data=payload,
