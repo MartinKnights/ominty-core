@@ -114,6 +114,37 @@ def test_check_platform_unknown_blocks(monkeypatch):
     assert findings[0].severity == "blocking"
 
 
+MINT_UBUNTU = {
+    "ID": "linuxmint",
+    "ID_LIKE": "ubuntu debian",
+    "PRETTY_NAME": "Linux Mint 22.3",
+    "VERSION_ID": "22.3",
+    "VERSION_CODENAME": "zena",
+    "UBUNTU_CODENAME": "noble",
+}
+
+
+def test_check_platform_mint_ubuntu_is_experimental(monkeypatch):
+    """Ubuntu-based Mint is an experimental (source-build) target, not a block."""
+    monkeypatch.setattr(insp, "detect_platform", lambda: "debian")
+    info, findings = _check_platform(MINT_UBUNTU)
+    assert info["family"] == "mint-ubuntu"
+    assert info["support_level"] == "experimental"
+    assert findings[0].status == "warn"
+    assert findings[0].severity != "blocking"
+
+
+def test_family_from_os_release_mapping():
+    from omintylib.platform import family_from_os_release as fam
+
+    assert fam({"ID": "debian"}) == "debian"
+    assert fam({"ID": "linuxmint", "ID_LIKE": "debian"}) == "mint-debian"
+    assert fam({"ID": "linuxmint", "ID_LIKE": "ubuntu debian"}) == "mint-ubuntu"
+    assert fam({"ID": "ubuntu", "ID_LIKE": "debian"}) == "ubuntu"
+    assert fam({"ID": "void"}) == "void"
+    assert fam({"ID": "arch"}) == "unknown"
+
+
 def _stub_layer_deps(monkeypatch, installed: dict, sources=None, pins=None):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: installed)
     monkeypatch.setattr(

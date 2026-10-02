@@ -37,7 +37,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .platform import detect_platform
+from .platform import detect_platform, family_from_os_release
 
 SCHEMA_VERSION = 1
 
@@ -334,6 +334,7 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
     pretty = osr.get("PRETTY_NAME", "")
     is_lmde = "linuxmint" in osr.get("ID_LIKE", "") or "Mint" in pretty
     platform_id = detect_platform()
+    family = family_from_os_release(osr)
 
     info = {
         "id": platform_id,
@@ -342,6 +343,8 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
         "version_id": osr.get("VERSION_ID", ""),
         "codename": codename,
         "is_lmde": is_lmde,
+        "family": family,
+        "support_level": "unsupported",
         "supported": codename in SUPPORTED_CODENAMES,
     }
 
@@ -356,6 +359,19 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
                 "blocking",
             )
         )
+    elif family in ("ubuntu", "mint-ubuntu"):
+        # Ubuntu-family systems share apt/systemd but not the Debian 13
+        # package set, so the desktop layers are provisioned by source build.
+        info["support_level"] = "experimental"
+        findings.append(
+            Finding(
+                "platform",
+                "warn",
+                f"{pretty or distro_id} ({family}) is an experimental target.",
+                "Ubuntu-family systems are supported via the source-build path; "
+                "see docs/MIGRATION.md and install.sh.",
+            )
+        )
     elif platform_id != "debian":
         findings.append(
             Finding(
@@ -367,6 +383,7 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
             )
         )
     elif not codename:
+        info["support_level"] = "unvalidated"
         findings.append(
             Finding(
                 "platform",
@@ -376,6 +393,7 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
             )
         )
     elif codename not in SUPPORTED_CODENAMES:
+        info["support_level"] = "unvalidated"
         findings.append(
             Finding(
                 "platform",
@@ -386,6 +404,7 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
             )
         )
     else:
+        info["support_level"] = "validated"
         findings.append(
             Finding(
                 "platform",
