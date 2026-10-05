@@ -124,13 +124,14 @@ MINT_UBUNTU = {
 }
 
 
-def test_check_platform_mint_ubuntu_is_experimental(monkeypatch):
-    """Ubuntu-based Mint is an experimental (source-build) target, not a block."""
+def test_check_platform_mint_ubuntu_is_supported(monkeypatch):
+    """Ubuntu-based Mint is supported via the source-build path (post-G1)."""
     monkeypatch.setattr(insp, "detect_platform", lambda: "debian")
     info, findings = _check_platform(MINT_UBUNTU)
     assert info["family"] == "mint-ubuntu"
-    assert info["support_level"] == "experimental"
-    assert findings[0].status == "warn"
+    assert info["support_level"] == "supported"
+    assert info["supported"] is True
+    assert findings[0].status == "pass"
     assert findings[0].severity != "blocking"
 
 
@@ -145,7 +146,7 @@ def test_family_from_os_release_mapping():
     assert fam({"ID": "arch"}) == "unknown"
 
 
-def _stub_layer_deps(monkeypatch, installed: dict, sources=None, pins=None):
+def _stub_layer_deps(monkeypatch, installed: dict, sources=None, pins=None, built=None):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: installed)
     monkeypatch.setattr(
         insp, "_apt_sources", lambda: sources if sources is not None else {}
@@ -153,6 +154,10 @@ def _stub_layer_deps(monkeypatch, installed: dict, sources=None, pins=None):
     monkeypatch.setattr(
         insp, "_apt_pins", lambda: pins if pins is not None else []
     )
+    # Keep the source-build probe deterministic: by default nothing is
+    # source-built, so tests are unaffected by binaries on the host PATH.
+    found = built or {}
+    monkeypatch.setattr(insp, "_on_path", lambda binary: found.get(binary))
 
 
 def test_check_layers_all_present(monkeypatch):
@@ -178,6 +183,36 @@ def test_check_layers_missing_required_blocks(monkeypatch):
     finding = next(f for f in findings if f.id == "layer.desktop")
     assert finding.status == "fail"
     assert finding.severity == "blocking"
+
+
+def test_source_built_package_counts_as_installed(monkeypatch):
+    """G1: a source-built binary proves the package is present.
+
+    Ubuntu-family systems build quickshell/dms/matugen from source, so they
+    have no dpkg entry; the binary on PATH must satisfy the layer instead.
+    """
+    everything = {pkg.name: "1.0" for layer in LAYERS for pkg in layer.packages}
+    for name in ("quickshell", "dms", "matugen"):
+        everything.pop(name, None)
+    built = {
+        "quickshell": "/home/u/.local/bin/quickshell",
+        "dms": "/home/u/.local/bin/dms",
+        "matugen": "/home/u/.local/bin/matugen",
+    }
+    _stub_layer_deps(monkeypatch, everything, built=built)
+
+    info, findings = _check_layers(LMDE)
+    by_name = {
+        p["name"]: p
+        for layer in info["layers"].values()
+        for p in layer["packages"]
+    }
+
+    assert by_name["quickshell"]["state"] == "installed"
+    assert by_name["quickshell"]["source"] == "build"
+    assert "source-built" in by_name["quickshell"]["detail"]
+    assert info["layers"]["desktop"]["satisfied"] is True
+    assert next(f for f in findings if f.id == "layer.desktop").status == "pass"
 
 
 def test_unprovisioned_layer_warns_but_never_blocks(monkeypatch):
@@ -374,6 +409,14 @@ def _stub_report_deps(monkeypatch):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_apt_sources", lambda: {})
     monkeypatch.setattr(insp, "_apt_pins", lambda: [])
+    # Keep choice resolution deterministic: no AI provider is configured
+    # unless a test says otherwise, so llm.provider stays unresolved.
+    try:
+        from omintylib import ai
+
+        monkeypatch.setattr(ai, "default_provider", lambda: "")
+    except Exception:  # pragma: no cover - defensive
+        pass
 
 
 def test_choice_points_are_well_formed(monkeypatch):
@@ -403,10 +446,11 @@ def test_choice_points_are_well_formed(monkeypatch):
             f"{choice['id']} default type must match multiple"
         )
 
-    # Every required choice must raise a finding so the agent notices it.
+    # Every *unresolved* required choice must raise a finding so the agent
+    # notices it; a resolved one is already answered by the environment.
     finding_ids = {f.id for f in findings}
     for choice in choices:
-        if choice["required"]:
+        if choice["required"] and not choice["resolved"]:
             assert f"choice.{choice['id']}" in finding_ids
 
 
@@ -498,6 +542,29 @@ def test_required_choices_in_summary(monkeypatch):
     assert "layers" not in required  # optional choices are not required
 
 
+def test_configured_provider_resolves_llm_choice(monkeypatch):
+    """A provider already configured means the choice is answered (migration)."""
+    _stub_report_deps(monkeypatch)
+    from omintylib import ai
+
+    monkeypatch.setattr(ai, "default_provider", lambda: "ollama")
+
+    choices, findings = insp._build_choices()
+    llm = next(c for c in choices if c["id"] == "llm.provider")
+    assert llm["resolved"] is True
+    assert "choice.llm.provider" not in {f.id for f in findings}
+
+
+def test_unconfigured_provider_leaves_llm_choice_required(monkeypatch):
+    """With no provider configured, llm.provider still needs the user."""
+    _stub_report_deps(monkeypatch)  # stubs default_provider -> ""
+
+    choices, findings = insp._build_choices()
+    llm = next(c for c in choices if c["id"] == "llm.provider")
+    assert llm["resolved"] is False
+    assert "choice.llm.provider" in {f.id for f in findings}
+
+
 def test_choices_survive_json_round_trip(monkeypatch):
     _stub_report_deps(monkeypatch)
     monkeypatch.setattr(insp, "_have_sudo", lambda: True)
@@ -507,7 +574,7 @@ def test_choices_survive_json_round_trip(monkeypatch):
     assert "choices" in report
     for choice in report["choices"]:
         assert set(choice) == {
-            "id", "question", "required", "multiple", "rationale",
+            "id", "question", "required", "resolved", "multiple", "rationale",
             "default", "detected", "options",
         }
         for option in choice["options"]:

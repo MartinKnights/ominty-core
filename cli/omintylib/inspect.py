@@ -64,6 +64,11 @@ class Package:
     #: False when a package is desirable but not required for a working
     #: desktop — inspect reports these as `optional`, never as a blocker.
     required: bool = True
+    #: Executable that also proves the package is present when it is *not* a
+    #: dpkg package. Ubuntu-family systems build quickshell/dms/matugen from
+    #: source (see docs/UBUNTU.md), so a missing dpkg entry is not evidence of
+    #: absence — the binary is. Empty means "dpkg only".
+    binary: str = ""
 
 
 @dataclass(frozen=True)
@@ -85,9 +90,9 @@ _DESKTOP = Layer(
     label="Niri + DMS desktop",
     description="Compositor, shell, theming, audio and portals.",
     packages=(
-        Package("quickshell", "apt", "DMS Quickshell runtime"),
-        Package("dms", "obs", "DankMaterialShell"),
-        Package("matugen", "obs", "wallpaper-driven dynamic theming"),
+        Package("quickshell", "apt", "DMS Quickshell runtime", binary="quickshell"),
+        Package("dms", "obs", "DankMaterialShell", binary="dms"),
+        Package("matugen", "obs", "wallpaper-driven dynamic theming", binary="matugen"),
         Package("niri", "local", "scrollable-tiling Wayland compositor"),
         Package("xwayland-satellite", "local", "XWayland for Niri"),
         Package("libseat1", "apt", "seat library required by niri"),
@@ -220,6 +225,25 @@ def _dpkg_status(names: tuple[str, ...]) -> dict[str, str]:
         if len(parts) == 3 and parts[1] == "installed":
             found[parts[0]] = parts[2]
     return found
+
+
+def _on_path(binary: str) -> str | None:
+    """Resolve an executable, or return None.
+
+    PATH is checked first, then the usual per-user and local prefixes, because
+    ``inspect`` can run in an environment whose PATH omits ``~/.local/bin``
+    even though a package was source-built there.
+    """
+    if not binary:
+        return None
+    found = shutil.which(binary)
+    if found:
+        return found
+    for prefix in (Path.home() / ".local/bin", Path("/usr/local/bin")):
+        candidate = prefix / binary
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
 
 
 def _os_release() -> dict[str, str]:
@@ -362,14 +386,15 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
     elif family in ("ubuntu", "mint-ubuntu"):
         # Ubuntu-family systems share apt/systemd but not the Debian 13
         # package set, so the desktop layers are provisioned by source build.
-        info["support_level"] = "experimental"
+        # Promoted from "experimental" once source-built packages became
+        # visible to inspect (G1) and the path was validated end-to-end.
+        info["support_level"] = "supported"
+        info["supported"] = True
         findings.append(
             Finding(
                 "platform",
-                "warn",
-                f"{pretty or distro_id} ({family}) is an experimental target.",
-                "Ubuntu-family systems are supported via the source-build path; "
-                "see docs/MIGRATION.md and install.sh.",
+                "pass",
+                f"{pretty or distro_id} ({family}) is supported via the source-build path.",
             )
         )
     elif platform_id != "debian":
@@ -489,6 +514,7 @@ def _check_layers(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
         entries = []
         for pkg in layer.packages:
             version = installed.get(pkg.name)
+            built = _on_path(pkg.binary) if (not version and pkg.binary) else None
             if version:
                 entries.append(
                     {
@@ -497,6 +523,19 @@ def _check_layers(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
                         "version": version,
                         "source": pkg.source,
                         "required": pkg.required,
+                    }
+                )
+            elif built:
+                # Source-built (Ubuntu-family): not a dpkg package, but the
+                # binary proves the package is present. See docs/UBUNTU.md.
+                entries.append(
+                    {
+                        "name": pkg.name,
+                        "state": "installed",
+                        "version": None,
+                        "source": "build",
+                        "required": pkg.required,
+                        "detail": f"source-built ({built})",
                     }
                 )
             else:
@@ -767,12 +806,19 @@ class Choice:
     required: bool = False
     #: True when more than one option may be chosen at once.
     multiple: bool = False
+    #: True when the environment already answers this choice, so the agent
+    #: records the detected answer instead of asking. A resolved required
+    #: choice is *not* reported as outstanding. This is what makes migration
+    #: work: on an existing desktop most answers already exist in the
+    #: environment, so re-asking them is the install→migration gap.
+    resolved: bool = False
 
     def to_dict(self, detected: dict | None = None) -> dict:
         return {
             "id": self.id,
             "question": self.question,
             "required": self.required,
+            "resolved": self.resolved,
             "multiple": self.multiple,
             "rationale": self.rationale,
             "default": self.default,
@@ -826,6 +872,8 @@ def _choice_llm_provider() -> tuple[Choice, dict]:
             "left unconfigured?"
         ),
         required=True,
+        # Already configured on this machine, so the answer is known.
+        resolved=bool(current),
         rationale=(
             "AI actions need a provider before the configuration can be "
             "written. The choice determines ~/.config/ominty/ai.toml and "
@@ -937,14 +985,17 @@ def _choice_existing_configs() -> tuple[Choice, dict]:
     detected: dict[str, object] = {}
     # Pre-rebrand installs used ~/.config/omivoid and omivoid* plugin names.
     legacy_config = config_home / "omivoid"
+    legacy_present = legacy_config.exists()
+    deployed = (config_home / "ominty").exists()
     detected["legacy_config_dir"] = {
         "path": str(legacy_config),
-        "present": legacy_config.exists(),
+        "present": legacy_present,
     }
     detected["active_config_dirs"] = {
         name: (config_home / name).exists()
         for name in ("niri", "DankMaterialShell", "ominty")
     }
+    detected["ominty_deployed"] = deployed
 
     return (
         Choice(
@@ -955,6 +1006,9 @@ def _choice_existing_configs() -> tuple[Choice, dict]:
                 "missing?"
             ),
             required=True,
+            # Ominty's own config is already deployed and nothing legacy is
+            # left, so there is no replace/keep decision to make.
+            resolved=deployed and not legacy_present,
             rationale=(
                 "Overwriting user configuration is destructive. AGENTS.md §30 "
                 "requires a tested rollback path, so the user chooses whether "
@@ -1039,7 +1093,7 @@ def _build_choices() -> tuple[list[dict], list[Finding]]:
 
         choices.append(choice.to_dict(detected))
 
-        if choice.required:
+        if choice.required and not choice.resolved:
             findings.append(
                 Finding(
                     f"choice.{choice.id}",
@@ -1075,7 +1129,7 @@ def inspect() -> dict:
     warnings = [f.id for f in all_findings if f.status == "warn"]
 
     sudo_ok = _have_sudo()
-    outstanding = [c["id"] for c in choices if c["required"]]
+    outstanding = [c["id"] for c in choices if c["required"] and not c["resolved"]]
 
     return {
         "schema_version": SCHEMA_VERSION,
