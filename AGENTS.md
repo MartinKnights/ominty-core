@@ -28,6 +28,14 @@ Ominty is intended to be:
 
 LMDE is the Phase 1 validation platform.
 
+This repository is **objective 1** of a twofold project: it is developed and
+validated on a live machine. **Objective 2** turns what is validated here into a
+reproducible install/**migration** process for the distribution repo
+(`MartinKnights/Ominty`). Development here therefore feeds distribution — work
+must stay generic and free of personal paths (§33) so it can be lifted into the
+installer. The deployment entry point is that repo's `AGENTS.md`; the migration
+record is its `docs/MIGRATION.md`.
+
 ---
 
 # 3. Existing Environment
