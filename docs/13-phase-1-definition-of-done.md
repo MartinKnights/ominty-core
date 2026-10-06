@@ -384,7 +384,9 @@ Examples:
 
 * selection capture;
 * remote Herdr delegation;
-* voice;
+* voice — split into TTS and STT by
+  [ADR-007](decisions/ADR-007-voice-tts-stt.md); STT is active
+  ([docs/ai/11](ai/11-voice-integration.md)), TTS expansion is deferred;
 * additional theme adapters;
 * daemon/event architecture.
 

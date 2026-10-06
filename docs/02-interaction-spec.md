@@ -556,9 +556,14 @@ This allows Ominty to apply:
 
 # 24. Voice
 
-Voice is considered a future interaction surface over the same action system.
+Voice is an interaction surface over the same action system, split into its two
+independent halves by [ADR-007](decisions/ADR-007-voice-tts-stt.md):
 
-Example:
+* **STT** (speech → text) — dictation, the active milestone; specified in
+  [docs/ai/11](ai/11-voice-integration.md);
+* **TTS** (text → speech) — local Piper; integration and expansion deferred.
+
+Spoken *commands* are the `voice.command` milestone and remain future work:
 
 ```text
 "Turn Bluetooth off."
@@ -566,7 +571,8 @@ Example:
 network.bluetooth.disable
 ```
 
-Phase 1 should preserve this possibility but does not require full voice implementation.
+They are gated by the `voice_accessible` registry field
+([docs/03 §19](03-action-registry-spec.md)).
 
 ---
 

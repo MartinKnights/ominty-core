@@ -715,7 +715,6 @@ event bus
 remote action routing
 full Herdr orchestration
 Agno integration
-voice
 complex permissions engine
 remote fleet management
 Void installer
@@ -725,6 +724,10 @@ graphical action editor
 ```
 
 Do not implement them opportunistically.
+
+The former `voice` item is no longer monolithic: [ADR-007](docs/decisions/ADR-007-voice-tts-stt.md)
+splits it into TTS and STT. **STT is now active**
+([docs/ai/11](docs/ai/11-voice-integration.md)); TTS expansion remains deferred.
 
 ---
 

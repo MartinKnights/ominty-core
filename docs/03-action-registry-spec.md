@@ -132,6 +132,7 @@ notification
 file
 project
 ai
+voice
 developer
 help
 system
@@ -563,9 +564,13 @@ Voice exposure uses:
 voice_accessible = true
 ```
 
-Voice implementation is not required in the initial Phase 1 milestone.
+The field gates what the voice surface may invoke, mirroring `ai_accessible`
+(§18). It defaults to `false`; each action opts in.
 
-The metadata exists to avoid redesigning the registry later.
+Voice is split into TTS and STT by
+[ADR-007](decisions/ADR-007-voice-tts-stt.md); STT (dictation) is now active and
+specified in [docs/ai/11](ai/11-voice-integration.md). The metadata exists so
+that adding voice did not require redesigning the registry.
 
 ---
 

@@ -700,7 +700,9 @@ Do not implement during Phase 1 unless required to unblock core work:
 * remote action routing;
 * full Herdr orchestration;
 * Agno integration;
-* voice system;
+* voice system — split into TTS and STT by
+  [ADR-007](decisions/ADR-007-voice-tts-stt.md); STT (dictation) is now active
+  ([docs/ai/11](ai/11-voice-integration.md)), the rest remains out of scope;
 * plugin marketplace;
 * complex permissions engine;
 * AI autonomy framework;
