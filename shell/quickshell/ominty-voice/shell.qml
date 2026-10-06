@@ -61,10 +61,19 @@ Scope {
     FileView {
         id: statusFile
         path: root.statusPath
-        watchChanges: true
+        __preload: true   // so reload() performs an actual async re-read
         printErrors: false
         onLoaded: root.refresh()
-        onFileChanged: root.refresh()
+    }
+
+    // Poll the status file rather than relying on the watcher signal: it is
+    // the same robust pattern the Piper indicator uses, and the watcher's
+    // fileChanged signal proved unreliable on this stack.
+    Timer {
+        interval: 250
+        running: true
+        repeat: true
+        onTriggered: statusFile.reload()
     }
 
     PwNodePeakMonitor {
