@@ -16,7 +16,7 @@ Scope {
     readonly property bool shown: root.panel || root.active
 
     readonly property int panelW: 300
-    readonly property int panelH: 80
+    readonly property int panelH: 96
 
     // Live input level (smoothed) and a slowly advancing tick for the
     // equalizer's gentle undulation.
@@ -139,7 +139,7 @@ Scope {
                 x: 68
                 anchors.verticalCenter: parent.verticalCenter
                 width: root.panelW - 68 - 34
-                spacing: 3
+                spacing: 4
 
                 Text {
                     width: parent.width
@@ -151,32 +151,38 @@ Scope {
                     font.pixelSize: 11
                 }
 
-                // Equalizer: 21 fixed-position bars on a stationary floor.
-                // Bar i has a tent-shaped height envelope and a small phase
-                // offset, so it levels like the classic segmented EQ.
+                // Equalizer: 21 fixed lanes; each bar is centred vertically in
+                // its lane, so the equalizer is symmetric around the middle.
                 Item {
                     width: parent.width
-                    height: 34
+                    height: 48
                     visible: root.active
 
                     Row {
-                        anchors.bottom: parent.bottom
                         anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
                         spacing: 3
 
                         Repeater {
                             model: 21
 
-                            Rectangle {
+                            Item {
+                                id: lane
+                                width: 6
+                                height: 44
                                 readonly property real env: Math.pow(Math.sin(Math.PI * index / 20), 1.3)
                                 readonly property real wob: Math.sin(root.tick * 0.22 + index * 1.1)
                                 readonly property real lvl: Math.max(0.03, Math.min(1, root.level))
-                                readonly property real h: 3 + Math.round(28 * env * lvl * (1 + 0.22 * wob))
+                                readonly property real barH: Math.min(42, 3 + Math.round(38 * env * lvl * (1 + 0.22 * wob)))
 
-                                width: 6
-                                height: Math.min(33, h)
-                                radius: 2
-                                color: "#f38ba8"
+                                Rectangle {
+                                    width: parent.width
+                                    height: lane.barH
+                                    radius: 2
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: "#f38ba8"
+                                }
                             }
                         }
                     }
