@@ -156,8 +156,15 @@ def status_path() -> Path:
 
 
 def write_status(state: str, **extra) -> None:
-    """Publish recording state for the indicator to poll (docs/ai/11 §8)."""
+    """Publish recording state for the indicator to poll (docs/ai/11 §8).
+
+    The ``panel`` flag is sticky: it survives state transitions unless the
+    caller sets it explicitly, so the control panel stays visible after
+    dictation ends and is only hidden by its close button.
+    """
     payload = {"state": state, "ts": time.time()}
+    if "panel" not in extra:
+        payload["panel"] = read_status().get("panel", False)
     payload.update(extra)
     try:
         status_path().write_text(json.dumps(payload))
@@ -344,7 +351,9 @@ def start_recording(cfg: dict | None = None) -> dict:
         return _err("ADAPTER_FAILED", f"could not start capture: {e}")
 
     _pid_path().write_text(str(proc.pid))
-    write_status("recording", pid=proc.pid)
+    # Keep the control panel visible while recording and afterwards, so the
+    # user closes it with the button rather than it vanishing on its own.
+    write_status("recording", pid=proc.pid, panel=True)
     return {"success": True, "state": {"recording": True, "pid": proc.pid, "file": str(wav)}}
 
 

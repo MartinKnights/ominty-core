@@ -32,8 +32,9 @@ Scope {
     }
 
     function pushPeak(value) {
-        const next = root.history.slice(1);
+        const next = root.history.slice();
         next.push(value);
+        if (next.length > root.historyLength) next.shift();
         root.history = next;
     }
 
@@ -136,38 +137,48 @@ Scope {
                 }
             }
 
-            // Level bars + state label.
-            Row {
+            // State label ABOVE the waveform, then the waveform bars on a
+            // fixed-height floor so the label never moves as bars rise/fall.
+            Column {
                 x: 62
-                y: (parent.height - 24) / 2
-                spacing: 8
-
-                Row {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: root.active
-                    spacing: 3
-                    anchors.verticalCenterOffset: 0
-
-                    Repeater {
-                        model: root.history
-                        Rectangle {
-                            required property var modelData
-                            width: 3
-                            height: 8 + 28 * Math.max(0.05, Math.min(1, modelData))
-                            radius: 1.5
-                            anchors.verticalCenter: parent.verticalCenter
-                            color: "#f38ba8"
-                        }
-                    }
-                }
+                anchors.verticalCenterOffset: 0
+                anchors.verticalCenter: parent.verticalCenter
+                width: root.panelW - 62 - 38
+                spacing: 2
 
                 Text {
-                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
                     text: root.state === "recording" ? "Dictating\u2026"
                         : root.state === "transcribing" ? "Transcribing\u2026"
                         : "Dictation"
                     color: "#cdd6f4"
-                    font.pixelSize: 13
+                    font.pixelSize: 11
+                }
+
+                Item {
+                    width: parent.width
+                    height: 24
+                    visible: root.active
+
+                    Row {
+                        anchors.bottom: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 3
+
+                        Repeater {
+                            model: root.history
+
+                            Rectangle {
+                                required property var modelData
+                                readonly property real lvl: Math.max(0.05, Math.min(1, modelData))
+                                width: 3
+                                height: 3 + Math.round(19 * lvl)
+                                radius: 1
+                                color: "#f38ba8"
+                            }
+                        }
+                    }
                 }
             }
 
