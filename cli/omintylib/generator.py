@@ -232,6 +232,16 @@ def generate_niri_fragment(
                 lines.append(f"        spawn {spawn_args}")
                 lines.append("    }")
                 lines.append("")
+            elif action.adapter and not action.adapter.startswith("shell."):
+                # Any other adapter-backed action runs through the canonical
+                # action runner (docs/03, Contract 3) — e.g. voice.dictate.
+                lines.append(f"    // {action.id}")
+                lines.append(f"    {kdl_key} {{")
+                lines.append(
+                    f'        spawn "{ominty_cli}" "action" "run" "{action.id}"'
+                )
+                lines.append("    }")
+                lines.append("")
             # shell.* adapters without command are handled by the shell, not here.
 
     lines.append("}")

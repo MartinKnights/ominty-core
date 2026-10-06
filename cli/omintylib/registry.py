@@ -29,8 +29,8 @@ ACTION_ID_RE = re.compile(r"^[a-z][a-z0-9_-]*(\.[a-z][a-z0-9_-]*){1,}$")
 NAMESPACES = {
     "app", "window", "workspace", "display", "input", "audio", "media",
     "network", "power", "session", "clipboard", "capture", "theme",
-    "notification", "file", "project", "ai", "developer", "help", "system",
-    "custom",
+    "notification", "file", "project", "ai", "voice", "developer", "help",
+    "system", "custom",
 }
 
 VALID_RISKS = {
@@ -69,6 +69,9 @@ KNOWN_ADAPTERS = {
     "ai.ask",
     "ai.clipboard.explain",
     "ai.clipboard.summarise",
+    # Voice / STT (docs/ai/11-voice-integration.md, ADR-007).
+    "voice.dictate",
+    "voice.transcribe",
 }
 
 REQUIRED_FIELDS = ("name", "description", "category", "risk")

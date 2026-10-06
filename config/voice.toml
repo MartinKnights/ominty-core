@@ -1,0 +1,29 @@
+# Ominty voice configuration — portable defaults
+# docs/ai/11-voice-integration.md, ADR-007
+#
+# Speech-to-text (dictation) runs locally on whisper.cpp. Users may override
+# through ~/.config/ominty/voice.toml (user configuration wins; the shipped
+# file here is only a fallback).
+
+[voice]
+enabled = true
+
+[voice.stt]
+# Engine is whisper.cpp; `binary` may be a name resolved on PATH or an
+# absolute path. The adapter also looks in the Phase 1 build dir
+# (~/.cache/ominty/build/whisper.cpp/build/bin).
+engine = "whisper.cpp"
+binary = "whisper-cli"
+model = "~/.local/share/ominty/models/ggml-base.en.bin"
+language = "en"
+# 0 = let whisper.cpp choose the thread count.
+threads = 0
+
+[voice.stt.capture]
+command = "pw-record"
+sample_rate = 16000
+channels = 1
+
+[voice.stt.inject]
+# Text injection method for dictation: "wtype" (Wayland virtual keyboard).
+method = "wtype"

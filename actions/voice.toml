@@ -1,0 +1,95 @@
+# Ominty action registry — voice
+# Schema version 1 (docs/03-action-registry-spec.md)
+# docs/ai/11-voice-integration.md, ADR-007
+#
+# Speech-to-text (dictation) is local (whisper.cpp). TTS (voice.speak.*) is
+# specified but not implemented yet; the existing Piper stack is unchanged.
+
+registry_version = 1
+
+[group.voice]
+
+name = "Voice"
+prefix = "Super+Alt+D"
+description = "Voice and speech-to-text operations"
+
+
+# Dictation is a toggle: Niri has no key-release bindings (ADR-007 §7), so the
+# first press starts recording and the next stops, transcribes and injects the
+# text into the focused window.
+[action."voice.dictate"]
+
+name = "Dictate"
+description = "Start or stop dictation; the transcript is typed into the focused window."
+category = "Voice"
+
+keywords = ["voice", "dictate", "dictation", "speech", "stt", "microphone", "type"]
+
+keys = ["Super+Alt+D"]
+
+adapter = "voice.dictate"
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["whisper-cli", "wtype"]
+
+discoverable = true
+palette = true
+# Dictation types text; it must not be reachable from the AI surface.
+ai_accessible = false
+voice_accessible = true
+
+
+# Forced stop. No key of its own: `voice.dictate` toggles. This exists so the
+# indicator, the CLI and future surfaces can abort a recording explicitly.
+[action."voice.stop"]
+
+name = "Stop Dictation"
+description = "Stop recording without transcribing."
+category = "Voice"
+
+keywords = ["voice", "stop", "cancel", "dictation", "recording"]
+
+keys = []
+
+adapter = "voice.dictate"
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = true
+
+
+# Non-interactive: transcribe an audio file. No capture, no injection.
+[action."voice.transcribe"]
+
+name = "Transcribe Audio"
+description = "Transcribe an audio file to text."
+category = "Voice"
+
+keywords = ["voice", "transcribe", "speech", "stt", "audio", "file"]
+
+keys = []
+
+adapter = "voice.transcribe"
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["whisper-cli"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = true

@@ -37,6 +37,9 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
     # AI clipboard context actions (docs/ai/10 §31, AI-25).
     "ai.clipboard.explain": ("common", "ai_clipboard_explain.py"),
     "ai.clipboard.summarise": ("common", "ai_clipboard_summarise.py"),
+    # Voice / STT (docs/ai/11-voice-integration.md, ADR-007).
+    "voice.dictate": ("common", "voice_dictate.py"),
+    "voice.transcribe": ("common", "voice_transcribe.py"),
 }
 
 # Adapters resolved by the platform → common convention below (no fixed

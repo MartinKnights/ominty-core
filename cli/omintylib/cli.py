@@ -466,6 +466,56 @@ def _inspect_main(args: argparse.Namespace) -> int:
     return inspect_main(argv)
 
 
+def _print_voice_result(result: dict, as_json: bool) -> int:
+    """Shared success/failure printing for the voice commands."""
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return 0 if result["success"] else 1
+    if result["success"]:
+        state = result.get("state", {})
+        if "text" in state:
+            print(state["text"])
+        else:
+            print(json.dumps(state))
+        return 0
+    error = result.get("error", {})
+    print(
+        f"{error.get('code', 'ERROR')}: {error.get('message', 'unknown error')}",
+        file=sys.stderr,
+    )
+    return 1
+
+
+def cmd_voice_status(args: argparse.Namespace) -> int:
+    from .voice import load_config, read_status, resolve_engine, resolve_model
+
+    cfg = load_config()
+    status = {
+        "enabled": cfg.get("voice", {}).get("enabled", True),
+        "engine": resolve_engine(cfg),
+        "model": resolve_model(cfg),
+        "state": read_status().get("state", "idle"),
+    }
+    if args.json:
+        print(json.dumps(status, indent=2))
+        return 0
+    for key, value in status.items():
+        print(f"{key}: {value}")
+    return 0
+
+
+def cmd_voice_transcribe(args: argparse.Namespace) -> int:
+    from .voice import transcribe_file
+
+    return _print_voice_result(transcribe_file(args.file), args.json)
+
+
+def cmd_voice_dictate(args: argparse.Namespace) -> int:
+    from .voice import dictate
+
+    return _print_voice_result(dictate(), args.json)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ominty",
@@ -641,6 +691,23 @@ def build_parser() -> argparse.ArgumentParser:
     kb_p.add_argument("--domain", help="filter to one GKS domain")
     kb_p.add_argument("--json", action="store_true", help="JSON output")
     kb_p.set_defaults(func=cmd_keybinds)
+
+    # voice (docs/ai/11-voice-integration.md, ADR-007)
+    voice_p = sub.add_parser("voice", help="voice / speech-to-text operations")
+    voice_sub = voice_p.add_subparsers(dest="voice_command", required=True)
+
+    vstatus_p = voice_sub.add_parser("status", help="show engine, model and recording state")
+    vstatus_p.add_argument("--json", action="store_true", help="JSON output")
+    vstatus_p.set_defaults(func=cmd_voice_status)
+
+    vtr_p = voice_sub.add_parser("transcribe", help="transcribe an audio file to text")
+    vtr_p.add_argument("file", help="audio file (wav/flac/mp3/ogg)")
+    vtr_p.add_argument("--json", action="store_true", help="JSON output")
+    vtr_p.set_defaults(func=cmd_voice_transcribe)
+
+    vdict_p = voice_sub.add_parser("dictate", help="start or stop dictation (toggle)")
+    vdict_p.add_argument("--json", action="store_true", help="JSON output")
+    vdict_p.set_defaults(func=cmd_voice_dictate)
 
     return parser
 
