@@ -943,8 +943,44 @@ def _choice_layers() -> tuple[Choice, dict]:
     )
 
 
+def _login_default_session() -> str:
+    """Best-effort: the session the display manager starts by default.
+
+    Reads LightDM's configuration (the last definition wins, so conf.d
+    fragments override lightdm.conf), then falls back to ``~/.dmrc`` — the
+    session the user last chose. Returns "" when neither is readable. Used to
+    resolve the ``session.default`` choice once Niri is already the default.
+    """
+    session = ""
+    paths = [Path("/etc/lightdm/lightdm.conf")]
+    conf_d = Path("/etc/lightdm/lightdm.conf.d")
+    if conf_d.is_dir():
+        paths += sorted(conf_d.glob("*.conf"))
+    for path in paths:
+        try:
+            text = path.read_text()
+        except OSError:
+            continue
+        for line in text.splitlines():
+            line = line.strip()
+            if line.startswith("user-session="):
+                session = line.split("=", 1)[1].strip()
+    if session:
+        return session
+    try:
+        for line in (Path.home() / ".dmrc").read_text().splitlines():
+            line = line.strip()
+            if line.lower().startswith("session="):
+                session = line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return session
+
+
 def _choice_default_session() -> tuple[Choice, dict]:
     """Whether to make Niri the default login session."""
+    current = _login_default_session()
+    is_niri = current.lower() == "niri"
     return (
         Choice(
             id="session.default",
@@ -953,6 +989,8 @@ def _choice_default_session() -> tuple[Choice, dict]:
                 "the current session stay the default?"
             ),
             required=True,
+            # Already Niri, so there is nothing left to change.
+            resolved=is_niri,
             rationale=(
                 "Changing the default session alters how the machine boots "
                 "into a desktop and is easy to get wrong over SSH, so it "
@@ -973,7 +1011,10 @@ def _choice_default_session() -> tuple[Choice, dict]:
                 ),
             ),
         ),
-        {"note": "The existing session must remain selectable as a fallback."},
+        {
+            "current_default": current or None,
+            "note": "The existing session must remain selectable as a fallback.",
+        },
     )
 
 
@@ -1006,9 +1047,11 @@ def _choice_existing_configs() -> tuple[Choice, dict]:
                 "missing?"
             ),
             required=True,
-            # Ominty's own config is already deployed and nothing legacy is
-            # left, so there is no replace/keep decision to make.
-            resolved=deployed and not legacy_present,
+            # Ominty's own config is already deployed, so the replace/keep
+            # decision is settled. A leftover ~/.config/omivoid is treated as
+            # a rollback backup, not an install to migrate (cleaning it up is
+            # gap G4, tracked separately), so it must not reopen this question.
+            resolved=deployed,
             rationale=(
                 "Overwriting user configuration is destructive. AGENTS.md §30 "
                 "requires a tested rollback path, so the user chooses whether "

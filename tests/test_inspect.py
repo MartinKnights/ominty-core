@@ -409,14 +409,20 @@ def _stub_report_deps(monkeypatch):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_apt_sources", lambda: {})
     monkeypatch.setattr(insp, "_apt_pins", lambda: [])
-    # Keep choice resolution deterministic: no AI provider is configured
-    # unless a test says otherwise, so llm.provider stays unresolved.
+    # Keep choice resolution deterministic and independent of the host:
+    #   - no AI provider configured -> llm.provider unresolved
+    #   - no deployed Ominty config -> config.migration unresolved
+    #   - no Niri login default     -> session.default unresolved
     try:
-        from omintylib import ai
+        from omintylib import ai, registry
 
         monkeypatch.setattr(ai, "default_provider", lambda: "")
+        monkeypatch.setattr(
+            registry, "xdg_config_home", lambda: insp.Path("/nonexistent-ominty")
+        )
     except Exception:  # pragma: no cover - defensive
         pass
+    monkeypatch.setattr(insp, "_login_default_session", lambda: "")
 
 
 def test_choice_points_are_well_formed(monkeypatch):
@@ -563,6 +569,36 @@ def test_unconfigured_provider_leaves_llm_choice_required(monkeypatch):
     llm = next(c for c in choices if c["id"] == "llm.provider")
     assert llm["resolved"] is False
     assert "choice.llm.provider" in {f.id for f in findings}
+
+
+def test_deployed_config_resolves_migration_choice(monkeypatch, tmp_path):
+    """D1: a deployed config settles replace/keep; a rollback backup must not
+    reopen the question."""
+    _stub_report_deps(monkeypatch)
+    from omintylib import registry
+
+    home = tmp_path / ".config"
+    (home / "ominty").mkdir(parents=True)   # deployed
+    (home / "omivoid").mkdir()              # rollback backup — ignored
+    monkeypatch.setattr(registry, "xdg_config_home", lambda: home)
+
+    choices, findings = insp._build_choices()
+    mig = next(c for c in choices if c["id"] == "config.migration")
+    assert mig["resolved"] is True
+    assert "choice.config.migration" not in {f.id for f in findings}
+    # The legacy dir is still reported, just not as an open question.
+    assert mig["detected"]["legacy_config_dir"]["present"] is True
+
+
+def test_niri_login_default_resolves_session_choice(monkeypatch):
+    """D2: once Niri is the login default there is nothing left to change."""
+    _stub_report_deps(monkeypatch)
+    monkeypatch.setattr(insp, "_login_default_session", lambda: "niri")
+
+    choices, findings = insp._build_choices()
+    sess = next(c for c in choices if c["id"] == "session.default")
+    assert sess["resolved"] is True
+    assert "choice.session.default" not in {f.id for f in findings}
 
 
 def test_choices_survive_json_round_trip(monkeypatch):
