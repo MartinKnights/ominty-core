@@ -16,9 +16,12 @@ Scope {
     readonly property bool shown: root.panel || root.active
 
     readonly property int panelW: 300
-    readonly property int panelH: 56
+    readonly property int panelH: 80
 
-    property var history: []
+    // Live input level (smoothed) and a slowly advancing tick for the
+    // equalizer's gentle undulation.
+    property real level: 0
+    property real tick: 0
 
     function refresh() {
         try {
@@ -29,13 +32,6 @@ Scope {
             root.state = "idle";
             root.panel = false;
         }
-    }
-
-    function pushPeak(value) {
-        const next = root.history.slice();
-        next.push(value);
-        if (next.length > root.historyLength) next.shift();
-        root.history = next;
     }
 
     function toggleDictation() {
@@ -68,10 +64,14 @@ Scope {
     }
 
     Timer {
-        interval: 50
+        interval: 40
         running: root.active
         repeat: true
-        onTriggered: root.pushPeak(peakMonitor.peak)
+        onTriggered: {
+            // smooth the peak a little to avoid flicker
+            root.level = Math.max(root.level * 0.72, peakMonitor.peak);
+            root.tick += 1;
+        }
     }
 
     Process {
@@ -105,9 +105,6 @@ Scope {
             left: popup.screen ? Math.round((popup.screen.width - root.panelW) / 2) : 0
         }
 
-        // One fixed-size clickable pill: click toggles dictation.
-        // A fixed 300x56 pill; children are positioned with absolute offsets
-        // so the layout cannot grow to the screen size.
         Rectangle {
             width: root.panelW
             height: root.panelH
@@ -118,18 +115,18 @@ Scope {
 
             // Toggle button (left).
             Rectangle {
-                x: 8
-                y: (parent.height - 44) / 2
-                width: 44
-                height: 44
-                radius: 22
+                x: 10
+                y: (parent.height - 48) / 2
+                width: 48
+                height: 48
+                radius: 24
                 color: root.active ? "#f38ba8" : "#89b4fa"
 
                 Text {
                     anchors.centerIn: parent
                     text: root.active ? "\u25A0" : "\u25B6"
                     color: "#11111b"
-                    font.pixelSize: 15
+                    font.pixelSize: 16
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -137,14 +134,12 @@ Scope {
                 }
             }
 
-            // State label ABOVE the waveform, then the waveform bars on a
-            // fixed-height floor so the label never moves as bars rise/fall.
+            // Centre: state label ABOVE a stationary segmented equalizer.
             Column {
-                x: 62
-                anchors.verticalCenterOffset: 0
+                x: 68
                 anchors.verticalCenter: parent.verticalCenter
-                width: root.panelW - 62 - 38
-                spacing: 2
+                width: root.panelW - 68 - 34
+                spacing: 3
 
                 Text {
                     width: parent.width
@@ -156,9 +151,12 @@ Scope {
                     font.pixelSize: 11
                 }
 
+                // Equalizer: 21 fixed-position bars on a stationary floor.
+                // Bar i has a tent-shaped height envelope and a small phase
+                // offset, so it levels like the classic segmented EQ.
                 Item {
                     width: parent.width
-                    height: 24
+                    height: 34
                     visible: root.active
 
                     Row {
@@ -167,14 +165,17 @@ Scope {
                         spacing: 3
 
                         Repeater {
-                            model: root.history
+                            model: 21
 
                             Rectangle {
-                                required property var modelData
-                                readonly property real lvl: Math.max(0.05, Math.min(1, modelData))
-                                width: 3
-                                height: 3 + Math.round(19 * lvl)
-                                radius: 1
+                                readonly property real env: Math.pow(Math.sin(Math.PI * index / 20), 1.3)
+                                readonly property real wob: Math.sin(root.tick * 0.22 + index * 1.1)
+                                readonly property real lvl: Math.max(0.03, Math.min(1, root.level))
+                                readonly property real h: 3 + Math.round(28 * env * lvl * (1 + 0.22 * wob))
+
+                                width: 6
+                                height: Math.min(33, h)
+                                radius: 2
                                 color: "#f38ba8"
                             }
                         }
@@ -184,7 +185,7 @@ Scope {
 
             // Close (hide the panel).
             Rectangle {
-                x: parent.width - 30
+                x: parent.width - 32
                 y: (parent.height - 24) / 2
                 width: 24
                 height: 24
@@ -202,11 +203,6 @@ Scope {
                     onClicked: root.closePanel()
                 }
             }
-        }
-
-        Component.onCompleted: {
-            console.log("ominty-voice size=" + popup.width + "x" + popup.height
-                + " screen=" + (popup.screen ? popup.screen.width : "none"));
         }
     }
 }
