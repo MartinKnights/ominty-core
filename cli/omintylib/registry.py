@@ -72,6 +72,7 @@ KNOWN_ADAPTERS = {
     # Voice / STT (docs/ai/11-voice-integration.md, ADR-007).
     "voice.dictate",
     "voice.transcribe",
+    "voice.panel",
 }
 
 REQUIRED_FIELDS = ("name", "description", "category", "risk")

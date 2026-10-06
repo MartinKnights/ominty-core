@@ -40,6 +40,7 @@ ADAPTER_LOCATIONS: dict[str, tuple[str, str]] = {
     # Voice / STT (docs/ai/11-voice-integration.md, ADR-007).
     "voice.dictate": ("common", "voice_dictate.py"),
     "voice.transcribe": ("common", "voice_transcribe.py"),
+    "voice.panel": ("common", "voice_panel.py"),
 }
 
 # Adapters resolved by the platform → common convention below (no fixed

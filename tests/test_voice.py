@@ -151,6 +151,15 @@ def test_dictate_stops_when_recording(monkeypatch, tmp_path):
     assert called.get("stop") is True
 
 
+def test_panel_toggles(monkeypatch, tmp_path):
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+    monkeypatch.setattr(voice, "load_config", lambda: {"voice": {"enabled": True}})
+    on = voice.panel()
+    assert on["success"] is True and on["state"]["panel"] is True
+    off = voice.panel()
+    assert off["state"]["panel"] is False
+
+
 # --- registry / generator integration --------------------------------------
 
 
@@ -158,7 +167,7 @@ def test_registry_has_voice_actions():
     from omintylib.registry import load_registry
 
     reg = load_registry()
-    for aid in ("voice.dictate", "voice.stop", "voice.transcribe"):
+    for aid in ("voice.dictate", "voice.stop", "voice.transcribe", "voice.panel"):
         action = reg.actions[aid]
         assert action.voice_accessible is True
         assert action.ai_accessible is False
@@ -173,5 +182,8 @@ def test_generator_emits_voice_binding():
         load_registry(), "/path/to/ominty", claimed_keys=frozenset()
     )
     assert "voice.dictate" in fragment
+    assert "voice.panel" in fragment
     assert "Mod+Alt+D" in fragment
+    assert "Mod+Alt+T" in fragment
     assert '"action" "run" "voice.dictate"' in fragment
+    assert '"action" "run" "voice.panel"' in fragment

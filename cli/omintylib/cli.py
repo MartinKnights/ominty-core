@@ -516,6 +516,12 @@ def cmd_voice_dictate(args: argparse.Namespace) -> int:
     return _print_voice_result(dictate(), args.json)
 
 
+def cmd_voice_panel(args: argparse.Namespace) -> int:
+    from .voice import panel
+
+    return _print_voice_result(panel(), args.json)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ominty",
@@ -708,6 +714,12 @@ def build_parser() -> argparse.ArgumentParser:
     vdict_p = voice_sub.add_parser("dictate", help="start or stop dictation (toggle)")
     vdict_p.add_argument("--json", action="store_true", help="JSON output")
     vdict_p.set_defaults(func=cmd_voice_dictate)
+
+    vpanel_p = voice_sub.add_parser(
+        "panel", help="show or hide the dictation control panel (Super+Alt+T)"
+    )
+    vpanel_p.add_argument("--json", action="store_true", help="JSON output")
+    vpanel_p.set_defaults(func=cmd_voice_panel)
 
     return parser
 

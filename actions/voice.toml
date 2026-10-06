@@ -34,7 +34,7 @@ confirmation = "never"
 
 contexts = ["global"]
 platforms = ["common"]
-requires = ["whisper-cli", "wtype"]
+requires = ["whisper-cli", "ffmpeg", "pw-record", "wtype"]
 
 discoverable = true
 palette = true
@@ -87,7 +87,33 @@ confirmation = "never"
 
 contexts = ["global"]
 platforms = ["common"]
-requires = ["whisper-cli"]
+requires = ["whisper-cli", "ffmpeg"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = true
+
+
+# Super+Alt+T: summon the dictation control panel (a mouse toggle — start or
+# stop recording by clicking its button).
+[action."voice.panel"]
+
+name = "Dictation Panel"
+description = "Show or hide the dictation control panel (mouse start/stop)."
+category = "Voice"
+
+keywords = ["voice", "panel", "dictate", "dictation", "control", "microphone", "mouse"]
+
+keys = ["Super+Alt+T"]
+
+adapter = "voice.panel"
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
 
 discoverable = true
 palette = true

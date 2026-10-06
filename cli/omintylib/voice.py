@@ -21,6 +21,7 @@ import os
 import shutil
 import signal
 import subprocess
+import tempfile
 import time
 import tomllib
 from pathlib import Path
@@ -176,6 +177,36 @@ def read_status() -> dict:
 # ---------------------------------------------------------------------------
 
 
+def _normalize_wav(path: str) -> tuple[str | None, str | None]:
+    """Convert any audio to a whisper-readable 16 kHz mono s16 WAV.
+
+    ``pw-record`` writes WAV files that whisper.cpp's miniaudio decoder rejects
+    ("Invalid argument" while reading frames); ffmpeg produces a header it
+    accepts. Returns (temp_path, None) on success, (None, error) otherwise.
+    """
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        return None, "ffmpeg not found (needed to normalise audio)"
+
+    fd, tmp = tempfile.mkstemp(prefix="ominty-voice-", suffix=".wav")
+    os.close(fd)
+    try:
+        proc = subprocess.run(
+            [ffmpeg, "-y", "-loglevel", "error", "-i", path,
+             "-ar", "16000", "-ac", "1", "-f", "wav", tmp],
+            capture_output=True, text=True, timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return None, str(e)
+    if proc.returncode != 0:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        return None, proc.stderr.strip() or "ffmpeg conversion failed"
+    return tmp, None
+
+
 def transcribe_file(path: str, cfg: dict | None = None) -> dict:
     """Transcribe an audio file to text with whisper.cpp."""
     cfg = cfg or load_config()
@@ -190,22 +221,29 @@ def transcribe_file(path: str, cfg: dict | None = None) -> dict:
     if not Path(path).is_file():
         return _err("INVALID_ARGUMENT", f"audio file not found: {path}")
 
-    cmd = [
-        engine, "-m", model, "-f", path,
-        "-l", str(stt.get("language") or "en"),
-        "-nt",  # no timestamps: we only want the text
-        "-np",  # no prints: keep stdout to the transcript
-    ]
-    threads = int(stt.get("threads") or 0)
-    if threads > 0:
-        cmd += ["-t", str(threads)]
-
+    wav, err = _normalize_wav(path)
+    if err:
+        return _err("ADAPTER_FAILED", err)
     try:
+        cmd = [
+            engine, "-m", model, "-f", wav,
+            "-l", str(stt.get("language") or "en"),
+            "-nt",  # no timestamps: we only want the text
+            "-np",  # no prints: keep stdout to the transcript
+        ]
+        threads = int(stt.get("threads") or 0)
+        if threads > 0:
+            cmd += ["-t", str(threads)]
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
     except subprocess.TimeoutExpired:
         return _err("ADAPTER_FAILED", "transcription timed out")
     except OSError as e:
         return _err("ADAPTER_FAILED", str(e))
+    finally:
+        try:
+            os.unlink(wav)
+        except OSError:
+            pass
 
     if proc.returncode != 0:
         return _err("ADAPTER_FAILED", proc.stderr.strip() or "transcription failed")
@@ -359,3 +397,23 @@ def dictate(cfg: dict | None = None) -> dict:
     if _recording_active():
         return stop_recording(cfg)
     return start_recording(cfg)
+
+
+def panel(cfg: dict | None = None) -> dict:
+    """Toggle the standalone dictation panel (shown by the indicator).
+
+    The panel is a presentation surface: this just flips the ``panel`` flag in
+    the shared status file so the Quickshell component (`shell/quickshell/
+    ominty-voice`) knows whether to stay visible for mouse control.
+    """
+    if not (cfg := cfg or load_config()).get("voice", {}).get("enabled", True):
+        return _err("ACTION_UNAVAILABLE", "voice is disabled in voice.toml")
+    status = read_status()
+    on = not status.get("panel", False)
+    state = status.get("state", "idle")
+    if on and state == "idle":
+        state = "panel"
+    elif not on and state == "panel":
+        state = "idle"
+    write_status(state, panel=on)
+    return {"success": True, "state": {"panel": on, "state": state}}
