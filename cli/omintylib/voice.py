@@ -365,6 +365,8 @@ def stop_recording(cfg: dict | None = None) -> dict:
                 os.kill(pid, 0)
             except OSError:
                 break
+        else:
+            os.kill(pid, signal.SIGKILL)  # unreachable in time — force stop
     except (OSError, ValueError):
         pass
 
@@ -376,18 +378,32 @@ def stop_recording(cfg: dict | None = None) -> dict:
 
     wav = _recording_path()
     result = transcribe_file(str(wav), cfg)
+    wav_size = wav.stat().st_size if wav.is_file() else 0
     if not result["success"]:
         write_status("idle")
+        _save_debug("", wav_size, {"success": False, "error": result.get("error")})
         return result
 
     text = result["state"]["text"]
     injected = inject_text(text, cfg)
     write_status("idle")
+    _save_debug(text, wav_size, injected)
     return {
         "success": injected["success"],
         "state": {"text": text, "injected": injected.get("state", {}).get("injected", False)},
         **({} if injected["success"] else {"error": injected.get("error")}),
     }
+
+
+def _save_debug(text: str, wav_size: int, inject: dict) -> None:
+    """Persist the last dictation outcome so failures are diagnosable."""
+    try:
+        d = state_dir()
+        (d / "last_transcript.txt").write_text(text if text else "<empty>")
+        (d / "last_wav_bytes").write_text(str(wav_size))
+        (d / "last_inject.json").write_text(json.dumps(inject))
+    except OSError:
+        pass
 
 
 def dictate(cfg: dict | None = None) -> dict:

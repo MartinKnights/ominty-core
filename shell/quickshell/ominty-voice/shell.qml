@@ -1,16 +1,3 @@
-// Ominty voice — dictation control panel (docs/ai/11-voice-integration.md, ADR-007).
-//
-// A focused Quickshell popup the user summons with Super+Alt+T. It is both
-// the *indicator* (live input level while recording) and the *control*: a
-// mouse toggle that starts and stops dictation. It is presentation only —
-// it invokes the canonical `voice.dictate` action and never talks to an
-// engine directly.
-//
-// The adapter publishes state to $XDG_RUNTIME_DIR/ominty-voice/status.json:
-//   {"state": "idle"|"recording"|"transcribing"|"panel", "panel": bool}
-//
-// Run with:  quickshell -c ominty-voice
-
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -23,14 +10,15 @@ Scope {
     readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
     readonly property string statusPath: root.runtimeDir + "/ominty-voice/status.json"
 
-    property string state: "idle"     // idle | panel | recording | transcribing
+    property string state: "idle"
     property bool panel: false
     readonly property bool active: root.state === "recording" || root.state === "transcribing"
     readonly property bool shown: root.panel || root.active
 
-    // Trailing peaks for the level meter.
+    readonly property int panelW: 300
+    readonly property int panelH: 56
+
     property var history: []
-    readonly property int historyLength: 26
 
     function refresh() {
         try {
@@ -49,7 +37,6 @@ Scope {
         root.history = next;
     }
 
-    // Toggle dictation through the canonical action (Contract 3).
     function toggleDictation() {
         toggleProcess.exec(["ominty", "action", "run", "voice.dictate"]);
     }
@@ -61,14 +48,11 @@ Scope {
     FileView {
         id: statusFile
         path: root.statusPath
-        __preload: true   // so reload() performs an actual async re-read
+        __preload: true
         printErrors: false
         onLoaded: root.refresh()
     }
 
-    // Poll the status file rather than relying on the watcher signal: it is
-    // the same robust pattern the Piper indicator uses, and the watcher's
-    // fileChanged signal proved unreliable on this stack.
     Timer {
         interval: 250
         running: true
@@ -89,131 +73,129 @@ Scope {
         onTriggered: root.pushPeak(peakMonitor.peak)
     }
 
-    Process { id: toggleProcess; running: false }
-    Process { id: panelProcess; running: false }
+    Process {
+        id: toggleProcess
+        running: false
+    }
+
+    Process {
+        id: panelProcess
+        running: false
+    }
 
     PanelWindow {
         id: popup
         visible: root.shown
-
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.exclusiveZone: -1
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "ominty:voice"
-
-        anchors {
-            top: true
-            left: true
-        }
-
-        readonly property int panelW: 320
-        readonly property int panelH: 60
-        readonly property int marginTop: 12
-
-        WlrLayershell.margins {
-            top: popup.marginTop
-            left: popup.screen ? Math.round((popup.screen.width - popup.panelW) / 2) : 0
-        }
-
-        implicitWidth: popup.panelW
-        implicitHeight: popup.panelH
         color: "transparent"
 
-        Rectangle {
-            anchors.fill: parent
-            radius: height / 2
-            color: "#11111b"
-            border.width: 1
-            border.color: root.active ? "#f38ba8" : "#7f849c"
+        implicitWidth: root.panelW
+        implicitHeight: root.panelH
+        width: root.panelW
+        height: root.panelH
 
-            // Start / Stop button (mouse toggle).
+        anchors.top: true
+        anchors.left: true
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        WlrLayershell.exclusiveZone: -1
+        WlrLayershell.namespace: "ominty:voice"
+        WlrLayershell.margins {
+            top: 12
+            left: popup.screen ? Math.round((popup.screen.width - root.panelW) / 2) : 0
+        }
+
+        // One fixed-size clickable pill: click toggles dictation.
+        // A fixed 300x56 pill; children are positioned with absolute offsets
+        // so the layout cannot grow to the screen size.
+        Rectangle {
+            width: root.panelW
+            height: root.panelH
+            radius: root.panelH / 2
+            color: "#181825"
+            border.width: 1
+            border.color: root.active ? "#f38ba8" : "#313244"
+
+            // Toggle button (left).
             Rectangle {
-                id: toggle
-                anchors.left: parent.left
-                anchors.leftMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                width: 46
-                height: 46
-                radius: width / 2
+                x: 8
+                y: (parent.height - 44) / 2
+                width: 44
+                height: 44
+                radius: 22
                 color: root.active ? "#f38ba8" : "#89b4fa"
 
                 Text {
                     anchors.centerIn: parent
-                    text: root.state === "recording" ? "\u25A0" : "\u25B6"   // stop / play
+                    text: root.active ? "\u25A0" : "\u25B6"
                     color: "#11111b"
-                    font.pixelSize: 16
+                    font.pixelSize: 15
                 }
-
                 MouseArea {
                     anchors.fill: parent
                     onClicked: root.toggleDictation()
                 }
             }
 
-            // Level meter.
+            // Level bars + state label.
             Row {
-                anchors.left: toggle.right
-                anchors.leftMargin: 10
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 3
+                x: 62
+                y: (parent.height - 24) / 2
+                spacing: 8
 
-                Repeater {
-                    model: root.history
+                Row {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.active
+                    spacing: 3
+                    anchors.verticalCenterOffset: 0
 
-                    Rectangle {
-                        required property var modelData
-                        readonly property real lvl: Math.max(0.05, Math.min(1, modelData))
-                        width: 3
-                        height: 10 + 30 * lvl
-                        radius: 1.5
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: root.active ? "#f38ba8" : "#7f849c"
+                    Repeater {
+                        model: root.history
+                        Rectangle {
+                            required property var modelData
+                            width: 3
+                            height: 8 + 28 * Math.max(0.05, Math.min(1, modelData))
+                            radius: 1.5
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: "#f38ba8"
+                        }
                     }
                 }
-            }
-
-            Column {
-                anchors.left: parent.left
-                anchors.leftMargin: 18 + 46 + 12 + 3 * 26 + 14
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 1
 
                 Text {
-                    text: root.state === "recording" ? "Dictating…"
-                        : root.state === "transcribing" ? "Transcribing…"
-                        : root.panel ? "Dictation" : ""
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.state === "recording" ? "Dictating\u2026"
+                        : root.state === "transcribing" ? "Transcribing\u2026"
+                        : "Dictation"
                     color: "#cdd6f4"
                     font.pixelSize: 13
-                    font.bold: root.active
-                }
-                Text {
-                    text: "Super+Alt+D · click \u25B6 to start"
-                    color: "#6c7086"
-                    font.pixelSize: 10
                 }
             }
 
             // Close (hide the panel).
             Rectangle {
-                anchors.right: parent.right
-                anchors.rightMargin: 6
-                anchors.verticalCenter: parent.verticalCenter
-                width: 30
-                height: 30
-                radius: width / 2
+                x: parent.width - 30
+                y: (parent.height - 24) / 2
+                width: 24
+                height: 24
+                radius: 12
                 color: "transparent"
 
                 Text {
                     anchors.centerIn: parent
                     text: "\u00D7"
                     color: "#6c7086"
-                    font.pixelSize: 16
+                    font.pixelSize: 15
                 }
                 MouseArea {
                     anchors.fill: parent
                     onClicked: root.closePanel()
                 }
             }
+        }
+
+        Component.onCompleted: {
+            console.log("ominty-voice size=" + popup.width + "x" + popup.height
+                + " screen=" + (popup.screen ? popup.screen.width : "none"));
         }
     }
 }
