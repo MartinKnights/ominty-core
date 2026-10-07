@@ -9,8 +9,17 @@ playing while the rest of the document is generated.
 
 Contract with the UI:
   run dir   : $XDG_RUNTIME_DIR/ominty-tts/
-  state.json: {title, doc, total, current, current0, status, error}
-  cmd FIFO  : one command per line — next | prev | pause | resume | stop
+  state.json: {title, doc, total, current, current0, status, ready, producing,
+               error}   status: synthesizing|playing|paused|stopped|done|error
+  cmd FIFO  : one command per line —
+              next | prev | pause | resume | play | stop | quit
+
+Semantics:
+  stop   stops playback and resets to segment 1 (the player stays alive so the
+         user can navigate again or press play).
+  play   starts/resumes from the current segment (restarts the document from
+         segment 1 when it had finished).
+  quit   fully stops and exits (used by the panel's close button).
 """
 
 from __future__ import annotations
@@ -45,14 +54,16 @@ class TTSPlayer:
         self.prep = prepare_document(doc_path)
         self.title = self.prep.title
         self.total = self.prep.total
+        self.doc_path = str(Path(doc_path).resolve())
         self.voice = default_voice()
 
         self.current = 0  # the segment about to play (0-based)
-        self.status = "synthesizing"  # synthesizing|playing|paused|done|error
+        self.status = "synthesizing"  # synthesizing|playing|paused|stopped|done|error
         self.error = ""
         self._stop = False
         self._wavs: dict[int, str] = {}
         self._lock = threading.Lock()
+        self._producing = True
         self._lock_fd = None
         self._loop: GLib.MainLoop | None = None
 
@@ -79,14 +90,20 @@ class TTSPlayer:
 
     # --- state ----------------------------------------------------------
 
+    def _ready_count(self) -> int:
+        with self._lock:
+            return len(self._wavs)
+
     def _write_state(self) -> None:
         data = {
             "title": self.title,
-            "doc": self.prep.path,
+            "doc": self.doc_path,
             "total": self.total,
             "current": self.current + 1,  # 1-based for the UI
             "current0": self.current,
             "status": self.status,
+            "ready": self._ready_count(),
+            "producing": self._producing,
             "error": self.error,
         }
         try:
@@ -117,7 +134,8 @@ class TTSPlayer:
     def _on_eos(self, bus, msg) -> None:
         self.player.set_state(Gst.State.NULL)
         if self.current + 1 >= self.total:
-            self._finish()
+            self.status = "done"
+            self._write_state()  # stay alive so the user can replay/close
         else:
             self.current += 1
             self.status = "synthesizing"
@@ -125,22 +143,10 @@ class TTSPlayer:
 
     def _on_error(self, bus, msg) -> None:
         err, _dbg = msg.parse_error()
-        self._fail(f"playback error: {err.message}")
-
-    def _fail(self, message: str) -> None:
         self.player.set_state(Gst.State.NULL)
         self.status = "error"
-        self.error = message
+        self.error = f"playback error: {err.message}"
         self._write_state()
-        if self._loop:
-            GLib.idle_add(self._loop.quit)
-
-    def _finish(self) -> None:
-        self.player.set_state(Gst.State.NULL)
-        self.status = "done"
-        self._write_state()
-        if self._loop:
-            GLib.idle_add(self._loop.quit)
 
     # --- producer -------------------------------------------------------
 
@@ -152,48 +158,76 @@ class TTSPlayer:
             try:
                 synth_chunk(chunk, wav, self.voice)
             except TTSError as e:
-                GLib.idle_add(self._fail, str(e))
+                self._fail_runtime(str(e))
                 return
             with self._lock:
                 self._wavs[i] = str(wav)
+            self._write_state()  # keep `ready` fresh for the UI pulse
+        self._producing = False
+        self._write_state()
+
+    def _fail_runtime(self, message: str) -> None:
+        self.player.set_state(Gst.State.NULL)
+        self.status = "error"
+        self.error = message
+        self._write_state()
 
     # --- tick: start the next ready segment -----------------------------
 
     def _tick(self) -> bool:
-        if self._stop or self.status in ("playing", "paused", "done", "error"):
+        if self._stop or self.status in (
+            "playing", "paused", "stopped", "done", "error",
+        ):
             return True
-        if self.current < self.total and self._ready(self.current):
+        if self.status == "synthesizing" and self.current < self.total and self._ready(self.current):
             self._play_segment(self.current)
         return True
 
     # --- commands (from the UI FIFO) ------------------------------------
 
+    def _nav_status(self) -> str:
+        if self.status == "playing":
+            return "synthesizing"
+        if self.status == "paused":
+            return "paused"
+        return "stopped"
+
     def _handle_command(self, cmd: str) -> None:
         cmd = cmd.strip()
         if cmd == "next":
-            self.player.set_state(Gst.State.NULL)
             if self.current + 1 < self.total:
+                self.player.set_state(Gst.State.NULL)
                 self.current += 1
-            self.status = "synthesizing"
-            self._write_state()
+                self.status = self._nav_status()
+                self._write_state()
         elif cmd == "prev":
             self.player.set_state(Gst.State.NULL)
             if self.current > 0:
                 self.current -= 1
-            self.status = "synthesizing"
+            self.status = self._nav_status()
             self._write_state()
         elif cmd == "pause":
             if self.status == "playing":
                 self.player.set_state(Gst.State.PAUSED)
                 self.status = "paused"
                 self._write_state()
-        elif cmd == "resume":
+        elif cmd in ("play", "resume"):
             if self.status == "paused":
                 self.player.set_state(Gst.State.PLAYING)
                 self.status = "playing"
                 self._write_state()
+            elif self.status in ("stopped", "done", "synthesizing"):
+                if self.status == "done":
+                    self.current = 0
+                self.status = "synthesizing"
+                self._write_state()
         elif cmd == "stop":
-            self._stop_daemon()
+            self.player.set_state(Gst.State.NULL)
+            self.current = 0
+            self.status = "stopped"
+            self._write_state()
+        elif cmd == "quit":
+            self._quit()
 
     def _fifo_reader(self) -> None:
         try:
@@ -210,19 +244,17 @@ class TTSPlayer:
 
     # --- lifecycle ------------------------------------------------------
 
-    def _stop_daemon(self) -> None:
+    def _quit(self) -> None:
         self._stop = True
         self.player.set_state(Gst.State.NULL)
-        self.status = "done"
-        self._write_state()
-        if self._loop:
-            GLib.idle_add(self._loop.quit)
-
-    def _cleanup(self) -> None:
         try:
             (self.dir / "state.json").unlink()
         except OSError:
             pass
+        if self._loop:
+            GLib.idle_add(self._loop.quit)
+
+    def _cleanup(self) -> None:
         try:
             self.fifo.unlink()
         except OSError:
@@ -233,7 +265,6 @@ class TTSPlayer:
             pass
 
     def run(self) -> int:
-        # Single player at a time.
         lock_path = self.dir / "player.lock"
         try:
             self._lock_fd = open(lock_path, "w")
@@ -246,8 +277,8 @@ class TTSPlayer:
         threading.Thread(target=self._producer, daemon=True).start()
         threading.Thread(target=self._fifo_reader, daemon=True).start()
         GLib.timeout_add(200, self._tick)
-        signal.signal(signal.SIGINT, lambda *a: self._stop_daemon())
-        signal.signal(signal.SIGTERM, lambda *a: self._stop_daemon())
+        signal.signal(signal.SIGINT, lambda *a: self._quit())
+        signal.signal(signal.SIGTERM, lambda *a: self._quit())
 
         self._write_state()
         self._loop = GLib.MainLoop()

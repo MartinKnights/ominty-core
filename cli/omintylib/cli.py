@@ -784,7 +784,7 @@ def build_parser() -> argparse.ArgumentParser:
     tts_status_p.add_argument("--json", action="store_true", help="JSON output")
     tts_status_p.set_defaults(func=cmd_tts_status)
 
-    for _cmd in ("next", "prev", "pause", "resume", "stop"):
+    for _cmd in ("next", "prev", "pause", "resume", "play", "stop", "quit"):
         ctrl_p = tts_sub.add_parser(_cmd, help=f"{_cmd} the document player")
         ctrl_p.add_argument("--json", action="store_true", help="JSON output")
         ctrl_p.set_defaults(command=_cmd, func=cmd_tts_control)

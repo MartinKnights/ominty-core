@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -337,6 +338,17 @@ def start_player(doc_path: str | Path) -> dict:
     """Validate a document and launch the (detached) player process."""
     # Surface extraction errors before spawning, so `tts say` is not silent.
     prepare_document(doc_path)
+    # One player at a time: politely stop any running one so the new process
+    # can take the flock.
+    fifo = run_dir() / "cmd"
+    if (run_dir() / "state.json").exists() or fifo.exists():
+        try:
+            with open(fifo, "w") as fh:
+                fh.write("quit\n")
+        except OSError:
+            pass
+        time.sleep(1.0)
+
     cli_dir = str(Path(__file__).resolve().parents[1])  # <repo>/cli
     env = dict(os.environ)
     env["PYTHONPATH"] = cli_dir + (
