@@ -522,6 +522,49 @@ def cmd_voice_panel(args: argparse.Namespace) -> int:
     return _print_voice_result(panel(), args.json)
 
 
+def cmd_tts_say(args: argparse.Namespace) -> int:
+    from .tts import start_player
+
+    return _print_voice_result(start_player(args.file), args.json)
+
+
+def cmd_tts_mp3(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from .tts import TTSError, export_mp3
+
+    out = args.output or (Path(args.file).stem + ".mp3")
+    try:
+        result = {
+            "success": True,
+            "state": {"output": export_mp3(args.file, out, bitrate=args.bitrate or "192k")},
+        }
+    except (TTSError, OSError) as e:
+        result = {"success": False, "error": {"code": "ADAPTER_FAILED", "message": str(e)}}
+    return _print_voice_result(result, args.json)
+
+
+def cmd_tts_status(args: argparse.Namespace) -> int:
+    from .tts import read_state
+
+    state = read_state()
+    if args.json:
+        print(json.dumps(state, indent=2))
+        return 0
+    if state.get("status") == "none":
+        print("no TTS player is running")
+        return 0
+    print(f"{state.get('current', '?')}/{state.get('total', '?')}"
+          f"  {state.get('status')}  {state.get('title', '')}")
+    return 0
+
+
+def cmd_tts_control(args: argparse.Namespace) -> int:
+    from .tts import send_command
+
+    return _print_voice_result(send_command(args.command), args.json)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ominty",
@@ -720,6 +763,31 @@ def build_parser() -> argparse.ArgumentParser:
     )
     vpanel_p.add_argument("--json", action="store_true", help="JSON output")
     vpanel_p.set_defaults(func=cmd_voice_panel)
+
+    # tts — document text-to-speech (docs/ai/11 TTS milestone)
+    tts_p = sub.add_parser("tts", help="document text-to-speech (play or MP3)")
+    tts_sub = tts_p.add_subparsers(dest="tts_command", required=True)
+
+    tts_say_p = tts_sub.add_parser("say", help="speak a document (segmented, overlapping)")
+    tts_say_p.add_argument("file", help="document (.md/.txt/.pdf/.doc/.docx/.epub)")
+    tts_say_p.add_argument("--json", action="store_true", help="JSON output")
+    tts_say_p.set_defaults(func=cmd_tts_say)
+
+    tts_mp3_p = tts_sub.add_parser("mp3", help="convert a document to an MP3 file")
+    tts_mp3_p.add_argument("file", help="document (.md/.txt/.pdf/.doc/.docx/.epub)")
+    tts_mp3_p.add_argument("-o", "--output", help="output .mp3 path (default: <name>.mp3)")
+    tts_mp3_p.add_argument("--bitrate", help="MP3 bitrate (default 192k)")
+    tts_mp3_p.add_argument("--json", action="store_true", help="JSON output")
+    tts_mp3_p.set_defaults(func=cmd_tts_mp3)
+
+    tts_status_p = tts_sub.add_parser("status", help="document player status (current/total)")
+    tts_status_p.add_argument("--json", action="store_true", help="JSON output")
+    tts_status_p.set_defaults(func=cmd_tts_status)
+
+    for _cmd in ("next", "prev", "pause", "resume", "stop"):
+        ctrl_p = tts_sub.add_parser(_cmd, help=f"{_cmd} the document player")
+        ctrl_p.add_argument("--json", action="store_true", help="JSON output")
+        ctrl_p.set_defaults(command=_cmd, func=cmd_tts_control)
 
     return parser
 

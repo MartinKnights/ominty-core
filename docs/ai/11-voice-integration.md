@@ -366,6 +366,17 @@ Implemented on the reference machine (2026-10-05):
 | Recording indicator (`shell/quickshell/ominty-voice`) | ✅ loads, connects to PipeWire peak monitor |
 | `wtype` (injection) | ✅ user-scope install |
 
+**TTS document layer (2026-10-07):**
+
+| Piece | State |
+| --- | --- |
+| `omintylib/tts.py` — extraction + cleaning + chunking for `.md` `.txt` `.pdf` `.doc` `.docx` `.epub` | ✅ (pandoc, pdftotext, catdoc) |
+| Overlapping player `omintylib/tts_player.py` — synthesises chunk *i* while chunk *i-1* plays | ✅ (verified next/prev/pause/resume/stop via FIFO) |
+| MP3 export (`synthesize_segments` + ffmpeg concat) | ✅ (sample: 3-chunk → valid MP3) |
+| `ominty tts say|mp3|status|next|prev|pause|resume|stop` CLI | ✅ |
+| Player control popup `shell/quickshell/ominty-tts` (title, `current/total`, transport) | ✅ loads; resident |
+| File picker `Ctrl+Alt+O` → `~/bin/tts-pick` → `ominty tts say` | ✅ |
+
 Not yet done:
 
 * installer/runbook support for the whisper.cpp build, the model download and
