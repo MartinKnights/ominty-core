@@ -116,7 +116,7 @@ Scope {
         Rectangle {
             width: 420
             height: 72
-            radius: 36
+            radius: 12
             color: "#181825"
             border.width: 1
             border.color: root.status === "playing" ? "#89b4fa" : "#313244"
@@ -212,7 +212,13 @@ Scope {
                 Rectangle {
                     width: 30; height: 30; radius: 15; color: "#45475a"
                     Text { anchors.centerIn: parent; text: "\u00D7"; color: "#cdd6f4"; font.pixelSize: 14 }
-                    MouseArea { anchors.fill: parent; onClicked: root.ctrl("quit") }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            root.ctrl("quit");
+                            root.status = "none"; // hide immediately
+                        }
+                    }
                 }
             }
         }

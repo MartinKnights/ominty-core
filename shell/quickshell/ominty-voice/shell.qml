@@ -108,7 +108,7 @@ Scope {
         Rectangle {
             width: root.panelW
             height: root.panelH
-            radius: root.panelH / 2
+            radius: 12
             color: "#181825"
             border.width: 1
             border.color: root.active ? "#f38ba8" : "#313244"
