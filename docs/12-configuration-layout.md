@@ -99,12 +99,19 @@ Recommended layout:
 ~/.config/ominty/
 ├── config.toml
 ├── apps.toml
+├── function-keys.toml   ← user's F-row map (F1–F12, with/without Fn); docs/14 §22
 ├── actions/
 ├── overrides/
 ├── themes/
 ├── machines/
 └── local/
 ```
+
+`function-keys.toml` defines what each physical function key does on *this*
+keyboard, so the keybindings cheat sheet can render physical keys and labels
+instead of raw `XF86*` tokens. It is created and edited with
+`ominty function-keys setup` (interactive, 24 entries) or `init` (commented
+template); a missing file is fine — hardware keys stay neutral.
 
 ---
 

@@ -11,8 +11,15 @@ import qs.Modules.Plugins
 // Ominty Keybindings — GKS cheat sheet (docs/14-gks-keyboard-grammar.md §22).
 //
 // A read-only, tabbed overlay: one tab per GKS domain, each listing
-// `key → action`. Data comes from `ominty keybinds --json`, which merges
-// the registry, Niri and DMS bindings, so the sheet cannot drift.
+// `key → action`. Data comes from `ominty keybinds --json`, which walks the
+// live Niri config tree (following `include` files, like NiriMod does) and
+// merges the registry, DMS and universal convention rows — so the sheet
+// cannot drift from what actually runs.
+//
+// Personalisation: rows that differ from the shipped defaults are marked
+// (custom/change), a "Custom" toggle shows only those, and each row's
+// `managed_by` says which editor owns it — click the ✎ to open that editor
+// (DMS Settings → Keybinds for DMS rows, NiriMod for Niri rows).
 //
 // Opened with:  dms ipc call omintyKeybinds toggle   (bound to Super+Shift+S)
 
@@ -24,8 +31,15 @@ PluginComponent {
     property var _bindings: []
     property int _tab: 0
     property string _query: ""
+    property bool _customOnly: false
 
     readonly property string cliPath: Quickshell.env("OMINTY_CLI") || "ominty"
+
+    // Accent for rows the user has changed (a safe local colour — the
+    // external DMS Theme singleton may not expose a `warn` token).
+    readonly property string customColor: "#f38ba8"
+
+    readonly property int _customCount: root._bindings.filter(b => b.custom).length
 
     readonly property var _rows: {
         const domain = (root._tab >= 0 && root._tab < root._domains.length)
@@ -33,6 +47,7 @@ PluginComponent {
         const q = root._query.trim().toLowerCase();
         return root._bindings.filter(b =>
             b.domain === domain &&
+            (!root._customOnly || b.custom) &&
             (q === "" ||
                 (b.key + " " + b.action + " " + b.source).toLowerCase().includes(q)));
     }
@@ -47,6 +62,14 @@ PluginComponent {
         "AI": "AI",
         "Projects": "Projects",
         "Hardware": "Hardware"
+    })
+
+    readonly property var _editorHint: ({
+        "dms-settings": "DMS settings",
+        "niri": "NiriMod",
+        "ominty-registry": "ominty registry",
+        "universal": "app convention",
+        "function-keys": "your function map"
     })
 
     function _label(domain) {
@@ -73,6 +96,26 @@ PluginComponent {
                 }
             }
         }
+    }
+
+    // One reusable process for "open the editor that manages this row".
+    readonly property var _editCommands: ({
+        "dms-settings": ["dms", "ipc", "call", "settings"],
+        "niri": ["nirimod"]
+    })
+
+    Process {
+        id: editorProc
+        command: ["true"]
+        running: false
+    }
+
+    function openEditor(managedBy: string) {
+        const cmd = root._editCommands[managedBy];
+        if (!cmd) return;
+        editorProc.running = false;
+        editorProc.command = cmd;
+        editorProc.running = true;
     }
 
     // ---- IPC ------------------------------------------------------------
@@ -139,7 +182,7 @@ PluginComponent {
             Rectangle {
                 id: panel
                 anchors.centerIn: parent
-                width: Math.min(940, content.width - 80)
+                width: Math.min(1020, content.width - 80)
                 height: Math.min(700, content.height - 80)
                 radius: Theme.cornerRadius
                 color: Theme.withAlpha(Theme.surface, 0.8)
@@ -167,7 +210,11 @@ PluginComponent {
                             Layout.fillWidth: true
                         }
                         StyledText {
-                            text: "GKS · read-only"
+                            text: root._customOnly
+                                ? `Showing ${root._rows.length} custom binding(s)`
+                                : (root._customCount > 0
+                                    ? `${root._customCount} custom · reflect your edits`
+                                    : "GKS · read-only")
                             color: Theme.surfaceVariantText
                         }
                     }
@@ -186,21 +233,49 @@ PluginComponent {
                         }
                     }
 
-                    TextField {
-                        id: search
+                    RowLayout {
                         Layout.fillWidth: true
-                        placeholderText: "Filter bindings…"
-                        color: "white"
-                        placeholderTextColor: Theme.surfaceVariantText
-                        leftPadding: Theme.spacingS
-                        rightPadding: Theme.spacingS
-                        background: Rectangle {
-                            color: "transparent"
-                            radius: 6
-                            border.width: 1
-                            border.color: Theme.outline
+                        spacing: Theme.spacingM
+
+                        TextField {
+                            id: search
+                            Layout.fillWidth: true
+                            placeholderText: "Filter bindings…"
+                            color: "white"
+                            placeholderTextColor: Theme.surfaceVariantText
+                            leftPadding: Theme.spacingS
+                            rightPadding: Theme.spacingS
+                            background: Rectangle {
+                                color: "transparent"
+                                radius: 6
+                                border.width: 1
+                                border.color: Theme.outline
+                            }
+                            onTextChanged: root._query = text
                         }
-                        onTextChanged: root._query = text
+
+                        Rectangle {
+                            id: customToggle
+                            Layout.preferredWidth: 96
+                            Layout.preferredHeight: 34
+                            radius: 6
+                            color: root._customOnly ? Theme.primary : "transparent"
+                            border.width: 1
+                            border.color: root._customOnly ? Theme.primary : Theme.outline
+                            visible: root._customCount > 0
+                            opacity: enabled ? 1 : 0.45
+                            enabled: root._customCount > 0
+
+                            StyledText {
+                                anchors.centerIn: parent
+                                text: "Custom"
+                                color: root._customOnly ? "black" : Theme.surfaceText
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: root._customOnly = !root._customOnly
+                            }
+                        }
                     }
 
                     ListView {
@@ -225,8 +300,8 @@ PluginComponent {
 
                                 StyledText {
                                     text: row.modelData.key_label || row.modelData.key
-                                    color: Theme.primary
-                                    Layout.preferredWidth: 260
+                                    color: row.modelData.custom ? root.customColor : Theme.primary
+                                    Layout.preferredWidth: 230
                                     elide: Text.ElideRight
                                 }
                                 StyledText {
@@ -236,9 +311,45 @@ PluginComponent {
                                     Layout.fillWidth: true
                                 }
                                 StyledText {
-                                    text: row.modelData.source
-                                          + (row.modelData.shadowed ? "  (shadowed)" : "")
+                                    text: root._editorHint[row.modelData.managed_by]
+                                        || row.modelData.managed_by
                                     color: Theme.surfaceVariantText
+                                    Layout.preferredWidth: 130
+                                    elide: Text.ElideRight
+                                    visible: !row.modelData.custom
+                                }
+                                StyledText {
+                                    text: row.modelData.custom
+                                        ? (row.modelData.change === "remapped" ? "remapped" : "added")
+                                        : ""
+                                    color: root.customColor
+                                    Layout.preferredWidth: 76
+                                    visible: row.modelData.custom
+                                }
+                                StyledText {
+                                    text: row.modelData.shadowed ? "shadowed" : ""
+                                    color: Theme.surfaceVariantText
+                                    Layout.preferredWidth: 64
+                                }
+                                // Open the editor that owns this binding.
+                                Rectangle {
+                                    width: 34; height: 22; radius: 4
+                                    color: "transparent"
+                                    border.width: 1
+                                    border.color: Theme.outline
+                                    visible: row.modelData.managed_by === "dms-settings"
+                                        || row.modelData.managed_by === "niri"
+
+                                    StyledText {
+                                        anchors.centerIn: parent
+                                        text: "\u270E"
+                                        color: Theme.primary
+                                        font.pixelSize: 12
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.openEditor(row.modelData.managed_by)
+                                    }
                                 }
                             }
                         }

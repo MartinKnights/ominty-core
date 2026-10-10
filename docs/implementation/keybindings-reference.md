@@ -9,21 +9,24 @@ regenerate with the commands below.
 
 | Command | Purpose |
 |---|---|
-| `ominty keybinds --json` | merge registry + Niri + DMS, tag each row with its GKS domain |
+| `ominty keybinds --json` | walk the live Niri config tree (incl. every `include` target — the same model NiriMod uses), merge registry + DMS + Niri, tag each row with its GKS domain, `managed_by`, and custom/remap status |
 | `ominty registry build` | regenerate the Niri bindings fragment from the registry |
 | `ominty registry validate` | validate the registry before generating |
+| `ominty function-keys setup` | user-defined F-row labels (24 entries: F1–F12 with and without Fn) |
 
 ## 2. Configuration files
 
 | Path | Role | Managed by |
 |---|---|---|
 | `~/.config/niri/config.kdl` | Niri compositor config; includes the DMS + Ominty fragments | user / Ominty |
-| `~/.config/niri/dms/binds.kdl` | DMS shell bindings (launcher, media, window management) | DMS |
+| `~/.config/niri/dms/binds.kdl` | DMS shell bindings (launcher, media, window management) | **DMS Settings → Keybinds** |
 | `~/.config/ominty/generated/niri/bindings.kdl` | Ominty-generated Niri fragment | **generated** — never hand-edit |
+| `~/.config/ominty/function-keys.toml` | user's function-row map (what each physical F-key does) | user (`ominty function-keys setup`) |
 | `<repo>/actions/*.toml` | Action Registry — the source of actions and their keys | Ominty |
 | `<repo>/cli/omintylib/generator.py` | Registry → Niri fragment generator | Ominty |
-| `<repo>/cli/omintylib/keybinds.py` | Cheat-sheet data aggregation + plain-English labels | Ominty |
-| `~/.config/DankMaterialShell/plugins/omintyKeybinds/` | GKS cheat-sheet DMS plugin (mirror of `<repo>/shell/dms/ominty-keybinds/`) | Ominty |
+| `<repo>/cli/omintylib/keybinds.py` | Cheat-sheet data aggregation + include-walk + labels + custom diff | Ominty |
+| `<repo>/cli/omintylib/function_keys.py` | Function-row map parsing/template/wizard | Ominty |
+| `~/.config/DankMaterialShell/plugins/omintyKeybinds/` | GKS cheat-sheet DMS plugin (symlink mirror of `<repo>/shell/dms/ominty-keybinds/`) | Ominty |
 
 ## 3. The cheat sheet
 
@@ -33,21 +36,16 @@ regenerate with the commands below.
 | IPC | `dms ipc call omintyKeybinds toggle` |
 | Registry action | `help.keybinds.open` |
 | Plugin | `omintyKeybinds` (DMS `PluginComponent`, tabbed by domain) |
-| Data | `ominty keybinds --json` |
-| Nature | read-only; one tab per GKS domain; labels rendered in plain English |
+| Data | `ominty keybinds --json` (re-run on every open — cannot drift) |
+| Nature | read-only; one tab per GKS domain; plain-English labels; **Custom toggle** (only your remaps/additions vs the shipped defaults); per-row **managed_by** hint; **✎** on a row opens the editor that owns it (DMS Settings → Keybinds, or NiriMod) |
+| Edit path | never from the sheet — change DMS binds in **DMS Settings → Keybinds**, other Niri binds in **NiriMod** (both are reflected live) |
 
 > The interaction explorer (`Super+K`) and the cheat sheet (`Super+Shift+S`) are
 > distinct surfaces: the explorer runs actions, the cheat sheet documents keys.
 
 ## 4. Full keybinding list
 
-Tab labels are shown in parentheses with their underlying GKS domain. Media keys
-on the Surface Book F-row are shown as `F1`–`F12`. Rows marked `(shadowed)` are
-defined but lose to a higher-priority layer for the same key. Keys with no
-physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
-`XF86AudioMicMute`, `XF86Launch1`) are omitted.
-
-### Apps (`Application`) — 16
+### Apps (`Application`) — 17
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
@@ -64,21 +62,22 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Ctrl + V | Paste | `Ctrl+V` | Universal |
 | Ctrl + W | Close document/tab | `Ctrl+W` | Universal |
 | Ctrl + X | Cut | `Ctrl+X` | Universal |
-| Ctrl + F5 | Media Volume Down | `Ctrl+XF86AudioLowerVolume` | DMS |
-| Ctrl + F6 | Media Volume Up | `Ctrl+XF86AudioRaiseVolume` | DMS |
+| Ctrl + Fn+F5 | Media Volume Down | `Ctrl+XF86AudioLowerVolume` | DMS |
+| Ctrl + Fn+F6 | Media Volume Up | `Ctrl+XF86AudioRaiseVolume` | DMS |
 | Ctrl + Z | Undo | `Ctrl+Z` | Universal |
+| Ctrl + space | App Launcher | `Ctrl+space` | DMS (custom: remapped) |
 
 ### Navigate (`Navigation`) — 5
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
 | Alt + Shift + Tab | Previous Window | `Alt+Shift+Tab` | Niri |
-| Alt + Shift + ` | Previous Window (Same App) | `Alt+Shift+grave` | Niri |
+| Alt + Shift + grave | Previous Window (Same App) | `Alt+Shift+grave` | Niri |
 | Alt + Space | Spotlight Bar | `Alt+Space` | DMS |
 | Alt + Tab | Next Window | `Alt+Tab` | Niri |
-| Alt + ` | Next Window (Same App) | `Alt+grave` | Niri |
+| Alt + grave | Next Window (Same App) | `Alt+grave` | Niri |
 
-### Desktop (`Desktop`) — 88
+### Desktop (`Desktop`) — 91
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
@@ -91,18 +90,20 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + 7 | Switch to Workspace 7 | `Mod+7` | DMS |
 | Super + 8 | Switch to Workspace 8 | `Mod+8` | DMS |
 | Super + 9 | Switch to Workspace 9 | `Mod+9` | DMS |
-| Super + Alt + L | Lock Screen | `Mod+Alt+L` | DMS |
-| Super + [ | Consume/Expel Window Left | `Mod+BracketLeft` | DMS |
-| Super + ] | Consume/Expel Window Right | `Mod+BracketRight` | DMS |
+| Super + Alt + D | voice.dictate | `Mod+Alt+D` | Ominty |
+| Super + Alt + L | spawn "swaylock" | `Mod+Alt+L` | DMS (custom: added) |
+| Super + Alt + T | voice.panel | `Mod+Alt+T` | Ominty |
+| Super + BracketLeft | Consume/Expel Window Left | `Mod+BracketLeft` | DMS |
+| Super + BracketRight | Consume/Expel Window Right | `Mod+BracketRight` | DMS |
 | Super + C | Center Column | `Mod+C` | DMS |
-| Super + , | Settings | `Mod+Comma` | DMS |
+| Super + Comma | Settings | `Mod+Comma` | DMS |
 | Super + Down | Focus Window Down | `Mod+Down` | DMS |
-| Super + F9 | Focus Last Column | `Mod+End` | DMS |
-| Super + = | Grow Column Width | `Mod+Equal` | DMS |
-| Super + Esc | Inhibit Shortcuts | `Mod+Escape` | DMS |
+| Super + Fn+F10 | Focus Last Column | `Mod+End` | DMS |
+| Super + Equal | Grow Column Width | `Mod+Equal` | DMS |
+| Super + Escape | Inhibit Shortcuts | `Mod+Escape` | DMS |
 | Super + F | Maximize Column | `Mod+F` | DMS |
 | Super + H | Focus Column Left | `Mod+H` | DMS |
-| Super + F8 | Focus First Column | `Mod+Home` | DMS |
+| Super + Fn+F9 | Focus First Column | `Mod+Home` | DMS |
 | Super + I | Focus Workspace Up | `Mod+I` | DMS |
 | Super + J | Focus Window Down | `Mod+J` | DMS |
 | Super + K | Focus Window Up | `Mod+K` | DMS (shadowed) |
@@ -110,17 +111,18 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + L | Focus Column Right | `Mod+L` | DMS |
 | Super + Left | Focus Column Left | `Mod+Left` | DMS |
 | Super + M | Task Manager | `Mod+M` | DMS |
-| Super + - | Shrink Column Width | `Mod+Minus` | DMS |
+| Super + Minus | Shrink Column Width | `Mod+Minus` | DMS |
 | Super + N | Notifications | `Mod+N` | DMS |
 | Super + O | Overview | `Mod+O` | DMS |
-| Super + P | Cycle Display Profile | `Mod+P` | DMS |
-| Super + F11 | Focus Workspace Down | `Mod+Page_Down` | DMS |
-| Super + F10 | Focus Workspace Up | `Mod+Page_Up` | DMS |
-| Super + . | Expel Window from Column | `Mod+Period` | DMS |
+| Super + P | spawn "dms" "ipc" "outputs" "cycleProfile" | `Mod+P` | DMS |
+| Super + Page_Down | Focus Workspace Down | `Mod+Page_Down` | DMS |
+| Super + Fn+F11 | Focus Workspace Up | `Mod+Page_Up` | DMS |
+| Super + Period | Expel Window from Column | `Mod+Period` | DMS |
 | Super + Q | Close Window | `Mod+Q` | DMS |
 | Super + R | Cycle Column Width | `Mod+R` | DMS |
-| Super + Enter | Open Terminal | `Mod+Return` | Ominty |
+| Super + Return | Open Terminal | `Mod+Return` | Ominty |
 | Super + Right | Focus Column Right | `Mod+Right` | DMS |
+| Super + S | spawn "/home/martin/Scripts/script_command_centre.sh" | `Mod+S` | Niri (custom: added) |
 | Super + Shift + 1 | Move Column to Workspace 1 | `Mod+Shift+1` | DMS |
 | Super + Shift + 2 | Move Column to Workspace 2 | `Mod+Shift+2` | DMS |
 | Super + Shift + 3 | Move Column to Workspace 3 | `Mod+Shift+3` | DMS |
@@ -133,7 +135,7 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + Shift + B | Open Browser | `Mod+Shift+B` | Ominty |
 | Super + Shift + Down | Move Window Down | `Mod+Shift+Down` | DMS |
 | Super + Shift + E | Quit | `Mod+Shift+E` | DMS |
-| Super + Shift + = | Grow Window Height | `Mod+Shift+Equal` | DMS |
+| Super + Shift + Equal | Grow Window Height | `Mod+Shift+Equal` | DMS |
 | Super + Shift + F | Toggle Fullscreen | `Mod+Shift+F` | DMS |
 | Super + Shift + H | Move Column Left | `Mod+Shift+H` | DMS |
 | Super + Shift + I | Move Workspace Up | `Mod+Shift+I` | DMS |
@@ -141,11 +143,11 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + Shift + K | Move Window Up | `Mod+Shift+K` | DMS |
 | Super + Shift + L | Move Column Right | `Mod+Shift+L` | DMS |
 | Super + Shift + Left | Move Column Left | `Mod+Shift+Left` | DMS |
-| Super + Shift + - | Shrink Window Height | `Mod+Shift+Minus` | DMS |
+| Super + Shift + Minus | Shrink Window Height | `Mod+Shift+Minus` | DMS |
 | Super + Shift + N | Notepad | `Mod+Shift+N` | DMS |
 | Super + Shift + P | Power Off Monitors | `Mod+Shift+P` | DMS |
-| Super + Shift + F11 | Move Workspace Down | `Mod+Shift+Page_Down` | DMS |
-| Super + Shift + F10 | Move Workspace Up | `Mod+Shift+Page_Up` | DMS |
+| Super + Shift + Page_Down | Move Workspace Down | `Mod+Shift+Page_Down` | DMS |
+| Super + Shift + Fn+F11 | Move Workspace Up | `Mod+Shift+Page_Up` | DMS |
 | Super + Shift + R | Cycle Window Height | `Mod+Shift+R` | DMS |
 | Super + Shift + Right | Move Column Right | `Mod+Shift+Right` | DMS |
 | Super + Shift + S | Keybindings Cheat Sheet | `Mod+Shift+S` | Ominty |
@@ -155,21 +157,21 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Super + Shift + Up | Move Window Up | `Mod+Shift+Up` | DMS |
 | Super + Shift + V | Switch Floating/Tiling | `Mod+Shift+V` | DMS |
 | Super + Shift + W | Window Rules | `Mod+Shift+W` | DMS |
-| Super + Shift + Scroll Down | Focus Column Right | `Mod+Shift+WheelScrollDown` | DMS |
-| Super + Shift + Scroll Up | Focus Column Left | `Mod+Shift+WheelScrollUp` | DMS |
-| Super + Space | App Launcher | `Mod+Space` | DMS |
-| Super + T | Terminal | `Mod+T` | DMS |
+| Super + Shift + WheelScrollDown | Focus Column Right | `Mod+Shift+WheelScrollDown` | DMS |
+| Super + Shift + WheelScrollUp | Focus Column Left | `Mod+Shift+WheelScrollUp` | DMS |
+| Super + T | spawn "alacritty" | `Mod+T` | DMS (custom: added) |
 | Super + Tab | Overview | `Mod+Tab` | DMS |
 | Super + U | Focus Workspace Down | `Mod+U` | DMS |
 | Super + Up | Focus Window Up | `Mod+Up` | DMS |
 | Super + V | Clipboard | `Mod+V` | DMS |
 | Super + W | Toggle Tabbed Display | `Mod+W` | DMS |
-| Super + Scroll Down | Focus Workspace Down | `Mod+WheelScrollDown` | DMS |
-| Super + Scroll Left | Focus Column Left | `Mod+WheelScrollLeft` | DMS |
-| Super + Scroll Right | Focus Column Right | `Mod+WheelScrollRight` | DMS |
-| Super + Scroll Up | Focus Workspace Up | `Mod+WheelScrollUp` | DMS |
+| Super + WheelScrollDown | Focus Workspace Down | `Mod+WheelScrollDown` | DMS |
+| Super + WheelScrollLeft | Focus Column Left | `Mod+WheelScrollLeft` | DMS |
+| Super + WheelScrollRight | Focus Column Right | `Mod+WheelScrollRight` | DMS |
+| Super + WheelScrollUp | Focus Workspace Up | `Mod+WheelScrollUp` | DMS |
 | Super + X | Power Menu | `Mod+X` | DMS |
 | Super + Y | Wallpapers | `Mod+Y` | DMS |
+| Super + space | App Launcher | `Mod+space` | Ominty |
 
 ### Workspaces (`Workspace topology`) — 30
 
@@ -177,10 +179,10 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 |---|---|---|---|
 | Ctrl + Super + C | Center Visible Columns | `Ctrl+Mod+C` | DMS |
 | Ctrl + Super + Down | Move Column to Workspace Down | `Ctrl+Mod+Down` | DMS |
-| Ctrl + Super + F9 | Move Column to Last | `Ctrl+Mod+End` | DMS |
+| Ctrl + Super + Fn+F10 | Move Column to Last | `Ctrl+Mod+End` | DMS |
 | Ctrl + Super + F | Expand Column | `Ctrl+Mod+F` | DMS |
 | Ctrl + Super + H | Focus Monitor Left | `Ctrl+Mod+H` | DMS |
-| Ctrl + Super + F8 | Move Column to First | `Ctrl+Mod+Home` | DMS |
+| Ctrl + Super + Fn+F9 | Move Column to First | `Ctrl+Mod+Home` | DMS |
 | Ctrl + Super + I | Move Column to Workspace Up | `Ctrl+Mod+I` | DMS |
 | Ctrl + Super + J | Focus Monitor Down | `Ctrl+Mod+J` | DMS |
 | Ctrl + Super + K | Focus Monitor Up | `Ctrl+Mod+K` | DMS |
@@ -197,20 +199,24 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 | Ctrl + Super + Shift + Left | Move Column to Monitor Left | `Ctrl+Mod+Shift+Left` | DMS |
 | Ctrl + Super + Shift + Right | Move Column to Monitor Right | `Ctrl+Mod+Shift+Right` | DMS |
 | Ctrl + Super + Shift + Up | Move Column to Monitor Up | `Ctrl+Mod+Shift+Up` | DMS |
-| Ctrl + Super + Shift + Scroll Down | Move Column Right | `Ctrl+Mod+Shift+WheelScrollDown` | DMS |
-| Ctrl + Super + Shift + Scroll Up | Move Column Left | `Ctrl+Mod+Shift+WheelScrollUp` | DMS |
+| Ctrl + Super + Shift + WheelScrollDown | Move Column Right | `Ctrl+Mod+Shift+WheelScrollDown` | DMS |
+| Ctrl + Super + Shift + WheelScrollUp | Move Column Left | `Ctrl+Mod+Shift+WheelScrollUp` | DMS |
 | Ctrl + Super + U | Move Column to Workspace Down | `Ctrl+Mod+U` | DMS |
 | Ctrl + Super + Up | Move Column to Workspace Up | `Ctrl+Mod+Up` | DMS |
-| Ctrl + Super + Scroll Down | Move Column to Workspace Down | `Ctrl+Mod+WheelScrollDown` | DMS |
-| Ctrl + Super + Scroll Left | Move Column Left | `Ctrl+Mod+WheelScrollLeft` | DMS |
-| Ctrl + Super + Scroll Right | Move Column Right | `Ctrl+Mod+WheelScrollRight` | DMS |
-| Ctrl + Super + Scroll Up | Move Column to Workspace Up | `Ctrl+Mod+WheelScrollUp` | DMS |
+| Ctrl + Super + WheelScrollDown | Move Column to Workspace Down | `Ctrl+Mod+WheelScrollDown` | DMS |
+| Ctrl + Super + WheelScrollLeft | Move Column Left | `Ctrl+Mod+WheelScrollLeft` | DMS |
+| Ctrl + Super + WheelScrollRight | Move Column Right | `Ctrl+Mod+WheelScrollRight` | DMS |
+| Ctrl + Super + WheelScrollUp | Move Column to Workspace Up | `Ctrl+Mod+WheelScrollUp` | DMS |
 
-### System (`System`) — 1
+### System (`System`) — 5
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
+| Ctrl + Alt + A | spawn "/usr/bin/artha" | `Ctrl+Alt+A` | Niri (custom: added) |
 | Ctrl + Alt + Delete | Task Manager | `Ctrl+Alt+Delete` | DMS |
+| Ctrl + Alt + O | spawn "/home/martin/bin/tts-pick" | `Ctrl+Alt+O` | Niri (custom: added) |
+| Ctrl + Alt + R | spawn "/home/martin/.local/bin/screen-ocr" | `Ctrl+Alt+R` | Niri (custom: added) |
+| Ctrl + Alt + S | spawn "/home/martin/bin/read-selection" | `Ctrl+Alt+S` | Niri (custom: added) |
 
 ### AI (`AI`) — 5
 
@@ -224,20 +230,21 @@ physical equivalent on the target keyboard (`XF86AudioPrev`, `XF86AudioNext`,
 
 ### Projects (`Projects`) — reserved, no bindings yet
 
+
 ### Hardware (`Hardware`) — 9
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
-| F1 | Brightness Down | `XF86MonBrightnessDown` | DMS |
-| F2 | Brightness Up | `XF86MonBrightnessUp` | DMS |
-| F3 | Play/Pause | `XF86AudioPause` | DMS |
-| F4 | Mute | `XF86AudioMute` | DMS |
-| F5 | Volume Down | `XF86AudioLowerVolume` | DMS |
-| F6 | Volume Up | `XF86AudioRaiseVolume` | DMS |
-| Alt + F7 | Screenshot: Window | `Alt+Print` | DMS |
-| Ctrl + F7 | Screenshot: Full Screen | `Ctrl+Print` | DMS |
-| F7 | Screenshot: Region | `Print` | DMS |
+| Fn+F1 | Brightness Down | `XF86MonBrightnessDown` | DMS |
+| Fn+F2 | Brightness Up | `XF86MonBrightnessUp` | DMS |
+| Fn+F3 | Play/Pause | `XF86AudioPause` | DMS |
+| Fn+F4 | Mute | `XF86AudioMute` | DMS |
+| Fn+F5 | Volume Down | `XF86AudioLowerVolume` | DMS |
+| Fn+F6 | Volume Up | `XF86AudioRaiseVolume` | DMS |
+| Alt + Fn+F7 | Screenshot: Window | `Alt+Print` | DMS |
+| Ctrl + Fn+F7 | Screenshot: Full Screen | `Ctrl+Print` | DMS |
+| Fn+F7 | Screenshot: Region | `Print` | DMS |
 
 ---
 
-*Generated from `ominty keybinds --json`. 154 bindings; one tab per GKS domain.*
+*Generated from `ominty keybinds --json` (162 bindings; one tab per GKS domain). Hardware rows render via the user's `function-keys.toml` map; `custom:` marks rows changed from the shipped defaults; `managed_by` is provided per row in the JSON but omitted here for brevity.*

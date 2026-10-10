@@ -426,23 +426,61 @@ def cmd_keybinds(args: argparse.Namespace) -> int:
     """List keybindings tagged by GKS domain (docs/14-gks-keyboard-grammar.md)."""
     from .keybinds import keybinds
 
-    data = keybinds()
+    data = keybinds(baseline_dir=getattr(args, "baseline", None))
     rows = data["bindings"]
     if getattr(args, "domain", None):
         want = args.domain.lower()
         rows = [r for r in rows if r["domain"].lower() == want]
 
     if args.json:
-        print(json.dumps({"domains": data["domains"], "bindings": rows}, indent=2))
+        print(json.dumps({"domains": data["domains"], "bindings": rows, "diff": data.get("diff")}, indent=2))
         return 0
 
+    diff = data.get("diff") or {}
+    if diff.get("baseline"):
+        print(f"(custom diff vs {diff['baseline']}: {diff.get('custom', 0)} row(s))")
     current = None
     for row in rows:
         if row["domain"] != current:
             current = row["domain"]
             print(f"\n## {current}")
-        mark = "  (shadowed)" if row["shadowed"] else ""
+        mark = "  (shadowed)" if row.get("shadowed") else ""
+        if row.get("custom"):
+            mark += f"  (custom: {row.get('change')})"
         print(f"  {row['key']:<24} {row['action']}  [{row['source']}]{mark}")
+
+
+def cmd_fnkeys_show(args: argparse.Namespace) -> int:
+    """Show the current function-key map."""
+    from .function_keys import display, load_function_keys
+
+    print(display(load_function_keys(path=getattr(args, "path", None))))
+    return 0
+
+
+def cmd_fnkeys_init(args: argparse.Namespace) -> int:
+    """Write a commented function-keys template for the user to fill in."""
+    from pathlib import Path
+
+    from .function_keys import config_path, template
+
+    arg_path = getattr(args, "path", None)
+    path = Path(arg_path) if arg_path else config_path()
+    if path.exists() and not getattr(args, "force", False):
+        print(f"refusing to overwrite {path} (use --force to replace)")
+        return 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(template())
+    print(f"wrote {path}")
+    return 0
+
+
+def cmd_fnkeys_setup(args: argparse.Namespace) -> int:
+    """Interactive wizard labelling F1–F12 (with and without Fn)."""
+    from .function_keys import interactive_setup
+
+    interactive_setup(path=getattr(args, "path", None))
+    return 0
     print(f"\n{len(rows)} binding(s)")
     return 0
 
@@ -738,8 +776,38 @@ def build_parser() -> argparse.ArgumentParser:
     # keybinds (GKS cheat sheet data — docs/14)
     kb_p = sub.add_parser("keybinds", help="list keybindings by GKS domain")
     kb_p.add_argument("--domain", help="filter to one GKS domain")
+    kb_p.add_argument(
+        "--baseline",
+        metavar="DIR",
+        help="shipped-default niri config dir for the custom/remap diff "
+        "(default: the repository's configs/niri)",
+    )
     kb_p.add_argument("--json", action="store_true", help="JSON output")
     kb_p.set_defaults(func=cmd_keybinds)
+
+    # function-keys — user-defined F-row labels (docs/14 §22)
+    fk_p = sub.add_parser(
+        "function-keys",
+        help="define what the F1–F12 keys do on your keyboard (24-entry map)",
+    )
+    fk_sub = fk_p.add_subparsers(dest="fk_command", required=True)
+
+    fkshow_p = fk_sub.add_parser("show", help="print the current function-key map")
+    fkshow_p.add_argument("--path", help="override the config file")
+    fkshow_p.set_defaults(func=cmd_fnkeys_show)
+
+    fkinit_p = fk_sub.add_parser(
+        "init", help="write a commented function-keys.toml template to edit"
+    )
+    fkinit_p.add_argument("--path", help="override the config file")
+    fkinit_p.add_argument("--force", action="store_true", help="replace an existing file")
+    fkinit_p.set_defaults(func=cmd_fnkeys_init)
+
+    fksetup_p = fk_sub.add_parser(
+        "setup", help="interactively label F1–F12 (with and without Fn)"
+    )
+    fksetup_p.add_argument("--path", help="override the config file")
+    fksetup_p.set_defaults(func=cmd_fnkeys_setup)
 
     # voice (docs/ai/11-voice-integration.md, ADR-007)
     voice_p = sub.add_parser("voice", help="voice / speech-to-text operations")

@@ -742,6 +742,28 @@ The full, generated list lives in
 - Rows are generated from the **live** sources (registry + Niri + DMS) so the sheet can never drift from reality.
 - Where a universal `Ctrl` convention is shown, it is marked as *reference only*.
 
+**Personalisation (2026-10-10):**
+
+- **Function-row labels are user-defined, not baked in.** `ominty function-keys
+  setup` walks F1→F12 (with and without the `Fn` key — 24 entries) and stores the
+  map in `~/.config/ominty/function-keys.toml`. The sheet renders any binding
+  whose keysym matches an entry as the physical key (`F5` / `Fn+F5`) and lists
+  every labelled function key in the Hardware tab. Unmapped keys fall back to
+  their raw token. A different keyboard = a different map; no code changes.
+  (This replaces the Surface-Book-specific F-row label mapping, which was
+  recorded as an open issue in the phase-1 exit review.)
+- **The user's own bindings are flagged, not hidden.** Rows whose key differs
+  from the repository's shipped default configuration are marked `custom`
+  (`remapped` or `added`) and a **Custom** toggle shows only those rows — this is
+  personal preference surfaced: the sheet is a live mirror of whatever the two
+  editors produce.
+- **Each row says which editor owns it** (`managed_by`) and a **✎** button opens
+  that editor: DMS rows → **DMS Settings → Keybinds**; Niri rows → **NiriMod**.
+  The sheet stays read-only (GKS-1 decision) — editing happens in the two real
+  editors, never in the sheet (ADR-006: integration over duplication). Because
+  the data pipeline walks the same `include`-resolved config tree NiriMod edits,
+  either editor's changes are reflected the moment the sheet re-opens.
+
 **Implementation sketch (DMS + Quickshell):**
 
 - Today `Super+K` opens the DMS spotlight in explorer mode (`!` / `!!` sentinel) via the `omintyActions` plugin.

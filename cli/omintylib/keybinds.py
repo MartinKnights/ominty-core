@@ -3,17 +3,28 @@
 Merges the live keybinding sources into one GKS-tagged list so the cheat
 sheet can group by domain (tab):
 
-    registry actions  +  Niri base  +  DMS binds  +  generated fragment
+    Niri config tree (incl. every `include` target)  +  registry chords
+        +  universal application conventions
 
-Plus the universal application conventions (``Ctrl+S`` etc.), which GKS
-does not own but the cheat sheet displays as reference.
+Sources are discovered by walking the live Niri config tree and resolving
+`include` directives (cycle-safe, ``optional=true`` respected) — the same
+model NiriMod uses — so any binding either the DMS keybind editor or
+NiriMod produces is captured wherever it lives.  Each binding carries::
 
-Each binding carries:
-
-    {key, domain, action, source, shadowed}
+    {key, domain, action, source, managed_by, shadowed, key_label,
+     action_label, custom, change}
 
 ``shadowed`` marks a binding that is defined but loses to another layer for
-the same key (GKS collision priority, docs/14 §17).
+the same key (GKS collision priority, docs/14 §17).  ``custom``/``change``
+mark rows that differ from the repository's shipped default configuration
+(``--baseline``), i.e. the user's own remaps.  ``managed_by`` says which
+editor owns the row (DMS Settings → Keybinds, NiriMod, the ominty registry,
+or a universal convention).
+
+Function-row keys (F1–F12, with and without the Fn layer) are rendered from
+the user-defined map in ``~/.config/ominty/function-keys.toml``
+(omintylib/function_keys.py); without a map, hardware keys fall back to
+their raw token.
 """
 
 from __future__ import annotations
@@ -21,6 +32,8 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
+
+from .function_keys import load_function_keys, physical_map, rows as function_key_rows
 
 # GKS domains (cheat-sheet tabs), in presentation order.
 GKS_DOMAINS: tuple[str, ...] = (
@@ -57,27 +70,25 @@ UNIVERSAL_CONVENTIONS: tuple[tuple[str, str], ...] = (
 # Source priority: later sources win a key collision (docs/14 §17).
 _SOURCE_ORDER = {"Niri": 0, "DMS": 1, "Ominty": 2}
 
+# Which editor the user changes a binding in (surfaced in the cheat sheet).
+_MANAGED_BY = {
+    "Niri": "niri",            # config.kdl / any fragment — NiriMod or hand
+    "DMS": "dms-settings",     # ~/.config/niri/dms/binds.kdl — DMS Settings → Keybinds
+    "Ominty": "ominty-registry",  # generated fragment — regenerate with ominty registry build
+    "Universal": "universal",
+    "Function keys": "function-keys",
+}
+
+# Technical sources are diffed against the shipped defaults (the user edits
+# these via the two editors); registry/universal/function-key rows are
+# canonical and therefore never "custom".
+_CUSTOM_SOURCES = frozenset({"Niri", "DMS"})
+
 # ---- Human-readable labels (cheat sheet) --------------------------------
-# Both columns must read as plain English: no XF86 codes, no spawn commands,
-# no native Niri verbs.
-#
-# Physical F-row of the target machine (Microsoft Surface Book):
-#   F1 Brightness Down  F2 Brightness Up  F3 Play/Pause  F4 Mute
-#   F5 Volume Down      F6 Volume Up      F7 Print Screen
-#   F8 Home             F9 End            F10 Page Up    F11 Page Down
+# Machine-independent labels only.  Physical F-row / media-key naming comes
+# from the user's function-keys.toml (function_keys.py); unmapped hardware
+# tokens fall back to their raw name.
 KEY_LABELS: dict[str, str] = {
-    "XF86MonBrightnessDown": "F1",
-    "XF86MonBrightnessUp": "F2",
-    "XF86AudioPlay": "F3",
-    "XF86AudioPause": "F3",
-    "XF86AudioMute": "F4",
-    "XF86AudioLowerVolume": "F5",
-    "XF86AudioRaiseVolume": "F6",
-    "Print": "F7",
-    "Home": "F8",
-    "End": "F9",
-    "Page_Up": "F10",
-    "Page_Down": "F11",
     "grave": "`",
     "BracketLeft": "[",
     "BracketRight": "]",
@@ -100,7 +111,9 @@ _MOD_LABELS: dict[str, str] = {
     "Shift": "Shift",
 }
 
-# Keys with no physical equivalent on the target keyboard are hidden entirely.
+# Keys with no physical equivalent on the user's keyboard are hidden; the
+# historical XF86 media set excluded here is surfaced through the user's
+# function-keys map instead.
 HIDDEN_KEYS: frozenset[str] = frozenset(
     {"XF86AudioPrev", "XF86AudioNext", "XF86AudioMicMute", "XF86Launch1"}
 )
@@ -133,7 +146,7 @@ ACTION_LABELS: dict[str, str] = {
     'spawn "dms" "ipc" "call" "wallpaperCarousel" "toggle"': "Wallpaper Carousel",
     'spawn "dms" "ipc" "call" "window-rules" "toggle"': "Window Rules",
     'spawn "dms" "ipc" "call" "workspace-rename" "open"': "Rename Workspace",
-    'spawn "dms" "ipc" "outputs" "cycleProfile"': "Cycle Display Profile",
+    'spawn "dms" "ipc" "call" "outputs" "cycleProfile"': "Cycle Display Profile",
     'spawn "dms" "screenshot"': "Screenshot: Region",
     'spawn "dms" "screenshot" "full"': "Screenshot: Full Screen",
     'spawn "dms" "screenshot" "window"': "Screenshot: Window",
@@ -215,14 +228,30 @@ def _base_token(key: str) -> str:
     return first.split("+")[-1]
 
 
-def key_label(key: str) -> str:
-    """Render a normalised key combo as plain English."""
+def key_label(key: str, fk: dict | None = None) -> str:
+    """Render a normalised key combo as plain English.
+
+    ``fk`` is the optional physical-key map from ``function_keys.physical_map``
+    (keysym → ``{"physical": "F5", "fn": bool}``).  Base tokens found in the
+    map render as the physical key (``F5`` / ``Fn+F5``); everything else uses
+    the neutral token labels.
+    """
     parts = key.split("+")
     mods, base = parts[:-1], parts[-1]
     mod_labels = [_MOD_LABELS.get(m, m) for m in mods]
-    base_label = ", ".join(
-        KEY_LABELS.get(tok.strip(), tok.strip()) for tok in base.split(",")
-    )
+    tokens = [tok.strip() for tok in base.split(",")]
+    if fk:
+        rendered = []
+        for tok in tokens:
+            hit = fk.get(tok)
+            if hit:
+                p = hit["physical"]
+                rendered.append(f"Fn+{p}" if hit.get("fn") else p)
+            else:
+                rendered.append(tok)
+        base_label = ", ".join(rendered)
+    else:
+        base_label = ", ".join(KEY_LABELS.get(tok, tok) for tok in tokens)
     return " + ".join(mod_labels + [base_label])
 
 
@@ -357,13 +386,81 @@ def registry_bindings(registry) -> list[dict]:
     return out
 
 
+# ── Source discovery: include-aware walk of the Niri config tree ─────────
+
+_INCLUDE_RE = re.compile(r'^\s*include\s+"([^"]+)"', re.MULTILINE)
+
+
+def _config_root() -> Path:
+    return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+
+
+def _source_for(path: Path) -> str:
+    """Return the source family for a config path."""
+    parts = path.resolve().parts
+    if "ominty" in parts and "generated" in parts and "niri" in parts:
+        return "Ominty"
+    if path.resolve().parent.name == "dms":
+        return "DMS"
+    return "Niri"
+
+
+def _resolve_include(inc: str, includer: Path) -> Path | None:
+    if inc.startswith("~"):
+        return Path(inc).expanduser().resolve()
+    p = Path(inc)
+    if p.is_absolute():
+        return p.resolve()
+    return (includer.parent / p).resolve()
+
+
+def _collect_files(cfg_root: Path, skip_generated: bool = False) -> list[tuple[str, Path]]:
+    """Walk config.kdl and every ``include`` target in the Niri tree.
+
+    Cycle-safe; missing files are skipped.  ``skip_generated`` ignores the
+    ominty generated fragment (used when diffing against a baseline, whose
+    generated fragment does not exist and is registry-derived anyway).
+    """
+    niri = cfg_root / "niri"
+    seen: set[Path] = set()
+    out: list[tuple[str, Path]] = []
+
+    def visit(p: Path) -> None:
+        try:
+            p = p.resolve()
+        except OSError:
+            return
+        if p in seen or not p.is_file():
+            return
+        seen.add(p)
+        src = _source_for(p)
+        if skip_generated and src == "Ominty":
+            return
+        out.append((src, p))
+        if src == "Ominty":
+            return  # generated fragments never include further files
+        try:
+            text = p.read_text(errors="replace")
+        except OSError:
+            return
+        for m in _INCLUDE_RE.finditer(text):
+            target = _resolve_include(m.group(1), p)
+            if target is not None:
+                visit(target)
+
+    visit(niri / "config.kdl")
+    # Belt-and-braces: the known family fragments are parsed even if a user
+    # config does not include them (matches the pre-include behaviour).
+    dms_dir = niri / "dms"
+    if dms_dir.is_dir():
+        for frag in sorted(dms_dir.glob("*.kdl")):
+            visit(frag)
+    visit(cfg_root / "ominty" / "generated" / "niri" / "bindings.kdl")
+    return out
+
+
 def _default_sources() -> list[tuple[str, Path]]:
-    config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
-    return [
-        ("Niri", config / "niri" / "config.kdl"),
-        ("DMS", config / "niri" / "dms" / "binds.kdl"),
-        ("Ominty", config / "ominty" / "generated" / "niri" / "bindings.kdl"),
-    ]
+    return _collect_files(_config_root())
 
 
 def _mark_shadowed(bindings: list[dict]) -> None:
@@ -379,22 +476,58 @@ def _mark_shadowed(bindings: list[dict]) -> None:
         b["shadowed"] = best.get(b["key"]) != i
 
 
-def collect(registry, sources: list[tuple[str, Path]] | None = None) -> dict:
+def _baseline_map(baseline_dir: Path) -> dict[tuple[str, str], set[str]]:
+    """Build ``(source, action) → {keys}`` from the shipped default configs."""
+    cfg_root = baseline_dir.parent  # configs/niri → configs
+    files = _collect_files(cfg_root, skip_generated=True)
+    base: dict[tuple[str, str], set[str]] = {}
+    for source, path in files:
+        if source not in _CUSTOM_SOURCES:
+            continue
+        for b in parse_kdl_file(path, source):
+            base.setdefault((source, b["action"]), set()).add(b["key"])
+    return base
+
+
+def _mark_custom(bindings: list[dict], baseline: dict[tuple[str, str], set[str]]) -> None:
+    """Tag rows that differ from the shipped defaults (user's own remaps)."""
+    for b in bindings:
+        b["custom"], b["change"] = False, "unchanged"
+        if b["source"] not in _CUSTOM_SOURCES:
+            continue
+        keys = baseline.get((b["source"], b["action"]))
+        if keys is None:
+            b["custom"], b["change"] = True, "added"
+        elif b["key"] not in keys:
+            b["custom"], b["change"] = True, "remapped"
+
+
+def _repo_defaults_dir() -> Path | None:
+    """Repository shipping configs (the baseline for the custom/diff view)."""
+    p = Path(__file__).resolve().parents[3] / "configs" / "niri"
+    return p if p.is_dir() else None
+
+
+def collect(
+    registry,
+    sources: list[tuple[str, Path]] | None = None,
+    baseline_dir: Path | None = None,
+    function_keys: dict | None = None,
+) -> dict:
     """Collect and tag all keybindings for the cheat sheet.
 
-    Returns ``{"domains": [...], "bindings": [...]}`` where each binding is
-    ``{key, domain, action, source, shadowed}``.
+    Returns ``{"domains": [...], "bindings": [...], "diff": {...}}`` where
+    each binding is ``{key, domain, action, source, managed_by, shadowed,
+    key_label, action_label, custom, change}``.
     """
-    sources = sources if sources is not None else _default_sources()
     bindings: list[dict] = []
-    for label, path in sources:
+    for label, path in sources or _default_sources():
         bindings.extend(parse_kdl_file(path, label))
     if registry is not None:
         # Only chords come from the registry: non-chord keys are either
         # emitted into the generated fragment (already parsed) or owned by
         # DMS. Adding them again would double-count.
         bindings.extend(b for b in registry_bindings(registry) if "," in b["key"])
-
     _mark_shadowed(bindings)
 
     # Universal conventions are reference-only, never shadowed.
@@ -410,12 +543,20 @@ def collect(registry, sources: list[tuple[str, Path]] | None = None) -> dict:
             }
         )
 
-    # Drop keys with no physical equivalent on the target keyboard, then add
-    # plain-English labels (raw key/action are preserved).
+    # Drop keys with no physical equivalent, then add labels (raw retained).
     bindings = [b for b in bindings if _base_token(b["key"]) not in HIDDEN_KEYS]
+
+    fk = function_keys if function_keys is not None else load_function_keys()
+    fk_map = physical_map(fk)
+
     for b in bindings:
-        b["key_label"] = key_label(b["key"])
+        b["key_label"] = key_label(b["key"], fk_map)
         b["action_label"] = action_label(b["action"])
+        b["managed_by"] = _MANAGED_BY.get(b["source"], "niri")
+
+    # Function-row definitions (the user's F1–F12 map) render as rows in the
+    # Hardware tab; they are reference information, never shadowed/custom.
+    bindings.extend(function_key_rows(fk))
 
     # Collapse rows that render identically (e.g. XF86AudioPlay/Pause → F3).
     seen: set[tuple[str, str]] = set()
@@ -428,6 +569,17 @@ def collect(registry, sources: list[tuple[str, Path]] | None = None) -> dict:
         deduped.append(b)
     bindings = deduped
 
+    # Should the row be flagged as user-modified vs the shipped defaults?
+    baseline: dict[tuple[str, str], set[str]] = {}
+    if baseline_dir is not None or _repo_defaults_dir() is not None:
+        use = baseline_dir if baseline_dir is not None else _repo_defaults_dir()
+        if use is not None:
+            baseline = _baseline_map(use)
+            _mark_custom(bindings, baseline)
+    else:
+        for b in bindings:
+            b["custom"], b["change"] = False, "unchanged"
+
     def _sort_key(b: dict) -> tuple:
         idx = GKS_DOMAINS.index(b["domain"])
         if b["domain"] == "Hardware":
@@ -436,13 +588,22 @@ def collect(registry, sources: list[tuple[str, Path]] | None = None) -> dict:
         return (idx, 1, 0, b["key"])
 
     bindings.sort(key=_sort_key)
-    return {"domains": list(GKS_DOMAINS), "bindings": bindings}
+
+    custom = sum(1 for b in bindings if b.get("custom"))
+    return {
+        "domains": list(GKS_DOMAINS),
+        "bindings": bindings,
+        "diff": {
+            "baseline": str(use) if baseline else None,
+            "custom": custom,
+        },
+    }
 
 
-def keybinds(registry=None, sources=None) -> dict:
+def keybinds(registry=None, sources=None, baseline_dir: Path | None = None) -> dict:
     """Public entry point. Loads the registry when none is supplied."""
     if registry is None:
         from .registry import load_registry
 
         registry = load_registry()
-    return collect(registry, sources)
+    return collect(registry, sources, baseline_dir)

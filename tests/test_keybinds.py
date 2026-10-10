@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from omintylib.keybinds import (
     UNIVERSAL_CONVENTIONS,
+    _collect_files,
     action_label,
     classify_domain,
     collect,
@@ -109,15 +110,24 @@ def test_universal_conventions_present():
 
 def test_key_labels():
     assert key_label("Mod+Q") == "Super + Q"
-    assert key_label("XF86MonBrightnessUp") == "F2"
-    assert key_label("Mod+Home") == "Super + F8"
-    assert key_label("Ctrl+XF86AudioRaiseVolume") == "Ctrl + F6"
+    # No function-key map → hardware tokens stay neutral (machine-independent).
+    assert key_label("XF86MonBrightnessUp") == "XF86MonBrightnessUp"
+    assert key_label("Mod+Home") == "Super + Home"
     assert key_label("Mod+BracketLeft") == "Super + ["
     assert key_label("Mod+A,A") == "Super + A, A"
     assert (
         key_label("Ctrl+Mod+Shift+WheelScrollDown")
         == "Ctrl + Super + Shift + Scroll Down"
     )
+
+
+def test_key_label_with_function_map():
+    fk = {"XF86MonBrightnessUp": {"physical": "F2", "fn": True}}
+    assert key_label("XF86MonBrightnessUp", fk) == "Fn+F2"
+    fk5 = {"XF86AudioLowerVolume": {"physical": "F5", "fn": True}}
+    assert key_label("Mod+XF86AudioLowerVolume", fk5) == "Super + Fn+F5"
+    fk_plain = {"F5": {"physical": "F5", "fn": False}}
+    assert key_label("F5", fk_plain) == "F5"
 
 
 def test_action_labels():
@@ -150,3 +160,85 @@ def test_collect_hides_absent_keys_and_adds_labels(tmp_path):
     row = next(b for b in data["bindings"] if b["key"] == "Mod+Q")
     assert row["key_label"] == "Super + Q"
     assert row["action_label"] == "Close Window"
+
+
+def test_collect_include_walk(tmp_path):
+    """Bindings inside included fragments are captured and tagged correctly."""
+    cfg = tmp_path / "niri"
+    (cfg / "frag").mkdir(parents=True)
+    (cfg / "dms").mkdir()
+    (cfg / "config.kdl").write_text(
+        'include "frag/a.kdl" optional=true\n'
+        'include "dms/binds.kdl"\n'
+        "binds {\n    Mod+Q { close-window; }\n}\n"
+    )
+    (cfg / "frag" / "a.kdl").write_text("binds {\n    Mod+W { close-window; }\n}\n")
+    (cfg / "dms" / "binds.kdl").write_text(
+        'binds {\n    Mod+T { spawn "ghostty"; }\n}\n'
+    )
+
+    data = collect(None, sources=_collect_files(tmp_path))
+    by_action = {b["action"]: b for b in data["bindings"]}
+    assert by_action["close-window"]["key"] == "Mod+W"
+    assert by_action["close-window"]["source"] == "Niri"
+    assert by_action["close-window"]["managed_by"] == "niri"
+    assert by_action['spawn "ghostty"']['source'] == "DMS"
+    assert by_action['spawn "ghostty"']['managed_by'] == "dms-settings"
+
+
+def test_include_walk_skips_missing_optional(tmp_path):
+    (tmp_path / "niri").mkdir()
+    (tmp_path / "niri" / "config.kdl").write_text(
+        'include "missing.kdl" optional=true\nbinds {\n    Mod+Q { close-window; }\n}\n'
+    )
+    files = _collect_files(tmp_path)
+    assert {p for _, p in files} == {(tmp_path / "niri" / "config.kdl").resolve()}
+
+
+def test_function_key_rows_in_collect(tmp_path):
+    niri = tmp_path / "config.kdl"
+    niri.write_text(
+        "binds {\n"
+        '    XF86AudioLowerVolume { spawn "dms" "ipc" "call" "audio" "decrement" "3"; }\n'
+        "}\n"
+    )
+    fk = {
+        "F1": {"label": "first", "keysyms": ["F1"]},
+        "F5": {"label": "volume down", "keysyms": ["F5"]},
+        "F5_fn": {"label": "media volume down", "keysyms": ["XF86AudioLowerVolume"]},
+    }
+    data = collect(None, sources=[("Niri", niri)], function_keys=fk)
+    hw = [b for b in data["bindings"] if b["domain"] == "Hardware"]
+    labels = {b["key_label"]: b for b in hw}
+    assert "Fn+F5" in labels
+    assert labels["Fn+F5"]["action_label"] == "media volume down"
+    assert labels["Fn+F5"]["managed_by"] == "function-keys"
+    # The media binding renders its physical key, so both collapse to one row.
+    assert "F5" in labels
+    assert labels["F5"]["action_label"] == "volume down"
+
+
+def test_custom_diff_remap_and_add(tmp_path):
+    base = tmp_path / "niri"
+    (base / "dms").mkdir(parents=True)
+    (base / "config.kdl").write_text('binds {\n    Mod+T { spawn "ghostty"; }\n}\n')
+    live = tmp_path / "live"
+    live.mkdir()
+    (live / "a.kdl").write_text('binds {\n    Mod+X { spawn "ghostty"; }\n}\n')
+    (live / "b.kdl").write_text(
+        'binds {\n    Mod+Y { spawn "/home/user/bin/mytool"; }\n}\n'
+    )
+
+    data = collect(
+        None,
+        sources=[("Niri", live / "a.kdl"), ("Niri", live / "b.kdl")],
+        baseline_dir=base,
+    )
+    rows = {b["action"]: b for b in data["bindings"]}
+    remapped = rows['spawn "ghostty"']
+    assert remapped["custom"] is True and remapped["change"] == "remapped"
+    added = rows['spawn "/home/user/bin/mytool"']
+    assert added["custom"] is True and added["change"] == "added"
+    # Universal rows are never custom.
+    uni = [b for b in data["bindings"] if b["source"] == "Universal"][0]
+    assert uni["custom"] is False and uni["change"] == "unchanged"
