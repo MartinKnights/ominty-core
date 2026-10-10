@@ -100,7 +100,7 @@ PluginComponent {
 
     // One reusable process for "open the editor that manages this row".
     readonly property var _editCommands: ({
-        "dms-settings": ["dms", "ipc", "call", "settings"],
+        "dms-settings": ["dms", "ipc", "call", "settings", "focusOrToggle"],
         "niri": ["nirimod"]
     })
 
