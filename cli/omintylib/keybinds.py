@@ -151,6 +151,7 @@ ACTION_LABELS: dict[str, str] = {
     'spawn "dms" "screenshot" "full"': "Screenshot: Full Screen",
     'spawn "dms" "screenshot" "window"': "Screenshot: Window",
     'spawn "ghostty"': "Terminal",
+    'spawn "omi-dict" "selection" "--popup"': "Define Selection (dictionary)",
 }
 
 # Registry action IDs (chords, and ominty-run spawns).

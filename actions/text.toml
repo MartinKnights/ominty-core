@@ -1,0 +1,40 @@
+# Ominty action registry — Text (selected-text actions)
+# Schema version 1 (docs/03-action-registry-spec.md)
+# Omi Dictionary Service spec §13 (Niri owns the shortcut), §25 (first text.*).
+
+registry_version = 1
+
+[group.text]
+
+name = "Text"
+prefix = ""
+description = "Selected-text actions (dictionary and, later, more)"
+
+# The dictionary lookup: select a word → Ctrl+Shift+A → Omi Dictionary popup.
+# The service (omi-dict) does the work; the popup is a presentation layer.
+# Artha keeps Ctrl+Alt+A (config.kdl), so this key stays free.
+[action."text.define"]
+
+name = "Define selection"
+description = "Look up the selected word in the local dictionary (OED by default)."
+category = "Text"
+
+keywords = ["dictionary", "define", "definition", "word", "lookup", "selection", "oed", "thesaurus"]
+
+keys = ["Ctrl+Shift+A"]
+
+adapter = "command"
+command = ["omi-dict", "selection", "--popup"]
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["omi-dict", "dms"]
+
+discoverable = true
+palette = true
+# Selected text may be confidential (spec §23): never hand it to AI unbidden.
+ai_accessible = false
+voice_accessible = false

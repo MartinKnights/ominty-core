@@ -30,7 +30,7 @@ NAMESPACES = {
     "app", "window", "workspace", "display", "input", "audio", "media",
     "network", "power", "session", "clipboard", "capture", "theme",
     "notification", "file", "project", "ai", "voice", "developer", "help",
-    "system", "custom",
+    "system", "text", "custom",
 }
 
 VALID_RISKS = {
