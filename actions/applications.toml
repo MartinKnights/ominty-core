@@ -146,3 +146,52 @@ discoverable = true
 palette = true
 ai_accessible = true
 voice_accessible = false
+[action."app.ai.usage"]
+
+name = "AI Usage"
+description = "Open the AI usage overview (AiOverviewControl)."
+category = "Applications"
+
+keywords = ["ai", "usage", "quota", "tokens", "overview"]
+
+keys = ["Ctrl+Shift+G"]
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "aiOverviewControl", function = "toggle" } }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
+
+[action."app.download.toggle"]
+
+name = "Download Manager"
+description = "Open the Ominty download manager (aria2)."
+category = "Applications"
+
+keywords = ["download", "downloader", "aria2", "queue"]
+
+keys = ["Ctrl+Shift+D"]
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "omintyDownload", function = "toggle" } }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
