@@ -79,3 +79,27 @@ discoverable = true
 palette = true
 ai_accessible = true
 voice_accessible = false
+[action."media.launcher"]
+
+name = "Media Launcher"
+description = "Open the media playlist launcher (Audio, Courses, Music, Video)."
+category = "Media"
+
+keywords = ["media", "playlist", "music", "video", "audio", "courses", "launcher"]
+
+keys = ["Ctrl+Shift+M"]
+
+adapter = "dms.ipc"
+arguments = { dms = { target = "omintyMedia", function = "toggle" } }
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["dms"]
+
+discoverable = true
+palette = true
+ai_accessible = true
+voice_accessible = false
