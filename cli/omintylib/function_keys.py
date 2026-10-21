@@ -121,7 +121,7 @@ def rows(data: dict[str, dict]) -> list[dict]:
 
     Only entries with a non-empty label are shown — the sheet is noisier
     than useful otherwise.  ``Fn+`` rows sort next to their plain partner
-    (both carry the same ``F(\d+)`` sort token).
+    (both carry the same ``F(\\d+)`` sort token).
     """
     out: list[dict] = []
     for name in FK_NAMES:
