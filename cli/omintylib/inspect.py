@@ -31,6 +31,7 @@ from __future__ import annotations
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -44,6 +45,14 @@ SCHEMA_VERSION = 1
 #: Codenames this project is validated against. `faye` is LMDE 7's release
 #: codename; `gigi` is its base Debian 13 codename (some LMDE images report it).
 SUPPORTED_CODENAMES = ("trixie", "faye", "gigi")
+
+#: Ubuntu base codenames validated through the source-build path. Mint images
+#: expose the base in ``UBUNTU_CODENAME`` (e.g. zena -> noble). Other Ubuntu
+#: codenames remain installable but are reported as unvalidated.
+SUPPORTED_UBUNTU_CODENAMES = ("noble",)
+
+#: Minimum niri version whose config understands ``custom-shader``.
+NIRI_SHADER_BASELINE = (26, 4)
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +91,10 @@ class Layer:
     #: `provisioned: false` layers honestly rather than implying they are
     #: installable.
     provisioned: bool = True
+    #: True when a missing package is a feature gap, not a broken desktop.
+    #: Optional layers warn instead of blocking, and are skipped by users who
+    #: do not want the feature (e.g. TTS).
+    optional: bool = False
     description: str = ""
 
 
@@ -105,6 +118,37 @@ _DESKTOP = Layer(
         Package("xdg-desktop-portal-gtk", "apt", "GTK portal backend"),
         Package("network-manager", "apt", "network management"),
         Package("nemo", "apt", "file manager (LMDE's Cinnamon file manager)"),
+    ),
+)
+
+_TTS = Layer(
+    id="tts",
+    label="Voice (TTS)",
+    description="Piper playback, the tray indicator, and the typelibs it needs.",
+    optional=True,
+    packages=(
+        Package(
+            "gir1.2-ayatanaappindicator3-0.1",
+            "apt",
+            "SNI tray typelib for the Piper indicator",
+        ),
+        Package(
+            "libayatana-appindicator3-1",
+            "apt",
+            "AppIndicator library used by the tray",
+        ),
+        Package("python3-gi", "apt", "GObject bindings for the indicator"),
+        Package("gir1.2-gtk-3.0", "apt", "GTK 3 typelib for the indicator UI"),
+        Package(
+            "gir1.2-gst-plugins-base-1.0",
+            "apt",
+            "GStreamer typelibs for audio playback",
+        ),
+        Package(
+            "gstreamer1.0-plugins-good",
+            "apt",
+            "audio decoders used by the indicator",
+        ),
     ),
 )
 
@@ -177,6 +221,7 @@ _BROWSER = Layer(
 
 LAYERS: tuple[Layer, ...] = (
     _DESKTOP,
+    _TTS,
     _TERMINAL,
     _EDITOR,
     _CLI,
@@ -352,13 +397,58 @@ class Check:
 # ---------------------------------------------------------------------------
 
 
+def _has_launchpad_ppa() -> bool:
+    """True when an AvengeMedia Launchpad PPA is configured.
+
+    The OBS repositories use download.opensuse.org; the Ubuntu PPA uses
+    ppa.launchpadcontent.net. Only the latter counts as "ppa".
+    """
+    roots = (Path("/etc/apt/sources.list"), Path("/etc/apt/sources.list.d"))
+    for root in roots:
+        files = [root] if root.is_file() else sorted(
+            [*root.glob("*.list"), *root.glob("*.sources")]
+        )
+        for path in files:
+            try:
+                text = path.read_text().lower()
+            except OSError:
+                continue
+            if "launchpad" in text and (
+                "avengemedia" in text or "danklinux" in text
+            ):
+                return True
+    return False
+
+
+def _desktop_source(family: str) -> str:
+    """How the desktop binaries got onto this machine.
+
+    ``obs``      Debian/LMDE package from the AvengeMedia Open Build Service
+    ``ppa``      Ubuntu package from the AvengeMedia Launchpad PPA
+    ``source``   built into ~/.local (Ubuntu path in docs/UBUNTU.md)
+    ``none``     DMS is not installed yet
+    """
+    if family not in ("debian", "mint-debian", "ubuntu", "mint-ubuntu"):
+        return "unknown"
+    try:
+        installed = _dpkg_status(("dms",))
+    except Exception:  # pragma: no cover - defensive
+        installed = {}
+    if installed:
+        return "ppa" if _has_launchpad_ppa() else "obs"
+    return "source" if _on_path("dms") else "none"
+
+
 def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
     codename = osr.get("VERSION_CODENAME", "")
     distro_id = osr.get("ID", "unknown")
     pretty = osr.get("PRETTY_NAME", "")
-    is_lmde = "linuxmint" in osr.get("ID_LIKE", "") or "Mint" in pretty
     platform_id = detect_platform()
     family = family_from_os_release(osr)
+    # LMDE is Mint's Debian edition. Ubuntu-based Mint has "ubuntu" in
+    # ID_LIKE, so testing for "debian" alone would misclassify it.
+    is_lmde = family == "mint-debian"
+    ubuntu_codename = osr.get("UBUNTU_CODENAME", "")
 
     info = {
         "id": platform_id,
@@ -366,8 +456,10 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
         "pretty_name": pretty,
         "version_id": osr.get("VERSION_ID", ""),
         "codename": codename,
+        "ubuntu_codename": ubuntu_codename,
         "is_lmde": is_lmde,
         "family": family,
+        "desktop_source": _desktop_source(family),
         "support_level": "unsupported",
         "supported": codename in SUPPORTED_CODENAMES,
     }
@@ -386,17 +478,30 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
     elif family in ("ubuntu", "mint-ubuntu"):
         # Ubuntu-family systems share apt/systemd but not the Debian 13
         # package set, so the desktop layers are provisioned by source build.
-        # Promoted from "experimental" once source-built packages became
-        # visible to inspect (G1) and the path was validated end-to-end.
-        info["support_level"] = "supported"
         info["supported"] = True
-        findings.append(
-            Finding(
-                "platform",
-                "pass",
-                f"{pretty or distro_id} ({family}) is supported via the source-build path.",
+        base = ubuntu_codename or (codename if family == "ubuntu" else "")
+        if base and base not in SUPPORTED_UBUNTU_CODENAMES:
+            info["support_level"] = "unvalidated"
+            findings.append(
+                Finding(
+                    "platform",
+                    "warn",
+                    f"{pretty or distro_id} uses Ubuntu codename '{base}', "
+                    "which has not been validated.",
+                    "The source-build path is expected to work; proceed only "
+                    "after the user accepts the risk.",
+                )
             )
-        )
+        else:
+            info["support_level"] = "supported"
+            findings.append(
+                Finding(
+                    "platform",
+                    "pass",
+                    f"{pretty or distro_id} ({family}) is supported via the "
+                    "source-build path.",
+                )
+            )
     elif platform_id != "debian":
         findings.append(
             Finding(
@@ -591,6 +696,16 @@ def _check_layers(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
                     f"Add the '{layer.id}' layer to install.sh before offering it.",
                 )
             )
+        elif missing_required and layer.optional:
+            findings.append(
+                Finding(
+                    f"layer.{layer.id}",
+                    "warn",
+                    f"Optional layer '{layer.label}' is missing "
+                    f"{len(missing_required)} package(s): {', '.join(missing_required)}.",
+                    "Install the layer to enable this feature, or ignore it.",
+                )
+            )
         elif missing_required:
             findings.append(
                 Finding(
@@ -626,6 +741,236 @@ def _check_layers(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
     )
 
 
+def _version_tuple(text: str) -> tuple[int, ...]:
+    """Extract the leading numeric version from a tool banner."""
+    match = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", text or "")
+    if not match:
+        return ()
+    return tuple(int(part) for part in match.groups() if part is not None)
+
+
+def _version_string(text: str) -> str:
+    """The version as written (``26.04``), not normalised (``26.4``)."""
+    match = re.search(r"\d+\.\d+(?:\.\d+)?", text or "")
+    return match.group(0) if match else ""
+
+
+def _tool_version(argv: list[str]) -> str:
+    """First line of a tool's version output, or ""."""
+    code, out = _run(argv)
+    if code != 0 or not out.strip():
+        return ""
+    return out.strip().splitlines()[0]
+
+
+def _shell_dir() -> Path:
+    """The DMS shell fork DMS_SHELL_DIR points at (or the default)."""
+    override = os.environ.get("DMS_SHELL_DIR", "").strip()
+    return Path(override) if override else Path.home() / ".local" / "share" / "dms-shell"
+
+
+def _shell_overlay_applied(shell_dir: Path | None = None) -> bool:
+    """True when the fork carries the Ominty ElevationShadow glow patch."""
+    shadow = (shell_dir or _shell_dir()) / "DankCommon" / "Common" / "ElevationShadow.qml"
+    try:
+        return shadow.is_file() and "property bool glowEnabled" in shadow.read_text(
+            errors="ignore"
+        )
+    except OSError:
+        return False
+
+
+def _overlay_base(shell_dir: Path | None = None) -> str:
+    """The DMS build id the fork was based on, if apply.sh recorded it."""
+    marker = (shell_dir or _shell_dir()) / ".ominty-overlay.json"
+    try:
+        return str(json.loads(marker.read_text()).get("base", ""))
+    except (OSError, ValueError):
+        return ""
+
+
+def _check_desktop() -> tuple[dict, list[Finding]]:
+    """Version and overlay state for the Niri + DMS desktop."""
+    from .registry import xdg_config_home
+
+    niri_raw = _tool_version(["niri", "--version"])
+    matugen_raw = _tool_version(["matugen", "--version"])
+    dms_raw = _tool_version(["dms", "version"])
+    niri_version = _version_string(niri_raw)
+    matugen_version = _version_string(matugen_raw)
+    parsed_niri = _version_tuple(niri_raw)
+    shader_ok = bool(parsed_niri) and parsed_niri[:2] >= NIRI_SHADER_BASELINE
+
+    shell_dir = _shell_dir()
+    applied = _shell_overlay_applied(shell_dir)
+    base = _overlay_base(shell_dir)
+    theme = xdg_config_home() / "niri" / "dms" / "ominty-theme.kdl"
+
+    info = {
+        "dms_version": dms_raw.removeprefix("dms ").strip(),
+        "niri_version": niri_version,
+        "matugen_version": matugen_version,
+        "custom_shader": shader_ok,
+        "shell_dir": str(shell_dir),
+        "shell_overlay": {
+            "state": "applied" if applied else "not-applied",
+            "base": base,
+        },
+        "theme_fragment": {"path": str(theme), "present": theme.is_file()},
+    }
+
+    findings: list[Finding] = []
+    if dms_raw:
+        findings.append(
+            Finding("desktop.dms", "pass", f"DMS {info['dms_version'] or 'present'}.")
+        )
+    else:
+        findings.append(
+            Finding(
+                "desktop.dms",
+                "warn",
+                "DMS is not on PATH.",
+                "Install the desktop layer, or check that ~/.local/bin is in PATH.",
+            )
+        )
+    if applied:
+        findings.append(
+            Finding(
+                "desktop.shell_overlay",
+                "pass",
+                "DMS shell overlay is applied (motion + accent glow).",
+            )
+        )
+    else:
+        findings.append(
+            Finding(
+                "desktop.shell_overlay",
+                "warn",
+                "DMS runs the stock shell; the Ominty overlay is not applied.",
+                "Run configs/dms/shell-overlay/apply.sh after DMS has started once.",
+            )
+        )
+    if shader_ok:
+        findings.append(
+            Finding(
+                "desktop.custom_shader",
+                "pass",
+                f"niri {niri_version} supports custom shaders.",
+            )
+        )
+    else:
+        findings.append(
+            Finding(
+                "desktop.custom_shader",
+                "warn",
+                f"niri {niri_version or 'unknown'} may not support custom shaders.",
+                "The matugen template must omit custom-shader below 26.04.",
+            )
+        )
+    findings.append(
+        Finding(
+            "desktop.theme_fragment",
+            "pass" if theme.is_file() else "warn",
+            f"{theme} {'found' if theme.is_file() else 'is missing'}.",
+            "" if theme.is_file() else "Change the wallpaper once so matugen renders it.",
+        )
+    )
+    return info, findings
+
+
+def _typelib_state() -> str:
+    """Where the AyatanaAppIndicator3 typelib lives: system, user, or missing."""
+    for base in (Path("/usr/lib"), Path("/usr/local/lib")):
+        if base.is_dir() and any(
+            base.glob("*/girepository-1.0/AyatanaAppIndicator3-0.1.typelib")
+        ):
+            return "system"
+    prefix = Path.home() / ".local" / "opt" / "ayatana-appindicator"
+    if prefix.is_dir() and any(
+        prefix.glob("usr/lib/*/girepository-1.0/AyatanaAppIndicator3-0.1.typelib")
+    ):
+        return "user"
+    return "missing"
+
+
+def _find_script(name: str) -> str:
+    """Resolve a user script from PATH, ~/bin, or ~/.local/bin."""
+    found = _on_path(name)
+    if found:
+        return found
+    for candidate in (Path.home() / "bin" / name, Path.home() / ".local" / "bin" / name):
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return ""
+
+
+def _check_tts() -> tuple[dict, list[Finding]]:
+    """TTS indicator, typelib and voice state (read-only)."""
+    indicator = _find_script("piper-indicator")
+    daemon = _find_script("piper-daemon")
+    typelib = _typelib_state()
+    voices = sorted(
+        (Path.home() / ".local" / "share" / "piper" / "voices").glob("*.onnx")
+    )
+    selected = os.environ.get("OMINTY_TTS_VOICE", "").strip()
+    voice = selected or (voices[0].stem if voices else "")
+
+    running = False
+    if indicator and shutil.which("pgrep"):
+        code, out = _run(["pgrep", "-f", "piper-indicator"])
+        running = code == 0 and bool(out.strip())
+
+    info = {
+        "indicator": indicator,
+        "daemon": daemon,
+        "running": running,
+        "typelib": typelib,
+        "voice": voice,
+        "voices": [path.stem for path in voices],
+    }
+
+    findings: list[Finding] = []
+    if typelib == "missing":
+        findings.append(
+            Finding(
+                "tts.typelib",
+                "warn",
+                "AyatanaAppIndicator3 typelib is not installed.",
+                "Install gir1.2-ayatanaappindicator3-0.1, or run "
+                "scripts/tts/ensure-ayatana-appindicator.sh.",
+            )
+        )
+    else:
+        findings.append(
+            Finding("tts.typelib", "pass", f"Ayatana typelib available ({typelib}).")
+        )
+    if indicator:
+        findings.append(
+            Finding("tts.indicator", "pass", f"TTS indicator found at {indicator}.")
+        )
+    else:
+        findings.append(
+            Finding(
+                "tts.indicator",
+                "warn",
+                "piper-indicator is not installed.",
+                "Install the tts layer and the helper scripts to enable read-aloud.",
+            )
+        )
+    if indicator and not running:
+        findings.append(
+            Finding(
+                "tts.running",
+                "warn",
+                "The TTS indicator is installed but not running.",
+                "Start it from the Niri session (spawn-at-startup) and check the tray.",
+            )
+        )
+    elif running:
+        findings.append(Finding("tts.running", "pass", "TTS indicator is running."))
+    return info, findings
+
+
 def _check_configs() -> tuple[dict, list[Finding]]:
     """Check the deployed configuration and CLI wiring."""
     from .registry import xdg_config_home
@@ -635,6 +980,7 @@ def _check_configs() -> tuple[dict, list[Finding]]:
 
     targets = {
         "niri_config": config_home / "niri" / "config.kdl",
+        "niri_theme_fragment": config_home / "niri" / "dms" / "ominty-theme.kdl",
         "dms_settings": config_home / "DankMaterialShell" / "settings.json",
         "ominty_config_dir": config_home / "ominty",
         "ominty_generated": config_home / "ominty" / "generated" / "niri" / "bindings.kdl",
@@ -701,6 +1047,25 @@ def _check_configs() -> tuple[dict, list[Finding]]:
                 "" if present else "Run install.sh, or use --no-plugins to skip plugins.",
             )
         )
+
+    # DMS shell fork (motion + accent glow). Located outside ~/.config, so it
+    # is reported here rather than in `targets`.
+    overlay_dir = _shell_dir()
+    overlay_present = overlay_dir.is_dir()
+    configs["dms_shell_overlay"] = {
+        "path": str(overlay_dir),
+        "present": overlay_present,
+        "patched": _shell_overlay_applied(overlay_dir),
+    }
+    findings.append(
+        Finding(
+            "config.dms_shell_overlay",
+            "pass" if overlay_present else "warn",
+            f"{overlay_dir} {'exists' if overlay_present else 'is missing'}.",
+            "" if overlay_present else
+            "Run configs/dms/shell-overlay/apply.sh after DMS has started once.",
+        )
+    )
 
     return (configs, findings)
 
@@ -1106,12 +1471,103 @@ def _choice_dms_plugins() -> tuple[Choice, dict]:
     )
 
 
+def _choice_shell_overlay() -> tuple[Choice, dict]:
+    """Whether to run Ominty's patched DMS shell or the stock one."""
+    shell_dir = _shell_dir()
+    applied = _shell_overlay_applied(shell_dir)
+    return (
+        Choice(
+            id="desktop.shell_overlay",
+            question=(
+                "Apply Ominty's motion + accent-glow overlay to the DMS shell, "
+                "or keep DMS's stock animations?"
+            ),
+            required=False,
+            # Already applied, so the environment answers this.
+            resolved=applied,
+            default="ominty",
+            rationale=(
+                "The overlay patches QML embedded in the DMS binary, so it is "
+                "coupled to the DMS build. A mismatched build must fall back to "
+                "the stock shell rather than leave a half-patched UI."
+            ),
+            options=(
+                ChoiceOption(
+                    "ominty",
+                    "Ominty overlay",
+                    "Accent glow and longer decelerating motion on modals, "
+                    "popouts, notifications and OSD.",
+                ),
+                ChoiceOption(
+                    "stock",
+                    "Stock DMS",
+                    "Upstream animations; no fork and no glow.",
+                ),
+            ),
+        ),
+        {
+            "shell_dir": str(shell_dir),
+            "applied": applied,
+            "base": _overlay_base(shell_dir),
+        },
+    )
+
+
+def _choice_tts() -> tuple[Choice, dict]:
+    """Whether the read-aloud (Piper) stack is wanted."""
+    indicator = _find_script("piper-indicator")
+    daemon = _find_script("piper-daemon")
+    typelib = _typelib_state()
+    voices = sorted(
+        (Path.home() / ".local" / "share" / "piper" / "voices").glob("*.onnx")
+    )
+    available = bool(indicator)
+    return (
+        Choice(
+            id="tts.enabled",
+            question=(
+                "Install the Piper read-aloud stack (indicator, daemon and "
+                "GTK/GStreamer typelibs)?"
+            ),
+            required=False,
+            # An installed indicator means the user has already opted in.
+            resolved=available,
+            default="yes" if available else "no",
+            rationale=(
+                "TTS is optional: it pulls GTK/GStreamer typelibs and runs a "
+                "background daemon and tray indicator. Users who do not want "
+                "it should not get it implicitly."
+            ),
+            options=(
+                ChoiceOption(
+                    "yes",
+                    "Install TTS",
+                    "Read selected text and documents aloud; adds a tray icon.",
+                ),
+                ChoiceOption(
+                    "no",
+                    "Skip TTS",
+                    "No daemon and no tray indicator.",
+                ),
+            ),
+        ),
+        {
+            "indicator": indicator,
+            "daemon": daemon,
+            "typelib": typelib,
+            "voices": [path.stem for path in voices],
+        },
+    )
+
+
 CHOICE_BUILDERS = (
     _choice_llm_provider,
     _choice_layers,
     _choice_default_session,
     _choice_existing_configs,
     _choice_dms_plugins,
+    _choice_shell_overlay,
+    _choice_tts,
 )
 
 
@@ -1160,13 +1616,22 @@ def inspect() -> dict:
 
     platform_info, f_platform = _check_platform(osr)
     hardware, f_hardware = _check_hardware()
+    desktop, f_desktop = _check_desktop()
     layers_info, f_layers = _check_layers(osr)
     configs, f_configs = _check_configs()
     session, f_session = _check_session()
+    tts, f_tts = _check_tts()
     choices, f_choices = _build_choices()
 
     all_findings = (
-        f_platform + f_hardware + f_layers + f_configs + f_session + f_choices
+        f_platform
+        + f_hardware
+        + f_desktop
+        + f_layers
+        + f_configs
+        + f_session
+        + f_tts
+        + f_choices
     )
     blocking = [f.id for f in all_findings if f.severity == "blocking"]
     warnings = [f.id for f in all_findings if f.status == "warn"]
@@ -1179,11 +1644,13 @@ def inspect() -> dict:
         "tool": "ominty",
         "platform": platform_info,
         "hardware": hardware,
+        "desktop": desktop,
         "session": session,
         "privilege": {"sudo": sudo_ok, "required": True},
         "layers": layers_info["layers"],
         "apt": layers_info["apt"],
         "configs": configs,
+        "tts": tts,
         "choices": choices,
         "findings": [f.to_dict() for f in all_findings],
         "summary": {
@@ -1289,6 +1756,17 @@ def format_text(report: dict) -> str:
     lines.append(f"Hardware:   {h['arch']} / {h['gpu']}")
     s = report["session"]
     lines.append(f"Session:    {s['desktop'] or 'none'} ({s['type'] or 'none'})")
+    d = report.get("desktop", {})
+    overlay = d.get("shell_overlay", {}).get("state", "unknown")
+    lines.append(
+        f"Desktop:    niri {d.get('niri_version') or '?'} / "
+        f"DMS {d.get('dms_version') or '?'} (overlay: {overlay})"
+    )
+    t = report.get("tts", {})
+    lines.append(
+        f"TTS:        indicator {'yes' if t.get('indicator') else 'no'}, "
+        f"typelib {t.get('typelib', 'unknown')}"
+    )
     lines.append(f"sudo:       {'yes' if report['privilege']['sudo'] else 'no'}")
     lines.append("")
 

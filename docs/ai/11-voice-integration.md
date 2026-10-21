@@ -172,6 +172,26 @@ TTS is **not** re-implemented here. The intended integration (later milestone):
 The Piper daemon and indicator remain the playback service; the adapter is the
 contract boundary.
 
+## 7.1 Tray dependency (Debian and Ubuntu)
+
+On Wayland the indicator publishes over **StatusNotifierItem**; the DMS bar
+tray is an SNI host and has no XEmbed support (`docs/MIGRATION.md` §2). That
+requires the AyatanaAppIndicator3 typelib.
+
+| Family | Packages | Notes |
+|---|---|---|
+| Debian 13 / LMDE 7 | `gir1.2-ayatanaappindicator3-0.1`, `libayatana-appindicator3-1` | present in the apt archive (0.5.94) |
+| Ubuntu 24.04 / Mint 22.x | same names | present in `noble` (0.5.93) |
+
+Both packages are in the **`tts` layer** of the inspect manifest, so
+`install.sh` provisions them through the same layer-driven apt path on either
+family. The `tts` layer is *optional*: a missing dependency warns, it never
+blocks the desktop install.
+
+When apt cannot be used (no root), `scripts/tts/ensure-ayatana-appindicator.sh`
+extracts the `.debs` into `~/.local/opt/ayatana-appindicator`; the indicator
+re-execs with `LD_LIBRARY_PATH` and `GI_TYPELIB_PATH` set, before `import gi`.
+
 ---
 
 # 8. Recording Indicator

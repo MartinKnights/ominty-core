@@ -464,6 +464,44 @@ Do not spread raw `/etc/os-release` parsing throughout the codebase.
 
 Use one detection function or module.
 
+## 15.1 Families and desktop source
+
+`platform.family` keeps the provisioning distinction that `platform.id`
+deliberately collapses:
+
+```text
+debian | mint-debian | ubuntu | mint-ubuntu | void | unknown
+```
+
+`is_lmde` is true only for `mint-debian`; Ubuntu-based Mint has `ubuntu` in
+`ID_LIKE` and must not be classified as LMDE.
+
+`platform.desktop_source` records how DMS arrived on the host:
+
+| Value | Meaning |
+|---|---|
+| `obs` | Debian/LMDE package from the AvengeMedia Open Build Service |
+| `ppa` | Ubuntu package from the AvengeMedia Launchpad PPA |
+| `source` | built into `~/.local` (the Ubuntu path in `docs/UBUNTU.md`) |
+| `none` | DMS is not installed |
+
+The installer uses this to decide whether it may replace `dms.service` (source
+build) or must leave the packaged unit alone and use a drop-in.
+
+## 15.2 DMS shell overlay is platform-specific
+
+DMS embeds its QML shell in the binary. Ominty's motion + accent-glow overlay
+patches a writable fork selected by `DMS_SHELL_DIR`. That is a
+**build-coupled, platform-specific** concern:
+
+- it must be applied after DMS has extracted its shell for the first time;
+- it must be re-applied after a DMS upgrade;
+- if the patch does not match the build, the stock shell must keep running.
+
+The overlay lives in the distribution repo (`configs/dms/shell-overlay/`), not
+in `ominty-core`; the core only *reports* its state
+(`desktop.shell_overlay`) so the installing agent can decide.
+
 ---
 
 # 16. Machine Profiles

@@ -129,6 +129,8 @@ def test_check_platform_mint_ubuntu_is_supported(monkeypatch):
     monkeypatch.setattr(insp, "detect_platform", lambda: "debian")
     info, findings = _check_platform(MINT_UBUNTU)
     assert info["family"] == "mint-ubuntu"
+    # Ubuntu-based Mint is *not* LMDE, even though ID_LIKE names both bases.
+    assert info["is_lmde"] is False
     assert info["support_level"] == "supported"
     assert info["supported"] is True
     assert findings[0].status == "pass"
@@ -222,11 +224,37 @@ def test_unprovisioned_layer_warns_but_never_blocks(monkeypatch):
 
     for layer in LAYERS:
         finding = next(f for f in findings if f.id == f"layer.{layer.id}")
-        if layer.provisioned:
+        if layer.provisioned and not layer.optional:
             assert finding.severity == "blocking"
         else:
             assert finding.status == "warn"
             assert finding.severity == "info"
+
+
+def test_optional_layer_missing_warns_not_blocks(monkeypatch):
+    """TTS is a feature layer: absent packages must not block the desktop."""
+    _stub_layer_deps(monkeypatch, {})
+    _, findings = _check_layers(LMDE)
+    tts = next(f for f in findings if f.id == "layer.tts")
+    assert tts.status == "warn"
+    assert tts.severity == "info"
+
+
+def test_desktop_source_reports_build_and_package_paths(monkeypatch):
+    monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
+    monkeypatch.setattr(insp, "_on_path", lambda binary: "/home/u/.local/bin/dms")
+    assert insp._desktop_source("ubuntu") == "source"
+
+    monkeypatch.setattr(insp, "_dpkg_status", lambda names: {"dms": "1.6.2"})
+    monkeypatch.setattr(insp, "_has_launchpad_ppa", lambda: False)
+    assert insp._desktop_source("debian") == "obs"
+
+    monkeypatch.setattr(insp, "_has_launchpad_ppa", lambda: True)
+    assert insp._desktop_source("ubuntu") == "ppa"
+
+    monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
+    monkeypatch.setattr(insp, "_on_path", lambda binary: None)
+    assert insp._desktop_source("ubuntu") == "none"
 
 
 def test_missing_package_reason_distinguishes_source(monkeypatch):
@@ -363,8 +391,9 @@ def test_report_shape_is_json_serialisable(monkeypatch):
     assert json.loads(json.dumps(report))["schema_version"] == SCHEMA_VERSION
 
     for key in (
-        "schema_version", "tool", "platform", "hardware", "session",
-        "privilege", "layers", "apt", "configs", "findings", "summary",
+        "schema_version", "tool", "platform", "hardware", "desktop",
+        "session", "privilege", "layers", "apt", "configs", "tts",
+        "findings", "summary",
     ):
         assert key in report, f"missing top-level key: {key}"
 
