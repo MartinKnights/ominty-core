@@ -87,10 +87,13 @@ Scope {
         __preload: true
         watchChanges: true
         printErrors: false
+        onFileChanged: paletteFile.reload()
         onLoaded: {
             try {
                 const d = JSON.parse(paletteFile.text());
-                if (d && d.dark) root.pal = d.dark;
+                const isLight = String((d && d.mode) || "dark").toLowerCase() === "light";
+                const chosen = isLight ? d.light : d.dark;
+                if (chosen) root.pal = chosen;
             } catch (e) {}
         }
     }
