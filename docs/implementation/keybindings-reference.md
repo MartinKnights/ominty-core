@@ -122,7 +122,7 @@ regenerate with the commands below.
 | Super + R | Cycle Column Width | `Mod+R` | DMS |
 | Super + Return | Open Terminal | `Mod+Return` | Ominty |
 | Super + Right | Focus Column Right | `Mod+Right` | DMS |
-| Super + S | spawn "/home/martin/Scripts/script_command_centre.sh" | `Mod+S` | Niri (custom: added) |
+| Super + S | spawn "__HOME__/Scripts/script_command_centre.sh" | `Mod+S` | Niri (custom: added) |
 | Super + Shift + 1 | Move Column to Workspace 1 | `Mod+Shift+1` | DMS |
 | Super + Shift + 2 | Move Column to Workspace 2 | `Mod+Shift+2` | DMS |
 | Super + Shift + 3 | Move Column to Workspace 3 | `Mod+Shift+3` | DMS |
@@ -212,11 +212,11 @@ regenerate with the commands below.
 
 | Key | Action | Raw key | Source |
 |---|---|---|---|
-| Ctrl + Alt + A | spawn "/usr/bin/artha" | `Ctrl+Alt+A` | Niri (custom: added) |
+| Ctrl + Alt + A | spawn "__HOME__/bin/artha-word" | `Ctrl+Alt+A` | Niri (custom: added) |
 | Ctrl + Alt + Delete | Task Manager | `Ctrl+Alt+Delete` | DMS |
-| Ctrl + Alt + O | spawn "/home/martin/bin/tts-pick" | `Ctrl+Alt+O` | Niri (custom: added) |
-| Ctrl + Alt + R | spawn "/home/martin/.local/bin/screen-ocr" | `Ctrl+Alt+R` | Niri (custom: added) |
-| Ctrl + Alt + S | spawn "/home/martin/bin/read-selection" | `Ctrl+Alt+S` | Niri (custom: added) |
+| Ctrl + Alt + O | spawn "__HOME__/bin/tts-pick" | `Ctrl+Alt+O` | Niri (custom: added) |
+| Ctrl + Alt + R | spawn "__HOME__/.local/bin/screen-ocr" | `Ctrl+Alt+R` | Niri (custom: added) |
+| Ctrl + Alt + S | spawn "__HOME__/bin/read-selection" | `Ctrl+Alt+S` | Niri (custom: added) |
 
 ### AI (`AI`) — 5
 

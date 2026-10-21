@@ -14,7 +14,7 @@ This document records the state of the target machine before Phase 1 implementat
 |---|---|
 | Distribution | LMDE 7 (gigi) — Linux Mint Debian Edition |
 | ID | linuxmint |
-| Base | Debian (bookworm-derived, LMDE 7) |
+| Base | Debian 13 (trixie-derived, LMDE 7) |
 | Kernel | (not captured — not required for Phase 1) |
 
 LMDE is the Phase 1 validation platform (ADR-005). The eventual target is Void Linux; nothing in this audit should be assumed to transfer to Void without re-validation.

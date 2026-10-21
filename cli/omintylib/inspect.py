@@ -42,9 +42,19 @@ from .platform import detect_platform, family_from_os_release
 
 SCHEMA_VERSION = 1
 
-#: Codenames this project is validated against. `faye` is LMDE 7's release
-#: codename; `gigi` is its base Debian 13 codename (some LMDE images report it).
-SUPPORTED_CODENAMES = ("trixie", "faye", "gigi")
+#: Debian 13 (trixie) is the validated base. LMDE 7 reports its own release
+#: codename (`gigi`), so both names are accepted.
+#:
+#: `faye` is deliberately absent: it is LMDE 6, built on Debian 12 (bookworm),
+#: which has no `trixie-backports` and therefore cannot install quickshell.
+SUPPORTED_CODENAMES = ("trixie", "gigi")
+
+#: Codenames we recognise but cannot install on, with the release they mean.
+#: These produce a blocking finding instead of "untested, proceed at risk".
+KNOWN_UNSUPPORTED_CODENAMES = {
+    "faye": "LMDE 6 (Debian 12, bookworm)",
+    "bookworm": "Debian 12 (bookworm)",
+}
 
 #: Ubuntu base codenames validated through the source-build path. Mint images
 #: expose the base in ``UBUNTU_CODENAME`` (e.g. zena -> noble). Other Ubuntu
@@ -118,6 +128,21 @@ _DESKTOP = Layer(
         Package("xdg-desktop-portal-gtk", "apt", "GTK portal backend"),
         Package("network-manager", "apt", "network management"),
         Package("nemo", "apt", "file manager (LMDE's Cinnamon file manager)"),
+        # Helpers used by the shipped keybinding scripts in configs/bin and
+        # configs/local-bin (clip-tool, read-selection, screen-ocr, artha-word,
+        # start-swayidle, wait-for-tray).
+        Package("wl-clipboard", "apt", "Wayland clipboard for clip-tool"),
+        Package("xclip", "apt", "X11 clipboard fallback for clip-tool"),
+        Package("slurp", "apt", "area selection for screen OCR"),
+        Package("grim", "apt", "Wayland screenshots for screen OCR"),
+        Package("tesseract-ocr", "apt", "OCR engine behind Ctrl+Alt+R"),
+        Package("wtype", "apt", "virtual-keyboard input for artha-word"),
+        Package("zenity", "apt", "dialogs for the document picker"),
+        Package("artha", "apt", "offline thesaurus behind Ctrl+Alt+A"),
+        Package("libnotify-bin", "apt", "notify-send, used by screen-ocr"),
+        Package("libglib2.0-bin", "apt", "gdbus, used by wait-for-tray"),
+        Package("swayidle", "apt", "idle/lock daemon for the Niri session"),
+        Package("swaylock", "apt", "screen locker used by swayidle"),
     ),
 )
 
@@ -149,6 +174,8 @@ _TTS = Layer(
             "apt",
             "audio decoders used by the indicator",
         ),
+        Package("sox", "apt", "concatenates multi-part Piper output"),
+        Package("python3-venv", "apt", "virtualenv for the Piper install"),
     ),
 )
 
@@ -420,16 +447,32 @@ def _has_launchpad_ppa() -> bool:
     return False
 
 
+def _managed_dms() -> Path | None:
+    """The source-built ``dms`` that ``install.sh`` manages, if present.
+
+    Both families now run the pinned build from ``~/.local/bin``, so this is
+    what the ``dms.service`` user unit actually starts.
+    """
+    candidate = Path.home() / ".local" / "bin" / "dms"
+    if candidate.is_file() and os.access(candidate, os.X_OK):
+        return candidate
+    return None
+
+
 def _desktop_source(family: str) -> str:
     """How the desktop binaries got onto this machine.
 
+    ``source``   built from the pinned commit into ~/.local (current path)
     ``obs``      Debian/LMDE package from the AvengeMedia Open Build Service
     ``ppa``      Ubuntu package from the AvengeMedia Launchpad PPA
-    ``source``   built into ~/.local (Ubuntu path in docs/UBUNTU.md)
     ``none``     DMS is not installed yet
     """
     if family not in ("debian", "mint-debian", "ubuntu", "mint-ubuntu"):
         return "unknown"
+    # A leftover package from an older install must not mask the managed build:
+    # the user unit install.sh writes runs ~/.local/bin/dms.
+    if _managed_dms() is not None:
+        return "source"
     try:
         installed = _dpkg_status(("dms",))
     except Exception:  # pragma: no cover - defensive
@@ -520,6 +563,20 @@ def _check_platform(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
                 "warn",
                 f"{pretty or distro_id} reports no VERSION_CODENAME.",
                 "Expected Debian 13 (trixie) or LMDE 7; confirm before installing.",
+            )
+        )
+    elif codename in KNOWN_UNSUPPORTED_CODENAMES:
+        info["support_level"] = "unsupported"
+        findings.append(
+            Finding(
+                "platform",
+                "fail",
+                f"{pretty or distro_id} is {KNOWN_UNSUPPORTED_CODENAMES[codename]}, "
+                "which Ominty cannot install on.",
+                "Ominty targets Debian 13 (trixie) and LMDE 7 (gigi). Debian 12 "
+                "has no trixie-backports, so quickshell cannot be installed. "
+                "Upgrade the host to LMDE 7 / Debian 13 first.",
+                "blocking",
             )
         )
     elif codename not in SUPPORTED_CODENAMES:

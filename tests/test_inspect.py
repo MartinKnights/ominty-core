@@ -99,12 +99,25 @@ def test_check_platform_supported(monkeypatch):
 
 def test_check_platform_unsupported_codename(monkeypatch):
     monkeypatch.setattr(insp, "detect_platform", lambda: "debian")
-    osr = dict(LMDE, VERSION_CODENAME="bookworm")
+    # A codename we have never seen stays a warning: it may work.
+    osr = dict(LMDE, VERSION_CODENAME="forky")
     info, findings = _check_platform(osr)
     assert info["supported"] is False
     assert findings[0].status == "warn"
-    # An untested distro must warn, never block.
     assert findings[0].severity != "blocking"
+
+
+def test_check_platform_debian_12_blocks(monkeypatch):
+    monkeypatch.setattr(insp, "detect_platform", lambda: "debian")
+    # LMDE 6 ('faye') and Debian 12 ('bookworm') cannot install quickshell:
+    # there is no trixie-backports, so this must block rather than warn.
+    for codename in ("faye", "bookworm"):
+        osr = dict(LMDE, VERSION_CODENAME=codename)
+        info, findings = _check_platform(osr)
+        assert info["supported"] is False
+        assert info["support_level"] == "unsupported"
+        assert findings[0].status == "fail"
+        assert findings[0].severity == "blocking"
 
 
 def test_check_platform_unknown_blocks(monkeypatch):
@@ -243,6 +256,7 @@ def test_optional_layer_missing_warns_not_blocks(monkeypatch):
 def test_desktop_source_reports_build_and_package_paths(monkeypatch):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_on_path", lambda binary: "/home/u/.local/bin/dms")
+    monkeypatch.setattr(insp, "_managed_dms", lambda: None)
     assert insp._desktop_source("ubuntu") == "source"
 
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {"dms": "1.6.2"})
@@ -255,6 +269,14 @@ def test_desktop_source_reports_build_and_package_paths(monkeypatch):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_on_path", lambda binary: None)
     assert insp._desktop_source("ubuntu") == "none"
+
+
+def test_desktop_source_prefers_the_managed_build(monkeypatch):
+    """A leftover dms package must not mask the source build that actually runs."""
+    monkeypatch.setattr(insp, "_managed_dms", lambda: "/home/u/.local/bin/dms")
+    monkeypatch.setattr(insp, "_dpkg_status", lambda names: {"dms": "1.6.2db1"})
+    monkeypatch.setattr(insp, "_has_launchpad_ppa", lambda: False)
+    assert insp._desktop_source("debian") == "source"
 
 
 def test_missing_package_reason_distinguishes_source(monkeypatch):
