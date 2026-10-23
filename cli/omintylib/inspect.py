@@ -185,10 +185,10 @@ _TERMINAL = Layer(
     provisioned=False,
     description="Terminal emulators, shell, and terminal multiplexer.",
     packages=(
-        Package("alacritty", "apt", "GPU-accelerated terminal"),
-        Package("ghostty", "obs", "fast terminal (alternative to alacritty)"),
-        Package("zellij", "apt", "terminal multiplexer"),
-        Package("starship", "apt", "cross-shell prompt"),
+        Package("alacritty", "apt", "GPU-accelerated terminal", binary="alacritty"),
+        Package("ghostty", "obs", "fast terminal (alternative to alacritty)", binary="ghostty"),
+        Package("zellij", "apt", "terminal multiplexer", binary="zellij"),
+        Package("starship", "apt", "cross-shell prompt", binary="starship"),
         Package("bash-completion", "apt", "shell completions"),
     ),
 )
@@ -199,7 +199,7 @@ _EDITOR = Layer(
     provisioned=False,
     description="Modal editor and its integrations.",
     packages=(
-        Package("neovim", "apt", "modal editor"),
+        Package("neovim", "apt", "modal editor", binary="nvim"),
         Package("fzf", "apt", "fuzzy finder"),
     ),
 )
@@ -215,12 +215,12 @@ _CLI = Layer(
         Package("curl", "apt", "HTTP client"),
         Package("wget", "apt", "HTTP client"),
         Package("jq", "apt", "JSON processor"),
-        Package("ripgrep", "apt", "recursive search"),
-        Package("fd-find", "apt", "find alternative"),
-        Package("bat", "apt", "cat with syntax highlighting"),
+        Package("ripgrep", "apt", "recursive search", binary="rg"),
+        Package("fd-find", "apt", "find alternative", binary="fdfind|fd"),
+        Package("bat", "apt", "cat with syntax highlighting", binary="batcat|bat"),
         Package("tree", "apt", "directory listing"),
         Package("htop", "apt", "process monitor"),
-        Package("fastfetch", "apt", "system information"),
+        Package("fastfetch", "apt", "system information", binary="fastfetch"),
         Package("unzip", "apt", "archive extraction"),
     ),
 )
@@ -231,8 +231,8 @@ _CONTAINERS = Layer(
     provisioned=False,
     description="Rootless containers and development environments.",
     packages=(
-        Package("podman", "apt", "rootless container engine"),
-        Package("distrobox", "apt", "containerised development environments"),
+        Package("podman", "apt", "rootless container engine", binary="podman"),
+        Package("distrobox", "apt", "containerised development environments", binary="distrobox"),
     ),
 )
 
@@ -242,7 +242,7 @@ _BROWSER = Layer(
     provisioned=False,
     description="Default browser.",
     packages=(
-        Package("firefox-esr", "apt", "web browser"),
+        Package("firefox-esr", "apt", "web browser", binary="firefox-esr|firefox"),
     ),
 )
 
@@ -297,6 +297,21 @@ def _dpkg_status(names: tuple[str, ...]) -> dict[str, str]:
         if len(parts) == 3 and parts[1] == "installed":
             found[parts[0]] = parts[2]
     return found
+
+
+def _binary_present(spec: str) -> str | None:
+    """Resolve the first available name in a ``"batcat|bat"`` style spec.
+
+    Debian renames several binaries (``bat`` -> ``batcat``, ``fd`` ->
+    ``fdfind``), and users also install tools by hand outside apt (``zellij``
+    into ``/usr/local/bin``). Either way the layer must not report the package
+    as missing when the program is there.
+    """
+    for name in spec.split("|"):
+        found = _on_path(name.strip())
+        if found:
+            return found
+    return None
 
 
 def _on_path(binary: str) -> str | None:
@@ -676,7 +691,11 @@ def _check_layers(osr: dict[str, str]) -> tuple[dict, list[Finding]]:
         entries = []
         for pkg in layer.packages:
             version = installed.get(pkg.name)
-            built = _on_path(pkg.binary) if (not version and pkg.binary) else None
+            built = (
+                _binary_present(pkg.binary)
+                if (not version and pkg.binary)
+                else None
+            )
             if version:
                 entries.append(
                     {

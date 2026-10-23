@@ -253,6 +253,34 @@ def test_optional_layer_missing_warns_not_blocks(monkeypatch):
     assert tts.severity == "info"
 
 
+def test_binary_present_accepts_debian_renames(monkeypatch):
+    """bat/fd are renamed by Debian; either name proves the package is there."""
+    present = {"batcat": "/usr/bin/batcat", "zellij": "/usr/local/bin/zellij"}
+    monkeypatch.setattr(
+        insp, "_on_path", lambda name: present.get(name)
+    )
+    assert insp._binary_present("batcat|bat") == "/usr/bin/batcat"
+    assert insp._binary_present("bat|batcat") == "/usr/bin/batcat"
+    assert insp._binary_present("zellij") == "/usr/local/bin/zellij"
+    assert insp._binary_present("fd|fdfind") is None
+    assert insp._binary_present("") is None
+
+
+def test_manifest_declares_binary_fallbacks():
+    """Packages that users install outside apt must carry a binary fallback.
+
+    zellij was reported missing on LMDE 7 while /usr/local/bin/zellij worked;
+    the same class of bug applies to bat/fd (renamed by Debian).
+    """
+    for pkg in insp._TERMINAL.packages:
+        if pkg.name in {"zellij", "starship", "ghostty", "alacritty"}:
+            assert pkg.binary, f"{pkg.name} needs a binary fallback"
+    by_name = {p.name: p for p in insp._CLI.packages}
+    assert by_name["bat"].binary == "batcat|bat"
+    assert by_name["fd-find"].binary == "fdfind|fd"
+    assert by_name["ripgrep"].binary == "rg"
+
+
 def test_desktop_source_reports_build_and_package_paths(monkeypatch):
     monkeypatch.setattr(insp, "_dpkg_status", lambda names: {})
     monkeypatch.setattr(insp, "_on_path", lambda binary: "/home/u/.local/bin/dms")
