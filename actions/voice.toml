@@ -119,3 +119,65 @@ discoverable = true
 palette = true
 ai_accessible = false
 voice_accessible = true
+
+
+# ---------------------------------------------------------------------------
+# Text to speech (Piper)
+#
+# The registry spec reserved `voice.speak.*` for this; the Piper stack already
+# existed as scripts, so these actions only give it a stable, discoverable
+# entry point and the desktop chords. Both are fire-and-forget: Niri has no
+# key-release bindings, so the action queues speech and returns.
+# ---------------------------------------------------------------------------
+
+[action."voice.speak.file"]
+
+name = "Read a document aloud"
+description = "Pick a document (.md/.txt/.pdf/.docx/.epub) and read it aloud."
+category = "Voice"
+
+keywords = ["tts", "speak", "read", "aloud", "document", "piper", "voice", "file"]
+
+keys = ["Super+Alt+O"]
+
+adapter = "command"
+command = ["tts-pick"]
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["zenity", "ominty"]
+
+discoverable = true
+palette = true
+# Documents may be confidential: never route their text to an AI surface.
+ai_accessible = false
+voice_accessible = false
+
+
+[action."voice.speak.clipboard"]
+
+name = "Read the clipboard aloud"
+description = "Speak the current clipboard contents with the local Piper voice."
+category = "Voice"
+
+keywords = ["tts", "speak", "clipboard", "read", "aloud", "piper", "voice"]
+
+keys = ["Shift+Alt+S"]
+
+adapter = "command"
+command = ["read-selection", "--clipboard"]
+
+risk = "routine"
+confirmation = "never"
+
+contexts = ["global"]
+platforms = ["common"]
+requires = ["read-selection"]
+
+discoverable = true
+palette = true
+ai_accessible = false
+voice_accessible = false

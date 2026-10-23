@@ -87,7 +87,9 @@ category = "Media"
 
 keywords = ["media", "playlist", "music", "video", "audio", "courses", "launcher"]
 
-keys = ["Ctrl+Shift+M"]
+# Shift+Alt+M is the Ominty desktop chord; Ctrl+Shift+M is kept as an
+# alias so either habit works (both are free — checked against 168 binds).
+keys = ["Shift+Alt+M", "Ctrl+Shift+M"]
 
 adapter = "dms.ipc"
 arguments = { dms = { target = "omintyMedia", function = "toggle" } }

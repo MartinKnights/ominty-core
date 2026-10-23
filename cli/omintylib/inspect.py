@@ -176,6 +176,10 @@ _TTS = Layer(
         ),
         Package("sox", "apt", "concatenates multi-part Piper output"),
         Package("python3-venv", "apt", "virtualenv for the Piper install"),
+        # Speech to text: whisper.cpp is built by scripts/source/whisper-build.sh,
+        # these are the runtime tools the voice adapter shells out to.
+        Package("ffmpeg", "apt", "normalises recordings for whisper.cpp"),
+        Package("pipewire-bin", "apt", "pw-record, used to capture dictation"),
     ),
 )
 
